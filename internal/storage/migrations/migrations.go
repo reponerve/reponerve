@@ -155,6 +155,21 @@ var allMigrations = []Migration{
 			DROP TABLE IF EXISTS repositories;
 		`,
 	},
+	{
+		Version: 2,
+		Name:    "add_scan_state_table",
+		Up: `
+			CREATE TABLE IF NOT EXISTS scan_state (
+				repository_id TEXT PRIMARY KEY,
+				last_scan_commit TEXT NOT NULL,
+				updated_at DATETIME NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id)
+			);
+		`,
+		Down: `
+			DROP TABLE IF EXISTS scan_state;
+		`,
+	},
 }
 
 // GetAppliedVersions returns the list of applied migration versions from the database.

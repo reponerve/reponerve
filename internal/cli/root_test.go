@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -15,9 +16,35 @@ func TestMain(m *testing.M) {
 	}
 	defer os.RemoveAll(tempDir)
 
+	origDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := os.Chdir(tempDir); err != nil {
+		panic(err)
+	}
+
+	// Initialize git repo in tempDir so scanning works
+	initCmd := exec.Command("git", "init")
+	initCmd.Dir = tempDir
+	if err := initCmd.Run(); err != nil {
+		panic(err)
+	}
+	// Setup user details
+	exec.Command("git", "config", "user.name", "Test").Run()
+	exec.Command("git", "config", "user.email", "test@example.com").Run()
+	// Add initial commit
+	os.WriteFile(filepath.Join(tempDir, "dummy.txt"), []byte("dummy"), 0644)
+	exec.Command("git", "add", "dummy.txt").Run()
+	exec.Command("git", "commit", "-m", "initial commit").Run()
+
 	os.Setenv("REPONERVE_WORKSPACE", filepath.Join(tempDir, ".reponerve"))
 
-	os.Exit(m.Run())
+	code := m.Run()
+
+	os.Chdir(origDir)
+	os.Exit(code)
 }
 
 func executeCommand(args ...string) (string, error) {
