@@ -79,7 +79,9 @@ func TestGitScannerIntegration(t *testing.T) {
 		t.Fatalf("failed to insert mock repository: %v", err)
 	}
 
-	scanner := git.NewScanner(db)
+	sourceStore := sqlite.NewSourceStore(db)
+	scanStateStore := sqlite.NewScanStateStore(db)
+	scanner := git.NewScanner(scanStateStore)
 
 	commits, err := scanner.Scan(ctx, &repo)
 	if err != nil {
@@ -87,6 +89,17 @@ func TestGitScannerIntegration(t *testing.T) {
 	}
 	if len(commits) != 2 {
 		t.Errorf("expected 2 commits from initial scan, got %d", len(commits))
+	}
+
+	for _, commit := range commits {
+		err = sourceStore.UpsertSource(ctx, commit)
+		if err != nil {
+			t.Fatalf("failed to store commit: %v", err)
+		}
+	}
+	err = scanStateStore.UpdateScanState(ctx, repo.ID, commits[0].Reference)
+	if err != nil {
+		t.Fatalf("failed to update scan state: %v", err)
 	}
 
 	var sourceCount int
@@ -98,7 +111,7 @@ func TestGitScannerIntegration(t *testing.T) {
 		t.Errorf("expected 2 source commits in DB, got %d", sourceCount)
 	}
 
-	state, err := scanner.GetScanState(ctx, repo.ID)
+	state, err := scanStateStore.GetScanState(ctx, repo.ID)
 	if err != nil {
 		t.Fatalf("failed to get scan state: %v", err)
 	}
@@ -123,6 +136,17 @@ func TestGitScannerIntegration(t *testing.T) {
 		t.Errorf("expected incremental commit message 'third commit', got %q", commitsInc[0].Title)
 	}
 
+	for _, commit := range commitsInc {
+		err = sourceStore.UpsertSource(ctx, commit)
+		if err != nil {
+			t.Fatalf("failed to store commit: %v", err)
+		}
+	}
+	err = scanStateStore.UpdateScanState(ctx, repo.ID, commitsInc[0].Reference)
+	if err != nil {
+		t.Fatalf("failed to update scan state: %v", err)
+	}
+
 	err = db.QueryRow("SELECT COUNT(*) FROM sources WHERE repository_id = ? AND source_type = 'commit'", repo.ID).Scan(&sourceCount)
 	if err != nil {
 		t.Fatalf("failed to query sources count after incremental scan: %v", err)
@@ -131,7 +155,7 @@ func TestGitScannerIntegration(t *testing.T) {
 		t.Errorf("expected 3 source commits in DB, got %d", sourceCount)
 	}
 
-	err = scanner.UpdateScanState(ctx, repo.ID, "fake_commit_hash_non_existent")
+	err = scanStateStore.UpdateScanState(ctx, repo.ID, "fake_commit_hash_non_existent")
 	if err != nil {
 		t.Fatalf("failed to update scan state with fake hash: %v", err)
 	}
@@ -142,5 +166,16 @@ func TestGitScannerIntegration(t *testing.T) {
 	}
 	if len(commitsFallback) != 3 {
 		t.Errorf("expected 3 commits from fallback full scan, got %d", len(commitsFallback))
+	}
+
+	for _, commit := range commitsFallback {
+		err = sourceStore.UpsertSource(ctx, commit)
+		if err != nil {
+			t.Fatalf("failed to store commit: %v", err)
+		}
+	}
+	err = scanStateStore.UpdateScanState(ctx, repo.ID, commitsFallback[0].Reference)
+	if err != nil {
+		t.Fatalf("failed to update scan state: %v", err)
 	}
 }

@@ -11,4 +11,5 @@ type Source struct {
 	Title        string
 	Author       string
 	Timestamp    time.Time
+	MetadataJSON string
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"reponerve/internal/config"
+	"reponerve/internal/ingestion"
 	"reponerve/internal/scanner/adr"
 	"reponerve/internal/scanner/git"
 	"reponerve/internal/scanner/repository"
@@ -31,39 +32,32 @@ func NewCommand() *cobra.Command {
 			}
 			defer db.Close()
 
+			// 1. Initialize dependencies
+			repoStore := sqlite.NewRepositoryStore(db)
+			sourceStore := sqlite.NewSourceStore(db)
+			scanStateStore := sqlite.NewScanStateStore(db)
+
+			reg := ingestion.NewRegistry()
+			reg.Register("git", git.NewScanner(scanStateStore))
+			reg.Register("adr", adr.NewScanner())
+
+			pipeline := ingestion.NewPipeline(reg)
+			coord := ingestion.NewCoordinator(repository.NewGitDiscovery(), repoStore, sourceStore, scanStateStore, pipeline)
+
 			cmd.Println("Scanning repository...")
 
-			// 1. Discover repository
-			discovery := repository.NewGitDiscovery(db)
-			repo, err := discovery.Discover(cmd.Context(), cfg.Repository.Path)
+			// 2. Call coordinator.Run()
+			result, err := coord.Run(cmd.Context(), cfg.Repository.Path)
 			if err != nil {
-				return fmt.Errorf("failed to discover repository: %w", err)
+				return err
 			}
 
-			// 2. Store repository metadata
-			err = discovery.Store(cmd.Context(), repo)
-			if err != nil {
-				return fmt.Errorf("failed to store repository metadata: %w", err)
-			}
+			// 3. Print results
 			cmd.Println("✓ Repository discovered")
-
-			// 3. Execute Git Scanner
-			gitScanner := git.NewScanner(db)
-			commits, err := gitScanner.Scan(cmd.Context(), repo)
-			if err != nil {
-				return fmt.Errorf("failed to scan commits: %w", err)
-			}
-			cmd.Printf("✓ %d commits indexed\n", len(commits))
-
-			// 4. Execute ADR Scanner
-			adrScanner := adr.NewScanner(db)
-			adrs, err := adrScanner.Scan(cmd.Context(), repo)
-			if err != nil {
-				return fmt.Errorf("failed to scan ADRs: %w", err)
-			}
-			cmd.Printf("✓ %d ADRs indexed\n", len(adrs))
-
+			cmd.Printf("✓ %d commits indexed\n", result.CommitsIndexed)
+			cmd.Printf("✓ %d ADRs indexed\n", result.ADRsIndexed)
 			cmd.Println("Scan completed.")
+
 			return nil
 		},
 	}

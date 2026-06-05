@@ -2,63 +2,26 @@ package git
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"os/exec"
 	"strings"
 	"time"
 
-	"reponerve/internal/storage/sqlite"
+	"reponerve/internal/storage"
 	"reponerve/pkg/models"
 )
 
-// ScanState holds the scan state for a repository.
-type ScanState struct {
-	RepositoryID   string
-	LastScanCommit string
-	UpdatedAt      time.Time
-}
-
-// Scanner provides functionality to discover and ingest Git commits.
+// Scanner provides functionality to discover Git commits.
 type Scanner struct {
-	db *sqlite.Database
+	scanStateStore storage.ScanStateStore
 }
 
 // NewScanner creates a new Scanner instance.
-func NewScanner(db *sqlite.Database) *Scanner {
-	return &Scanner{db: db}
+func NewScanner(scanStateStore storage.ScanStateStore) *Scanner {
+	return &Scanner{scanStateStore: scanStateStore}
 }
 
-// GetScanState retrieves the scan state for a repository.
-func (s *Scanner) GetScanState(ctx context.Context, repoID string) (*ScanState, error) {
-	var state ScanState
-	query := "SELECT repository_id, last_scan_commit, updated_at FROM scan_state WHERE repository_id = ?"
-	err := s.db.QueryRowContext(ctx, query, repoID).Scan(&state.RepositoryID, &state.LastScanCommit, &state.UpdatedAt)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	} else if err != nil {
-		return nil, fmt.Errorf("failed to query scan state: %w", err)
-	}
-	return &state, nil
-}
-
-// UpdateScanState stores or updates the scan state.
-func (s *Scanner) UpdateScanState(ctx context.Context, repoID string, commitHash string) error {
-	query := `
-		INSERT INTO scan_state (repository_id, last_scan_commit, updated_at)
-		VALUES (?, ?, ?)
-		ON CONFLICT(repository_id) DO UPDATE SET
-			last_scan_commit = excluded.last_scan_commit,
-			updated_at = excluded.updated_at
-	`
-	_, err := s.db.ExecContext(ctx, query, repoID, commitHash, time.Now())
-	if err != nil {
-		return fmt.Errorf("failed to update scan state: %w", err)
-	}
-	return nil
-}
-
-// Scan extracts and stores new commits starting from the last scanned commit.
+// Scan extracts new commits starting from the last scanned commit.
 // It returns the list of new source records scanned.
 func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.Source, error) {
 	headCmd := exec.CommandContext(ctx, "git", "rev-parse", "HEAD")
@@ -69,9 +32,13 @@ func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.
 	}
 	headHash := strings.TrimSpace(string(headOut))
 
-	state, err := s.GetScanState(ctx, repo.ID)
-	if err != nil {
-		return nil, err
+	var state *storage.ScanState
+	if s.scanStateStore != nil {
+		var err error
+		state, err = s.scanStateStore.GetScanState(ctx, repo.ID)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var gitArgs []string
@@ -109,34 +76,7 @@ func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.
 		return nil, fmt.Errorf("failed to parse git log: %w", err)
 	}
 
-	for _, src := range sources {
-		err := s.storeSource(ctx, src)
-		if err != nil {
-			return nil, fmt.Errorf("failed to store source commit %s: %w", src.ID, err)
-		}
-	}
-
-	err = s.UpdateScanState(ctx, repo.ID, headHash)
-	if err != nil {
-		return nil, err
-	}
-
 	return sources, nil
-}
-
-func (s *Scanner) storeSource(ctx context.Context, src *models.Source) error {
-	query := `
-		INSERT INTO sources (id, repository_id, source_type, reference, title, author, timestamp, metadata_json, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-		ON CONFLICT(id) DO UPDATE SET
-			title = excluded.title,
-			author = excluded.author,
-			timestamp = excluded.timestamp,
-			metadata_json = excluded.metadata_json
-	`
-	now := time.Now()
-	_, err := s.db.ExecContext(ctx, query, src.ID, src.RepositoryID, src.SourceType, src.Reference, src.Title, src.Author, src.Timestamp, nil, now)
-	return err
 }
 
 // ParseGitLog parses raw git log outputs into structured models.Source pointers.

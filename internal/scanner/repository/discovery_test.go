@@ -44,7 +44,7 @@ func TestDiscover_Success(t *testing.T) {
 	tempRepo := createTestRepo(t, "main-branch")
 	defer os.RemoveAll(tempRepo)
 
-	service := NewGitDiscovery(nil)
+	service := NewGitDiscovery()
 	ctx := context.Background()
 	repo, err := service.Discover(ctx, tempRepo)
 	if err != nil {
@@ -81,7 +81,7 @@ func TestDiscover_NotGitRepository(t *testing.T) {
 	}
 	defer os.RemoveAll(tempDir)
 
-	service := NewGitDiscovery(nil)
+	service := NewGitDiscovery()
 	ctx := context.Background()
 	_, err = service.Discover(ctx, tempDir)
 	if err == nil {
@@ -99,7 +99,7 @@ func TestDiscover_EmptyRepository(t *testing.T) {
 	runGitCommand(t, tempDir, "init")
 	runGitCommand(t, tempDir, "symbolic-ref", "HEAD", "refs/heads/empty-default")
 
-	service := NewGitDiscovery(nil)
+	service := NewGitDiscovery()
 	ctx := context.Background()
 	repo, err := service.Discover(ctx, tempDir)
 	if err != nil {
@@ -125,7 +125,7 @@ func TestDiscover_DetachedHEAD(t *testing.T) {
 
 	runGitCommand(t, tempRepo, "checkout", commitHash)
 
-	service := NewGitDiscovery(nil)
+	service := NewGitDiscovery()
 	ctx := context.Background()
 	repo, err := service.Discover(ctx, tempRepo)
 	if err != nil {
@@ -138,7 +138,7 @@ func TestDiscover_DetachedHEAD(t *testing.T) {
 }
 
 func TestDiscover_InvalidPath(t *testing.T) {
-	service := NewGitDiscovery(nil)
+	service := NewGitDiscovery()
 	ctx := context.Background()
 	_, err := service.Discover(ctx, "/path/does/not/exist/reponerve-invalid")
 	if err == nil {
