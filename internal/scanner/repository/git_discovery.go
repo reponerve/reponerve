@@ -11,18 +11,16 @@ import (
 	"strings"
 	"time"
 
-	"reponerve/internal/storage/sqlite"
 	"reponerve/pkg/models"
 )
 
 // GitDiscovery implements the Discovery interface for Git repositories.
 type GitDiscovery struct {
-	db *sqlite.Database
 }
 
 // NewGitDiscovery creates a new GitDiscovery service.
-func NewGitDiscovery(db *sqlite.Database) *GitDiscovery {
-	return &GitDiscovery{db: db}
+func NewGitDiscovery() *GitDiscovery {
+	return &GitDiscovery{}
 }
 
 // Discover extracts repository metadata for the given path.
@@ -55,24 +53,6 @@ func (g *GitDiscovery) Discover(ctx context.Context, path string) (*models.Repos
 	}
 
 	return repo, nil
-}
-
-// Store persists or updates the repository metadata in the database.
-func (g *GitDiscovery) Store(ctx context.Context, repo *models.Repository) error {
-	query := `
-		INSERT INTO repositories (id, name, path, default_branch, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?)
-		ON CONFLICT(id) DO UPDATE SET
-			name = excluded.name,
-			path = excluded.path,
-			default_branch = excluded.default_branch,
-			updated_at = excluded.updated_at
-	`
-	_, err := g.db.ExecContext(ctx, query, repo.ID, repo.Name, repo.Path, repo.DefaultBranch, repo.CreatedAt, repo.UpdatedAt)
-	if err != nil {
-		return fmt.Errorf("failed to store repository metadata: %w", err)
-	}
-	return nil
 }
 
 func (g *GitDiscovery) getRepositoryName(dir string) string {

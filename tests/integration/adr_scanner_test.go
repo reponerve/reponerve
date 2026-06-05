@@ -82,12 +82,20 @@ We need to load yaml files.`
 	}
 
 	// Initialize ADR scanner and scan
-	scanner := adr.NewScanner(db)
+	sourceStore := sqlite.NewSourceStore(db)
+	scanner := adr.NewScanner()
 	ctx := context.Background()
 
 	sources, err := scanner.Scan(ctx, repo)
 	if err != nil {
 		t.Fatalf("ADR scan failed: %v", err)
+	}
+
+	for _, src := range sources {
+		err = sourceStore.UpsertSource(ctx, src)
+		if err != nil {
+			t.Fatalf("failed to store ADR source: %v", err)
+		}
 	}
 
 	if len(sources) != 2 {
@@ -161,6 +169,12 @@ We need a lightweight database with update.`
 	rescanSources, err := scanner.Scan(ctx, repo)
 	if err != nil {
 		t.Fatalf("ADR scan fail on rescan: %v", err)
+	}
+	for _, src := range rescanSources {
+		err = sourceStore.UpsertSource(ctx, src)
+		if err != nil {
+			t.Fatalf("failed to store ADR source on rescan: %v", err)
+		}
 	}
 	if len(rescanSources) != 2 {
 		t.Fatalf("expected still 2 sources on rescan, got %d", len(rescanSources))

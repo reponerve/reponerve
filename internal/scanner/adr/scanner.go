@@ -9,20 +9,17 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
-	"reponerve/internal/storage/sqlite"
 	"reponerve/pkg/models"
 )
 
-// Scanner provides functionality to discover, parse, and ingest Architecture Decision Records (ADRs).
+// Scanner provides functionality to discover and parse Architecture Decision Records (ADRs).
 type Scanner struct {
-	db *sqlite.Database
 }
 
 // NewScanner creates a new Scanner instance.
-func NewScanner(db *sqlite.Database) *Scanner {
-	return &Scanner{db: db}
+func NewScanner() *Scanner {
+	return &Scanner{}
 }
 
 // ParseADR parses the raw markdown content to extract the main title and status.
@@ -65,7 +62,7 @@ func ParseADR(content string) (title string, status string) {
 	return title, status
 }
 
-// Scan discovers ADR markdown files under the supported directories, parses them, and stores them in the DB.
+// Scan discovers ADR markdown files under the supported directories and parses them.
 func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.Source, error) {
 	var sources []*models.Source
 
@@ -136,14 +133,7 @@ func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.
 				Title:        title,
 				Author:       "",
 				Timestamp:    info.ModTime(),
-			}
-
-			// Store in DB if DB is configured
-			if s.db != nil {
-				err = s.storeSource(ctx, src, string(metadataBytes))
-				if err != nil {
-					return fmt.Errorf("failed to store ADR source %s: %w", src.ID, err)
-				}
+				MetadataJSON: string(metadataBytes),
 			}
 
 			sources = append(sources, src)
@@ -155,18 +145,4 @@ func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.
 	}
 
 	return sources, nil
-}
-
-func (s *Scanner) storeSource(ctx context.Context, src *models.Source, metadataJSON string) error {
-	query := `
-		INSERT INTO sources (id, repository_id, source_type, reference, title, author, timestamp, metadata_json, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-		ON CONFLICT(id) DO UPDATE SET
-			title = excluded.title,
-			timestamp = excluded.timestamp,
-			metadata_json = excluded.metadata_json
-	`
-	now := time.Now()
-	_, err := s.db.ExecContext(ctx, query, src.ID, src.RepositoryID, src.SourceType, src.Reference, src.Title, src.Author, src.Timestamp, metadataJSON, now)
-	return err
 }

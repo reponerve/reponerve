@@ -57,13 +57,14 @@ func TestDiscoveryIntegration(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	service := repository.NewGitDiscovery(db)
+	service := repository.NewGitDiscovery()
 	repo, err := service.Discover(ctx, repoPath)
 	if err != nil {
 		t.Fatalf("failed to discover repository: %v", err)
 	}
 
-	err = service.Store(ctx, repo)
+	repoStore := sqlite.NewRepositoryStore(db)
+	err = repoStore.UpsertRepository(ctx, repo)
 	if err != nil {
 		t.Fatalf("failed to store repository metadata: %v", err)
 	}
@@ -90,7 +91,7 @@ func TestDiscoveryIntegration(t *testing.T) {
 
 	repo.Name = "updated-integration-name"
 	repo.DefaultBranch = "updated-integration-branch"
-	err = service.Store(ctx, repo)
+	err = repoStore.UpsertRepository(ctx, repo)
 	if err != nil {
 		t.Fatalf("failed to upsert repository metadata: %v", err)
 	}
