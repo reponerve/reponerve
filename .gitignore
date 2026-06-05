@@ -1,32 +1,116 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
+# ==========================================
+# Go
+# ==========================================
+
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
-# Test binary, built with `go test -c`
 *.test
-
-# Code coverage profiles and other test artifacts
 *.out
-coverage.*
-*.coverprofile
-profile.cov
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+bin/
+dist/
+build/
 
-# Go workspace file
-go.work
-go.work.sum
+# ==========================================
+# Coverage
+# ==========================================
 
-# env file
+coverage.out
+coverage.html
+
+# ==========================================
+# Vendor (if not committing dependencies)
+# ==========================================
+
+vendor/
+
+# ==========================================
+# RepoNerve Workspace
+# ==========================================
+
+.reponerve/
+reponerve
+
+# ==========================================
+# SQLite
+# ==========================================
+
+*.db
+*.sqlite
+*.sqlite3
+
+# ==========================================
+# Logs
+# ==========================================
+
+*.log
+logs/
+
+# ==========================================
+# Environment Files
+# ==========================================
+
 .env
+.env.*
+!.env.example
 
-# Editor/IDE
-# .idea/
-# .vscode/
+# ==========================================
+# IDEs
+# ==========================================
+
+.vscode/
+.idea/
+
+# JetBrains
+
+*.iml
+
+# ==========================================
+# macOS
+# ==========================================
+
+.DS_Store
+
+# ==========================================
+# Linux
+# ==========================================
+
+*~
+
+# ==========================================
+# Windows
+# ==========================================
+
+Thumbs.db
+Desktop.ini
+
+# ==========================================
+# Temporary Files
+# ==========================================
+
+tmp/
+temp/
+
+# ==========================================
+# Generated Test Repositories
+# ==========================================
+
+testdata/generated/
+
+# ==========================================
+# Release Artifacts
+# ==========================================
+
+release/
+artifacts/
+
+# ==========================================
+# Local Agent Files
+# ==========================================
+
+.codex/
+.antigravity/
