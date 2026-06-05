@@ -1,0 +1,703 @@
+# RepoNerve Memory Model
+
+Version: 1.0
+
+Status: Draft
+
+Authors: RepoNerve Contributors
+
+Last Updated: 2026-06-05
+
+---
+
+# Purpose
+
+This document defines the core memory model used by RepoNerve.
+
+The memory model is the foundation of the platform.
+
+Everything in RepoNerve ultimately depends on memory:
+
+* Storage
+* Retrieval
+* Querying
+* Context generation
+* MCP tools
+* AI integrations
+
+If the memory model is incorrect, the entire platform becomes difficult to evolve.
+
+---
+
+# Design Goals
+
+The memory model must:
+
+* Preserve repository knowledge
+* Remain evidence-based
+* Be explainable
+* Support historical reasoning
+* Support context generation
+* Support future graph capabilities
+* Support AI consumption
+
+---
+
+# Core Principle
+
+RepoNerve does not invent memory.
+
+RepoNerve discovers, preserves, links, and serves memory.
+
+Every memory entity must be traceable to evidence.
+
+---
+
+# Memory Hierarchy
+
+```text id="hztr6w"
+Repository Memory
+│
+├── Facts
+├── Events
+├── Decisions
+├── Ownership
+├── Intent
+├── Relationships
+└── Sources
+```
+
+All memory entities belong to one of these categories.
+
+---
+
+# Memory Entity
+
+All memory objects inherit common fields.
+
+---
+
+## Base Memory Schema
+
+```text id="yrsvzy"
+Memory
+├── ID
+├── Type
+├── Title
+├── Summary
+├── Confidence
+├── SourceIDs
+├── CreatedAt
+├── UpdatedAt
+└── Metadata
+```
+
+---
+
+## ID
+
+Unique identifier.
+
+Example:
+
+```text id="xq3zhv"
+decision_001
+fact_124
+event_873
+```
+
+---
+
+## Type
+
+Memory category.
+
+Values:
+
+```text id="n7w3ez"
+fact
+event
+decision
+ownership
+intent
+relationship
+```
+
+---
+
+## Confidence
+
+Indicates certainty.
+
+Values:
+
+```text id="rvupnl"
+Explicit
+Strongly Inferred
+Weakly Inferred
+```
+
+---
+
+# Fact Memory
+
+Facts represent objective truths.
+
+Facts should be:
+
+* Verifiable
+* Stable
+* Evidence-backed
+
+---
+
+## Examples
+
+```text id="0ow7x5"
+UserService uses Redis.
+
+AuthService depends on PostgreSQL.
+
+Kafka introduced in 2025.
+```
+
+---
+
+## Fact Schema
+
+```text id="1f01ka"
+Fact
+├── ID
+├── Subject
+├── Predicate
+├── Object
+├── Confidence
+├── SourceIDs
+└── Metadata
+```
+
+---
+
+## Example
+
+```text id="30pkjv"
+Subject:
+UserService
+
+Predicate:
+USES
+
+Object:
+Redis
+```
+
+---
+
+# Event Memory
+
+Events represent things that happened.
+
+Events create repository history.
+
+---
+
+## Examples
+
+```text id="o10o2m"
+Commit Created
+
+PR Merged
+
+Issue Closed
+
+ADR Added
+
+Incident Recorded
+```
+
+---
+
+## Event Schema
+
+```text id="xgy2z7"
+Event
+├── ID
+├── EventType
+├── Timestamp
+├── Actors
+├── Resources
+├── Description
+└── SourceIDs
+```
+
+---
+
+## Example
+
+```text id="f89wsd"
+EventType:
+PullRequestMerged
+
+Timestamp:
+2026-03-12
+
+Actor:
+john
+
+Resource:
+PR-143
+```
+
+---
+
+# Decision Memory
+
+Decision memory is the most valuable memory category.
+
+This is RepoNerve's primary differentiator.
+
+---
+
+## Examples
+
+```text id="hnfk4h"
+Use Redis
+
+Adopt Kafka
+
+Split Monolith
+
+Implement CQRS
+```
+
+---
+
+## Decision Schema
+
+```text id="g46q3x"
+Decision
+├── ID
+├── Title
+├── Description
+├── Reason
+├── Alternatives
+├── Tradeoffs
+├── DecisionMaker
+├── Outcome
+├── SourceIDs
+└── Timestamp
+```
+
+---
+
+## Example
+
+```text id="jx5uop"
+Decision:
+Use Redis
+
+Reason:
+Database latency
+
+Alternatives:
+Memcached
+
+Tradeoff:
+Additional infrastructure complexity
+```
+
+---
+
+# Ownership Memory
+
+Ownership identifies responsibility.
+
+---
+
+## Examples
+
+```text id="72i8s7"
+Billing owned by Payments Team
+
+Auth owned by Platform Team
+```
+
+---
+
+## Ownership Schema
+
+```text id="xsn2y0"
+Ownership
+├── ID
+├── Resource
+├── OwnerType
+├── Owner
+├── StartDate
+├── EndDate
+└── SourceIDs
+```
+
+---
+
+## Owner Types
+
+```text id="j7g0wo"
+Person
+Team
+Organization
+```
+
+---
+
+# Intent Memory
+
+Intent answers:
+
+> Why?
+
+Intent represents goals and motivations.
+
+---
+
+## Examples
+
+```text id="rtdn9r"
+Reduce latency
+
+Improve scalability
+
+Meet compliance requirements
+
+Reduce infrastructure costs
+```
+
+---
+
+## Intent Schema
+
+```text id="qpn1t5"
+Intent
+├── ID
+├── Goal
+├── Description
+├── RelatedDecisions
+├── RelatedEvents
+├── Outcome
+└── SourceIDs
+```
+
+---
+
+# Relationship Memory
+
+Relationships connect memory.
+
+Relationships transform isolated facts into repository knowledge.
+
+---
+
+## Examples
+
+```text id="mrvzjt"
+UserService USES Redis
+
+Decision A CAUSED Event B
+
+ADR A INFLUENCED Decision B
+```
+
+---
+
+## Relationship Schema
+
+```text id="mxoq0v"
+Relationship
+├── ID
+├── SourceNode
+├── Relation
+├── TargetNode
+├── Confidence
+└── SourceIDs
+```
+
+---
+
+## Common Relations
+
+```text id="2hyuk9"
+USES
+
+OWNS
+
+REFERENCES
+
+CREATED_BY
+
+AFFECTS
+
+RELATED_TO
+
+INFLUENCED_BY
+
+RESULTED_IN
+```
+
+---
+
+# Source Entity
+
+Sources provide evidence.
+
+Every memory must be traceable to one or more sources.
+
+---
+
+## Source Types
+
+```text id="l2e1wu"
+Commit
+
+PullRequest
+
+Issue
+
+ADR
+
+Documentation
+
+SourceCode
+```
+
+---
+
+## Source Schema
+
+```text id="m7h7on"
+Source
+├── ID
+├── Type
+├── Reference
+├── URL
+├── Author
+├── Timestamp
+└── Metadata
+```
+
+---
+
+## Example
+
+```text id="dx1yxj"
+Source:
+PR-143
+
+Type:
+PullRequest
+
+Author:
+john
+
+Date:
+2026-03-12
+```
+
+---
+
+# Evidence Model
+
+Every answer generated by RepoNerve must include evidence.
+
+---
+
+## Evidence Schema
+
+```text id="zowj3l"
+Evidence
+├── MemoryID
+├── SourceID
+├── Confidence
+└── Explanation
+```
+
+---
+
+## Example
+
+```text id="s6e2ho"
+Decision:
+Use Redis
+
+Evidence:
+PR-143
+
+Confidence:
+Explicit
+```
+
+---
+
+# Memory Linking
+
+Individual memories become valuable when linked.
+
+---
+
+## Example
+
+```text id="qvhl1w"
+Intent:
+Reduce Latency
+        │
+        ▼
+Decision:
+Use Redis
+        │
+        ▼
+Event:
+PR-143 Merged
+        │
+        ▼
+Fact:
+UserService Uses Redis
+```
+
+---
+
+# Memory Graph
+
+The MVP does not require a graph database.
+
+However, memory should be modeled as a graph conceptually.
+
+This enables future:
+
+* Knowledge graphs
+* Relationship traversal
+* Context generation
+* AI reasoning
+
+---
+
+# Context Generation
+
+Context is generated from memory.
+
+Example query:
+
+```text id="sj6l5f"
+Why was Redis introduced?
+```
+
+RepoNerve retrieves:
+
+```text id="7prpn4"
+Intent
+
+Decision
+
+Events
+
+Facts
+
+Evidence
+```
+
+and generates a unified response.
+
+---
+
+# Memory Lifecycle
+
+All memory follows:
+
+```text id="x1wzci"
+Discovered
+      │
+      ▼
+Extracted
+      │
+      ▼
+Validated
+      │
+      ▼
+Linked
+      │
+      ▼
+Queryable
+```
+
+---
+
+# Memory Quality Levels
+
+## Level 1
+
+Explicit
+
+Directly stated.
+
+---
+
+## Level 2
+
+Strongly Inferred
+
+Supported by evidence.
+
+---
+
+## Level 3
+
+Weakly Inferred
+
+Requires interpretation.
+
+---
+
+# Future Memory Types
+
+The following memory types are intentionally deferred.
+
+---
+
+## Pattern Memory
+
+Repository conventions.
+
+---
+
+## Incident Memory
+
+Operational incidents.
+
+---
+
+## Risk Memory
+
+Architectural risks.
+
+---
+
+## Technical Debt Memory
+
+Known technical debt.
+
+---
+
+# Success Criteria
+
+The memory model succeeds when:
+
+* Repository knowledge becomes durable.
+* Historical decisions remain discoverable.
+* Context can be generated efficiently.
+* Evidence remains traceable.
+* New memory types can be added without redesign.
+
+---
+
+# Guiding Principle
+
+Memory is RepoNerve's primary asset.
+
+All retrieval, context generation, and AI integration capabilities are built on top of repository memory.
