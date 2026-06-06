@@ -42,7 +42,7 @@ func TestScanCommandIntegration(t *testing.T) {
 
 Accepted
 
-We need to simplify configuration and optimize deployment.`
+We need to simplify configuration and optimize deployment. Authentication Service uses Redis.`
 	if err := os.WriteFile(filepath.Join(adrDir, "0001-use-go.md"), []byte(adrContent), 0644); err != nil {
 		t.Fatalf("failed to write ADR file: %v", err)
 	}
@@ -202,5 +202,30 @@ We need to simplify configuration and optimize deployment.`
 	}
 	if descs[2] != "Simplify Configuration" {
 		t.Errorf("expected 'Simplify Configuration', got %q", descs[2])
+	}
+
+	// Verify memory_facts content
+	var factCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM memory_facts").Scan(&factCount)
+	if err != nil {
+		t.Fatalf("failed to query memory_facts count: %v", err)
+	}
+	if factCount != 1 {
+		t.Errorf("expected 1 fact in memory_facts, got %d", factCount)
+	}
+
+	var factSubj, factPred, factObj string
+	err = db.QueryRow("SELECT subject, predicate, object FROM memory_facts").Scan(&factSubj, &factPred, &factObj)
+	if err != nil {
+		t.Fatalf("failed to query memory_fact fields: %v", err)
+	}
+	if factSubj != "Authentication Service" {
+		t.Errorf("expected subject 'Authentication Service', got %q", factSubj)
+	}
+	if factPred != "USES" {
+		t.Errorf("expected predicate 'USES', got %q", factPred)
+	}
+	if factObj != "Redis" {
+		t.Errorf("expected object 'Redis', got %q", factObj)
 	}
 }
