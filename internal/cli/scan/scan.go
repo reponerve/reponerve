@@ -7,6 +7,7 @@ import (
 
 	"reponerve/internal/config"
 	"reponerve/internal/ingestion"
+	memorystorage "reponerve/internal/memory/storage"
 	"reponerve/internal/scanner/adr"
 	"reponerve/internal/scanner/git"
 	"reponerve/internal/scanner/repository"
@@ -36,13 +37,23 @@ func NewCommand() *cobra.Command {
 			repoStore := sqlite.NewRepositoryStore(db)
 			sourceStore := sqlite.NewSourceStore(db)
 			scanStateStore := sqlite.NewScanStateStore(db)
+			eventStore := sqlite.NewEventStore(db)
+			decisionStore := memorystorage.NewSQLiteDecisionStore(db)
 
 			reg := ingestion.NewRegistry()
 			reg.Register("git", git.NewScanner(scanStateStore))
 			reg.Register("adr", adr.NewScanner())
 
 			pipeline := ingestion.NewPipeline(reg)
-			coord := ingestion.NewCoordinator(repository.NewGitDiscovery(), repoStore, sourceStore, scanStateStore, pipeline)
+			coord := ingestion.NewCoordinator(
+				repository.NewGitDiscovery(),
+				repoStore,
+				sourceStore,
+				scanStateStore,
+				eventStore,
+				decisionStore,
+				pipeline,
+			)
 
 			cmd.Println("Scanning repository...")
 

@@ -28,7 +28,7 @@ func TestScanCommandIntegration(t *testing.T) {
 		t.Fatalf("failed to write file: %v", err)
 	}
 	runGitCommand(t, tempDir, "add", "code.go")
-	runGitCommand(t, tempDir, "commit", "-m", "initial repository commit")
+	runGitCommand(t, tempDir, "commit", "-m", "feat: initial repository commit")
 	runGitCommand(t, tempDir, "branch", "-M", "main")
 
 	// Create an ADR
@@ -119,5 +119,49 @@ Go is chosen.`
 	}
 	if adrCount != 1 {
 		t.Errorf("expected 1 ADR in db, got %d", adrCount)
+	}
+
+	// Verify memory_events content
+	var eventCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM memory_events").Scan(&eventCount)
+	if err != nil {
+		t.Fatalf("failed to query memory_events count: %v", err)
+	}
+	if eventCount != 1 {
+		t.Errorf("expected 1 event in memory_events, got %d", eventCount)
+	}
+
+	var eventType, eventTitle string
+	err = db.QueryRow("SELECT event_type, title FROM memory_events").Scan(&eventType, &eventTitle)
+	if err != nil {
+		t.Fatalf("failed to query memory_event fields: %v", err)
+	}
+	if eventType != "FEATURE_INTRODUCED" {
+		t.Errorf("expected event_type FEATURE_INTRODUCED, got %q", eventType)
+	}
+	if eventTitle != "Initial Repository Commit" {
+		t.Errorf("expected title 'Initial Repository Commit', got %q", eventTitle)
+	}
+
+	// Verify memory_decisions content
+	var decisionCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM memory_decisions").Scan(&decisionCount)
+	if err != nil {
+		t.Fatalf("failed to query memory_decisions count: %v", err)
+	}
+	if decisionCount != 1 {
+		t.Errorf("expected 1 decision in memory_decisions, got %d", decisionCount)
+	}
+
+	var decTitle, decStatus string
+	err = db.QueryRow("SELECT title, status FROM memory_decisions").Scan(&decTitle, &decStatus)
+	if err != nil {
+		t.Fatalf("failed to query memory_decision fields: %v", err)
+	}
+	if decTitle != "1. Use Go" {
+		t.Errorf("expected title '1. Use Go', got %q", decTitle)
+	}
+	if decStatus != "Accepted" {
+		t.Errorf("expected status 'Accepted', got %q", decStatus)
 	}
 }

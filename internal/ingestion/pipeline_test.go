@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	memorystorage "reponerve/internal/memory/storage"
 	"reponerve/internal/scanner/repository"
 	"reponerve/internal/storage/migrations"
 	"reponerve/internal/storage/sqlite"
@@ -173,7 +174,9 @@ func TestCoordinator_Run(t *testing.T) {
 	repoStore := sqlite.NewRepositoryStore(db)
 	sourceStore := sqlite.NewSourceStore(db)
 	scanStateStore := sqlite.NewScanStateStore(db)
-	coord := NewCoordinator(discovery, repoStore, sourceStore, scanStateStore, pipeline)
+	eventStore := sqlite.NewEventStore(db)
+	decisionStore := memorystorage.NewSQLiteDecisionStore(db)
+	coord := NewCoordinator(discovery, repoStore, sourceStore, scanStateStore, eventStore, decisionStore, pipeline)
 	ctx := context.Background()
 
 	result, err := coord.Run(ctx, tempDir)

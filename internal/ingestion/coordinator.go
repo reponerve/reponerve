@@ -7,6 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"reponerve/internal/extraction/decision"
+	"reponerve/internal/extraction/event"
+	memorystorage "reponerve/internal/memory/storage"
 	"reponerve/internal/scanner/repository"
 	"reponerve/internal/storage"
 )
@@ -17,6 +20,8 @@ type Coordinator struct {
 	repoStore      storage.RepositoryStore
 	sourceStore    storage.SourceStore
 	scanStateStore storage.ScanStateStore
+	eventStore     storage.EventStore
+	decisionStore  memorystorage.DecisionStore
 	pipeline       *Pipeline
 }
 
@@ -26,6 +31,8 @@ func NewCoordinator(
 	repoStore storage.RepositoryStore,
 	sourceStore storage.SourceStore,
 	scanStateStore storage.ScanStateStore,
+	eventStore storage.EventStore,
+	decisionStore memorystorage.DecisionStore,
 	pipeline *Pipeline,
 ) *Coordinator {
 	return &Coordinator{
@@ -33,6 +40,8 @@ func NewCoordinator(
 		repoStore:      repoStore,
 		sourceStore:    sourceStore,
 		scanStateStore: scanStateStore,
+		eventStore:     eventStore,
+		decisionStore:  decisionStore,
 		pipeline:       pipeline,
 	}
 }
@@ -66,6 +75,30 @@ func (c *Coordinator) Run(ctx context.Context, path string) (*ScanResult, error)
 			commitsIndexed++
 		} else if source.SourceType == "adr" {
 			adrsIndexed++
+		}
+	}
+
+	// Extract and persist Events (ISSUE-011)
+	eventExtractor := event.NewExtractor()
+	events, err := eventExtractor.Extract(ctx, sources)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract events: %w", err)
+	}
+	for _, evt := range events {
+		if err := c.eventStore.UpsertEvent(ctx, evt); err != nil {
+			return nil, fmt.Errorf("failed to store event: %w", err)
+		}
+	}
+
+	// Extract and persist Decisions (ISSUE-012)
+	decisionExtractor := decision.NewExtractor()
+	decisions, err := decisionExtractor.Extract(ctx, sources)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract decisions: %w", err)
+	}
+	for _, dec := range decisions {
+		if err := c.decisionStore.UpsertDecision(ctx, dec); err != nil {
+			return nil, fmt.Errorf("failed to store decision: %w", err)
 		}
 	}
 
