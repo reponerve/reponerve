@@ -199,6 +199,33 @@ var allMigrations = []Migration{
 			DROP TABLE IF EXISTS memory_events;
 		`,
 	},
+	{
+		Version: 4,
+		Name:    "create_memory_decisions_table",
+		Up: `
+			CREATE TABLE IF NOT EXISTS memory_decisions (
+				id TEXT PRIMARY KEY,
+				repository_id TEXT NOT NULL,
+				title TEXT NOT NULL,
+				status TEXT NOT NULL,
+				source_id TEXT NOT NULL,
+				created_at DATETIME NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id),
+				FOREIGN KEY (source_id) REFERENCES sources(id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_memory_decisions_repository_id
+			ON memory_decisions(repository_id);
+
+			CREATE INDEX IF NOT EXISTS idx_memory_decisions_source_id
+			ON memory_decisions(source_id);
+		`,
+		Down: `
+			DROP INDEX IF EXISTS idx_memory_decisions_source_id;
+			DROP INDEX IF EXISTS idx_memory_decisions_repository_id;
+			DROP TABLE IF EXISTS memory_decisions;
+		`,
+	},
 }
 
 // GetAppliedVersions returns the list of applied migration versions from the database.
