@@ -14,6 +14,9 @@ func NewCommand() *cobra.Command {
 
 	// Register subcommands
 	cmd.AddCommand(newListCommand())
+	cmd.AddCommand(newGetCommand())
+	cmd.AddCommand(newTraceCommand())
+	cmd.AddCommand(newExplainCommand())
 
 	return cmd
 }
