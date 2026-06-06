@@ -9,6 +9,7 @@ import (
 
 	"reponerve/internal/extraction/decision"
 	"reponerve/internal/extraction/event"
+	"reponerve/internal/extraction/fact"
 	"reponerve/internal/extraction/intent"
 	memorystorage "reponerve/internal/memory/storage"
 	"reponerve/internal/scanner/repository"
@@ -24,6 +25,7 @@ type Coordinator struct {
 	eventStore     storage.EventStore
 	decisionStore  memorystorage.DecisionStore
 	intentStore    memorystorage.IntentStore
+	factStore      memorystorage.FactStore
 	pipeline       *Pipeline
 }
 
@@ -36,6 +38,7 @@ func NewCoordinator(
 	eventStore storage.EventStore,
 	decisionStore memorystorage.DecisionStore,
 	intentStore memorystorage.IntentStore,
+	factStore memorystorage.FactStore,
 	pipeline *Pipeline,
 ) *Coordinator {
 	return &Coordinator{
@@ -46,6 +49,7 @@ func NewCoordinator(
 		eventStore:     eventStore,
 		decisionStore:  decisionStore,
 		intentStore:    intentStore,
+		factStore:      factStore,
 		pipeline:       pipeline,
 	}
 }
@@ -115,6 +119,18 @@ func (c *Coordinator) Run(ctx context.Context, path string) (*ScanResult, error)
 	for _, it := range intents {
 		if err := c.intentStore.UpsertIntent(ctx, it); err != nil {
 			return nil, fmt.Errorf("failed to store intent: %w", err)
+		}
+	}
+
+	// Extract and persist Facts (ISSUE-014)
+	factExtractor := fact.NewExtractor()
+	facts, err := factExtractor.Extract(ctx, sources)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract facts: %w", err)
+	}
+	for _, f := range facts {
+		if err := c.factStore.UpsertFact(ctx, f); err != nil {
+			return nil, fmt.Errorf("failed to store fact: %w", err)
 		}
 	}
 

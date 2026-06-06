@@ -252,6 +252,34 @@ var allMigrations = []Migration{
 			DROP TABLE IF EXISTS memory_intents;
 		`,
 	},
+	{
+		Version: 6,
+		Name:    "create_memory_facts_table",
+		Up: `
+			CREATE TABLE IF NOT EXISTS memory_facts (
+				id TEXT PRIMARY KEY,
+				repository_id TEXT NOT NULL,
+				subject TEXT NOT NULL,
+				predicate TEXT NOT NULL,
+				object TEXT NOT NULL,
+				source_id TEXT NOT NULL,
+				created_at DATETIME NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id),
+				FOREIGN KEY (source_id) REFERENCES sources(id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_memory_facts_repository_id
+			ON memory_facts(repository_id);
+
+			CREATE INDEX IF NOT EXISTS idx_memory_facts_source_id
+			ON memory_facts(source_id);
+		`,
+		Down: `
+			DROP INDEX IF EXISTS idx_memory_facts_source_id;
+			DROP INDEX IF EXISTS idx_memory_facts_repository_id;
+			DROP TABLE IF EXISTS memory_facts;
+		`,
+	},
 }
 
 // GetAppliedVersions returns the list of applied migration versions from the database.
