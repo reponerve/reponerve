@@ -1,0 +1,732 @@
+package server
+
+import (
+	"bytes"
+	stdcontext "context"
+	"encoding/json"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"reponerve/internal/context"
+	"reponerve/internal/context/render"
+	"reponerve/internal/mcp"
+	memorymodels "reponerve/internal/memory/models"
+	"reponerve/internal/query/storage"
+	"reponerve/internal/storage/migrations"
+	"reponerve/internal/storage/sqlite"
+	models "reponerve/pkg/models"
+)
+
+func runServerTest(t *testing.T, registry *mcp.Registry, service *mcp.Service, input string) string {
+	inReader, inWriter := io.Pipe()
+	outReader, outWriter := io.Pipe()
+
+	ctx, cancel := stdcontext.WithCancel(stdcontext.Background())
+	defer cancel()
+
+	srv := NewServer(registry, service, inReader, outWriter)
+
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- srv.Start(ctx)
+	}()
+
+	// Write input in a separate goroutine
+	go func() {
+		_, _ = inWriter.Write([]byte(input))
+		_ = inWriter.Close()
+	}()
+
+	// Read all responses until EOF
+	var outBuf bytes.Buffer
+	doneChan := make(chan struct{})
+	go func() {
+		_, _ = io.Copy(&outBuf, outReader)
+		close(doneChan)
+	}()
+
+	// Wait for server to finish
+	select {
+	case err := <-errChan:
+		if err != nil && err != io.EOF {
+			t.Logf("server returned error: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("timeout waiting for server to exit")
+	}
+
+	// Close pipes
+	_ = outReader.Close()
+	_ = outWriter.Close()
+	<-doneChan
+
+	return outBuf.String()
+}
+
+func parseToolResult(t *testing.T, result interface{}) CallToolResult {
+	data, err := json.Marshal(result)
+	if err != nil {
+		t.Fatalf("failed to marshal result: %v", err)
+	}
+	var callResult CallToolResult
+	if err := json.Unmarshal(data, &callResult); err != nil {
+		t.Fatalf("failed to unmarshal CallToolResult: %v", err)
+	}
+	return callResult
+}
+
+func TestServer_JSONRPC(t *testing.T) {
+	registry := mcp.NewRegistry()
+
+	t.Run("Initialize handshake", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}` + "\n"
+		output := runServerTest(t, registry, nil, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v, output was: %q", err, output)
+		}
+
+		if resp.JSONRPC != "2.0" {
+			t.Errorf("expected jsonrpc '2.0', got %q", resp.JSONRPC)
+		}
+		if resp.Error != nil {
+			t.Fatalf("unexpected error response: %+v", resp.Error)
+		}
+
+		var id int
+		if err := json.Unmarshal(*resp.ID, &id); err != nil {
+			t.Fatalf("failed to parse response ID: %v", err)
+		}
+		if id != 1 {
+			t.Errorf("expected ID 1, got %d", id)
+		}
+
+		// Verify result
+		resultData, err := json.Marshal(resp.Result)
+		if err != nil {
+			t.Fatalf("failed to marshal result: %v", err)
+		}
+		var result InitializeResult
+		if err := json.Unmarshal(resultData, &result); err != nil {
+			t.Fatalf("failed to unmarshal initialize result: %v", err)
+		}
+
+		if result.ProtocolVersion != "2024-11-05" {
+			t.Errorf("expected protocolVersion '2024-11-05', got %q", result.ProtocolVersion)
+		}
+		if result.ServerInfo.Name != "reponerve" {
+			t.Errorf("expected server name 'reponerve', got %q", result.ServerInfo.Name)
+		}
+	})
+
+	t.Run("Tools list discovery", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":"req-2","method":"tools/list"}` + "\n"
+		output := runServerTest(t, registry, nil, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v, output was: %q", err, output)
+		}
+
+		if resp.Error != nil {
+			t.Fatalf("unexpected error response: %+v", resp.Error)
+		}
+
+		var id string
+		if err := json.Unmarshal(*resp.ID, &id); err != nil {
+			t.Fatalf("failed to parse response ID: %v", err)
+		}
+		if id != "req-2" {
+			t.Errorf("expected ID 'req-2', got %q", id)
+		}
+
+		// Verify result
+		resultData, err := json.Marshal(resp.Result)
+		if err != nil {
+			t.Fatalf("failed to marshal result: %v", err)
+		}
+		var result ListToolsResult
+		if err := json.Unmarshal(resultData, &result); err != nil {
+			t.Fatalf("failed to unmarshal tools list: %v", err)
+		}
+
+		if len(result.Tools) != 14 {
+			t.Errorf("expected 14 tools, got %d", len(result.Tools))
+		}
+
+		expectedTools := map[string]bool{
+			"explain_decision": true,
+			"explain_event":    true,
+			"export_context":   true,
+			"generate_context": true,
+			"get_decision":     true,
+			"get_event":        true,
+			"get_fact":         true,
+			"get_intent":       true,
+			"list_decisions":   true,
+			"list_events":      true,
+			"list_facts":       true,
+			"list_intents":     true,
+			"trace_decision":   true,
+			"trace_event":      true,
+		}
+
+		for _, tool := range result.Tools {
+			if !expectedTools[tool.Name] {
+				t.Errorf("unexpected tool %q returned", tool.Name)
+			}
+			if tool.InputSchema.Type != "object" {
+				t.Errorf("expected tool input schema type 'object', got %q", tool.InputSchema.Type)
+			}
+		}
+	})
+
+	t.Run("Unknown method returns method not found", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":100,"method":"some_unknown_method"}` + "\n"
+		output := runServerTest(t, registry, nil, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v, output was: %q", err, output)
+		}
+
+		if resp.Error == nil {
+			t.Fatal("expected error response, got nil")
+		}
+		if resp.Error.Code != -32601 {
+			t.Errorf("expected error code -32601 (Method not found), got %d", resp.Error.Code)
+		}
+		if !strings.Contains(resp.Error.Message, "Method not found") {
+			t.Errorf("expected error message to contain 'Method not found', got %q", resp.Error.Message)
+		}
+	})
+
+	t.Run("Notification is ignored (no response)", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","method":"notifications/initialized"}` + "\n"
+		output := runServerTest(t, registry, nil, req)
+
+		if len(strings.TrimSpace(output)) != 0 {
+			t.Errorf("expected no response output for notification, got %q", output)
+		}
+	})
+
+	t.Run("Invalid JSON returns parse error", func(t *testing.T) {
+		req := `invalid json` + "\n"
+		output := runServerTest(t, registry, nil, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v, output was: %q", err, output)
+		}
+
+		if resp.Error == nil {
+			t.Fatal("expected error response, got nil")
+		}
+		if resp.Error.Code != -32700 {
+			t.Errorf("expected error code -32700 (Parse error), got %d", resp.Error.Code)
+		}
+	})
+}
+
+func TestServer_ToolsExecution(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "reponerve-server-test-*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	dbPath := filepath.Join(tempDir, "test.db")
+	db, err := sqlite.Open(dbPath)
+	if err != nil {
+		t.Fatalf("failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	if err := migrations.RunUp(db); err != nil {
+		t.Fatalf("failed to run migrations: %v", err)
+	}
+
+	repoID := "repo_xxx"
+
+	// Insert test data
+	_, err = db.Exec("INSERT INTO repositories (id, name, path, default_branch, created_at, updated_at) VALUES (?, ?, ?, ?, datetime(), datetime())", repoID, "Repo Test", tempDir, "main")
+	if err != nil {
+		t.Fatalf("failed to insert repository: %v", err)
+	}
+
+	_, err = db.Exec("INSERT INTO sources (id, repository_id, source_type, reference, title, author, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime(), datetime())", "src_1", repoID, "adr", "docs/adr/0001.md", "Author", "2024-01-01T00:00:00Z")
+	if err != nil {
+		t.Fatalf("failed to insert source: %v", err)
+	}
+
+	// Insert decision
+	_, err = db.Exec("INSERT INTO memory_decisions (id, repository_id, source_id, title, status, created_at) VALUES (?, ?, ?, ?, ?, datetime())", "dec_1", repoID, "src_1", "Use Redis Cache", "Accepted")
+	if err != nil {
+		t.Fatalf("failed to insert decision: %v", err)
+	}
+
+	// Insert intent
+	_, err = db.Exec("INSERT INTO memory_intents (id, repository_id, source_id, description, created_at) VALUES (?, ?, ?, ?, datetime())", "int_1", repoID, "src_1", "Reduce Database Latency")
+	if err != nil {
+		t.Fatalf("failed to insert intent: %v", err)
+	}
+
+	// Insert fact
+	_, err = db.Exec("INSERT INTO memory_facts (id, repository_id, source_id, subject, predicate, object, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime())", "fact_1", repoID, "src_1", "Authentication Service", "USES", "Redis")
+	if err != nil {
+		t.Fatalf("failed to insert fact: %v", err)
+	}
+
+	// Insert event
+	_, err = db.Exec("INSERT INTO memory_events (id, repository_id, event_type, title, description, source_id, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime(), datetime())", "evt_1", repoID, "FEATURE_INTRODUCED", "Introduce Redis Cache", "Added cache capability", "src_1")
+	if err != nil {
+		t.Fatalf("failed to insert event: %v", err)
+	}
+
+	// Insert relationships
+	_, err = db.Exec("INSERT INTO memory_relationships (id, repository_id, from_id, to_id, relationship_type, created_at) VALUES (?, ?, ?, ?, ?, datetime())", "rel_1", repoID, "int_1", "dec_1", "INTENT_DRIVES_DECISION")
+	if err != nil {
+		t.Fatalf("failed to insert relationship 1: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO memory_relationships (id, repository_id, from_id, to_id, relationship_type, created_at) VALUES (?, ?, ?, ?, ?, datetime())", "rel_2", repoID, "fact_1", "dec_1", "FACT_SUPPORTS_DECISION")
+	if err != nil {
+		t.Fatalf("failed to insert relationship 2: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO memory_relationships (id, repository_id, from_id, to_id, relationship_type, created_at) VALUES (?, ?, ?, ?, ?, datetime())", "rel_3", repoID, "dec_1", "evt_1", "DECISION_RESULTS_IN_EVENT")
+	if err != nil {
+		t.Fatalf("failed to insert relationship 3: %v", err)
+	}
+
+	// Set up Service
+	er := storage.NewSQLiteEventReader(db)
+	dr := storage.NewSQLiteDecisionReader(db)
+	ir := storage.NewSQLiteIntentReader(db)
+	fr := storage.NewSQLiteFactReader(db)
+	rr := storage.NewSQLiteRelationshipReader(db)
+
+	ctxReader := context.NewMemoryContextReader(er, dr, ir, fr)
+	generator := context.NewGenerator(ctxReader)
+	renderer := render.NewRenderer()
+
+	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer)
+	registry := mcp.NewRegistry()
+
+	// 1. Test list_decisions (all)
+	t.Run("list_decisions all", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"list_decisions"}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v, output: %s", err, output)
+		}
+		if resp.Error != nil {
+			t.Fatalf("unexpected error response: %+v", resp.Error)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var decisions []*memorymodels.Decision
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &decisions); err != nil {
+			t.Fatalf("failed to parse decisions: %v", err)
+		}
+		if len(decisions) != 1 {
+			t.Errorf("expected 1 decision, got %d", len(decisions))
+		}
+		if decisions[0].Title != "Use Redis Cache" {
+			t.Errorf("expected decision title 'Use Redis Cache', got %q", decisions[0].Title)
+		}
+	})
+
+	// 2. Test get_decision
+	t.Run("get_decision success", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"get_decision","arguments":{"decision_id":"dec_1"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var dec memorymodels.Decision
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &dec); err != nil {
+			t.Fatalf("failed to parse decision: %v", err)
+		}
+		if dec.ID != "dec_1" || dec.Title != "Use Redis Cache" {
+			t.Errorf("unexpected decision properties: %+v", dec)
+		}
+	})
+
+	t.Run("get_decision not found", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_decision","arguments":{"decision_id":"nonexistent"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if !result.IsError {
+			t.Fatalf("expected tool error but got success")
+		}
+
+		text := result.Content[0].Text
+		if !strings.Contains(text, "not found") {
+			t.Errorf("expected error message to contain 'not found', got %q", text)
+		}
+	})
+
+	// 3. Test list_events with repository_id filter
+	t.Run("list_events with repository_id", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"list_events","arguments":{"repository_id":"repo_xxx"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var events []*models.Event
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &events); err != nil {
+			t.Fatalf("failed to parse events: %v", err)
+		}
+		if len(events) != 1 {
+			t.Errorf("expected 1 event, got %d", len(events))
+		}
+		if events[0].Title != "Introduce Redis Cache" {
+			t.Errorf("unexpected event title: %q", events[0].Title)
+		}
+	})
+
+	// 4. Test trace_decision
+	t.Run("trace_decision success", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"trace_decision","arguments":{"decision_id":"dec_1"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var trace DecisionTraceResult
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &trace); err != nil {
+			t.Fatalf("failed to parse decision trace: %v", err)
+		}
+
+		if trace.Decision.ID != "dec_1" {
+			t.Errorf("expected decision ID 'dec_1', got %q", trace.Decision.ID)
+		}
+		if len(trace.Intents) != 1 || trace.Intents[0].ID != "int_1" {
+			t.Errorf("expected 1 intent 'int_1', got: %+v", trace.Intents)
+		}
+		if len(trace.Facts) != 1 || trace.Facts[0].ID != "fact_1" {
+			t.Errorf("expected 1 fact 'fact_1', got: %+v", trace.Facts)
+		}
+		if len(trace.Events) != 1 || trace.Events[0].ID != "evt_1" {
+			t.Errorf("expected 1 event 'evt_1', got: %+v", trace.Events)
+		}
+	})
+
+	// 5. Test trace_event
+	t.Run("trace_event success", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"trace_event","arguments":{"event_id":"evt_1"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var trace EventTraceResult
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &trace); err != nil {
+			t.Fatalf("failed to parse event trace: %v", err)
+		}
+
+		if trace.Event.ID != "evt_1" {
+			t.Errorf("expected event ID 'evt_1', got %q", trace.Event.ID)
+		}
+		if len(trace.Decisions) != 1 || trace.Decisions[0].ID != "dec_1" {
+			t.Errorf("expected 1 decision 'dec_1', got: %+v", trace.Decisions)
+		}
+		if len(trace.Intents) != 1 || trace.Intents[0].ID != "int_1" {
+			t.Errorf("expected 1 intent 'int_1', got: %+v", trace.Intents)
+		}
+	})
+
+	// 6. Test explain_decision
+	t.Run("explain_decision success", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"explain_decision","arguments":{"decision_id":"dec_1"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var explanation DecisionExplanationResult
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &explanation); err != nil {
+			t.Fatalf("failed to parse decision explanation: %v", err)
+		}
+
+		if explanation.Decision.ID != "dec_1" {
+			t.Errorf("expected decision ID 'dec_1', got %q", explanation.Decision.ID)
+		}
+		if len(explanation.Reason) != 1 || explanation.Reason[0] != "Reduce Database Latency" {
+			t.Errorf("expected reason 'Reduce Database Latency', got: %v", explanation.Reason)
+		}
+		if len(explanation.SupportingFacts) != 1 || explanation.SupportingFacts[0] != "Authentication Service USES Redis" {
+			t.Errorf("expected fact 'Authentication Service USES Redis', got: %v", explanation.SupportingFacts)
+		}
+		if len(explanation.ResultingEvents) != 1 || explanation.ResultingEvents[0] != "Introduce Redis Cache" {
+			t.Errorf("expected event 'Introduce Redis Cache', got: %v", explanation.ResultingEvents)
+		}
+	})
+
+	// 7. Test explain_event
+	t.Run("explain_event success", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"explain_event","arguments":{"event_id":"evt_1"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var explanation EventExplanationResult
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &explanation); err != nil {
+			t.Fatalf("failed to parse event explanation: %v", err)
+		}
+
+		if explanation.Event.ID != "evt_1" {
+			t.Errorf("expected event ID 'evt_1', got %q", explanation.Event.ID)
+		}
+		if len(explanation.CausedBy) != 1 || explanation.CausedBy[0] != "Use Redis Cache" {
+			t.Errorf("expected causedBy 'Use Redis Cache', got: %v", explanation.CausedBy)
+		}
+		if len(explanation.Reason) != 1 || explanation.Reason[0] != "Reduce Database Latency" {
+			t.Errorf("expected reason 'Reduce Database Latency', got: %v", explanation.Reason)
+		}
+	})
+
+	// 8. Test list_intents, list_facts, get_intent, get_fact
+	t.Run("list_intents, list_facts, get_intent, get_fact success", func(t *testing.T) {
+		// list_intents
+		req := `{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"list_intents"}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		text := result.Content[0].Text
+		var intents []*memorymodels.Intent
+		_ = json.Unmarshal([]byte(text), &intents)
+		if len(intents) != 1 || intents[0].ID != "int_1" {
+			t.Errorf("unexpected intents: %+v", intents)
+		}
+
+		// get_intent
+		req = `{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"get_intent","arguments":{"intent_id":"int_1"}}}` + "\n"
+		output = runServerTest(t, registry, service, req)
+		_ = json.Unmarshal([]byte(output), &resp)
+		result = parseToolResult(t, resp.Result)
+		text = result.Content[0].Text
+		var intent memorymodels.Intent
+		_ = json.Unmarshal([]byte(text), &intent)
+		if intent.ID != "int_1" {
+			t.Errorf("unexpected intent: %+v", intent)
+		}
+
+		// list_facts
+		req = `{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"list_facts"}}` + "\n"
+		output = runServerTest(t, registry, service, req)
+		_ = json.Unmarshal([]byte(output), &resp)
+		result = parseToolResult(t, resp.Result)
+		text = result.Content[0].Text
+		var facts []*memorymodels.Fact
+		_ = json.Unmarshal([]byte(text), &facts)
+		if len(facts) != 1 || facts[0].ID != "fact_1" {
+			t.Errorf("unexpected facts: %+v", facts)
+		}
+
+		// get_fact
+		req = `{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"get_fact","arguments":{"fact_id":"fact_1"}}}` + "\n"
+		output = runServerTest(t, registry, service, req)
+		_ = json.Unmarshal([]byte(output), &resp)
+		result = parseToolResult(t, resp.Result)
+		text = result.Content[0].Text
+		var fact memorymodels.Fact
+		_ = json.Unmarshal([]byte(text), &fact)
+		if fact.ID != "fact_1" {
+			t.Errorf("unexpected fact: %+v", fact)
+		}
+	})
+
+	// 9. Test missing required argument
+	t.Run("missing required argument error", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"get_decision","arguments":{}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if !result.IsError {
+			t.Fatalf("expected error for missing required argument")
+		}
+
+		text := result.Content[0].Text
+		if !strings.Contains(text, "missing required argument") {
+			t.Errorf("expected error message to contain 'missing required argument', got %q", text)
+		}
+	})
+
+	// 10. Test generate_context success
+	t.Run("generate_context success", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":14,"method":"tools/call","params":{"name":"generate_context","arguments":{"repository_id":"repo_xxx"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v, output: %s", err, output)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var rc context.RepositoryContext
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &rc); err != nil {
+			t.Fatalf("failed to parse RepositoryContext: %v", err)
+		}
+
+		if rc.RepositoryID != "repo_xxx" {
+			t.Errorf("expected repository ID 'repo_xxx', got %q", rc.RepositoryID)
+		}
+		if len(rc.Decisions) != 1 || rc.Decisions[0].ID != "dec_1" {
+			t.Errorf("expected 1 decision 'dec_1'")
+		}
+		if len(rc.Intents) != 1 || rc.Intents[0].ID != "int_1" {
+			t.Errorf("expected 1 intent 'int_1'")
+		}
+		if len(rc.Facts) != 1 || rc.Facts[0].ID != "fact_1" {
+			t.Errorf("expected 1 fact 'fact_1'")
+		}
+		if len(rc.Events) != 1 || rc.Events[0].ID != "evt_1" {
+			t.Errorf("expected 1 event 'evt_1'")
+		}
+	})
+
+	// 11. Test export_context success
+	t.Run("export_context success", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":15,"method":"tools/call","params":{"name":"export_context","arguments":{"repository_id":"repo_xxx"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		text := result.Content[0].Text
+		if !strings.Contains(text, "# Repository Context") {
+			t.Errorf("expected header '# Repository Context' in markdown, got %q", text)
+		}
+		if !strings.Contains(text, "Repository: repo_xxx") {
+			t.Errorf("expected repository ID in markdown, got %q", text)
+		}
+		if !strings.Contains(text, "## Key Decisions") || !strings.Contains(text, "* Use Redis Cache") {
+			t.Errorf("expected Decisions section, got %q", text)
+		}
+	})
+
+	// 12. Test generate_context empty repo
+	t.Run("generate_context empty repo", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":16,"method":"tools/call","params":{"name":"generate_context","arguments":{"repository_id":"empty_repo"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var rc context.RepositoryContext
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &rc); err != nil {
+			t.Fatalf("failed to parse RepositoryContext: %v", err)
+		}
+
+		if len(rc.Decisions) != 0 || len(rc.Intents) != 0 || len(rc.Facts) != 0 || len(rc.Events) != 0 {
+			t.Errorf("expected empty context lists, got: %+v", rc)
+		}
+	})
+
+	// 13. Test export_context empty repo
+	t.Run("export_context empty repo", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":17,"method":"tools/call","params":{"name":"export_context","arguments":{"repository_id":"empty_repo"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		text := result.Content[0].Text
+		if text != "No repository context available." {
+			t.Errorf("expected empty context text, got %q", text)
+		}
+	})
+}
