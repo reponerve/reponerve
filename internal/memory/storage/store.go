@@ -10,3 +10,8 @@ import (
 type DecisionStore interface {
 	UpsertDecision(ctx context.Context, decision *models.Decision) error
 }
+
+// IntentStore defines the persistence interface for extracted Intent records.
+type IntentStore interface {
+	UpsertIntent(ctx context.Context, intent *models.Intent) error
+}

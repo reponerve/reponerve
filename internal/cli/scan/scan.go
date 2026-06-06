@@ -39,6 +39,7 @@ func NewCommand() *cobra.Command {
 			scanStateStore := sqlite.NewScanStateStore(db)
 			eventStore := sqlite.NewEventStore(db)
 			decisionStore := memorystorage.NewSQLiteDecisionStore(db)
+			intentStore := memorystorage.NewSQLiteIntentStore(db)
 
 			reg := ingestion.NewRegistry()
 			reg.Register("git", git.NewScanner(scanStateStore))
@@ -52,6 +53,7 @@ func NewCommand() *cobra.Command {
 				scanStateStore,
 				eventStore,
 				decisionStore,
+				intentStore,
 				pipeline,
 			)
 

@@ -9,6 +9,7 @@ import (
 
 	"reponerve/internal/extraction/decision"
 	"reponerve/internal/extraction/event"
+	"reponerve/internal/extraction/intent"
 	memorystorage "reponerve/internal/memory/storage"
 	"reponerve/internal/scanner/repository"
 	"reponerve/internal/storage"
@@ -22,6 +23,7 @@ type Coordinator struct {
 	scanStateStore storage.ScanStateStore
 	eventStore     storage.EventStore
 	decisionStore  memorystorage.DecisionStore
+	intentStore    memorystorage.IntentStore
 	pipeline       *Pipeline
 }
 
@@ -33,6 +35,7 @@ func NewCoordinator(
 	scanStateStore storage.ScanStateStore,
 	eventStore storage.EventStore,
 	decisionStore memorystorage.DecisionStore,
+	intentStore memorystorage.IntentStore,
 	pipeline *Pipeline,
 ) *Coordinator {
 	return &Coordinator{
@@ -42,6 +45,7 @@ func NewCoordinator(
 		scanStateStore: scanStateStore,
 		eventStore:     eventStore,
 		decisionStore:  decisionStore,
+		intentStore:    intentStore,
 		pipeline:       pipeline,
 	}
 }
@@ -99,6 +103,18 @@ func (c *Coordinator) Run(ctx context.Context, path string) (*ScanResult, error)
 	for _, dec := range decisions {
 		if err := c.decisionStore.UpsertDecision(ctx, dec); err != nil {
 			return nil, fmt.Errorf("failed to store decision: %w", err)
+		}
+	}
+
+	// Extract and persist Intents (ISSUE-013)
+	intentExtractor := intent.NewExtractor()
+	intents, err := intentExtractor.Extract(ctx, sources)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract intents: %w", err)
+	}
+	for _, it := range intents {
+		if err := c.intentStore.UpsertIntent(ctx, it); err != nil {
+			return nil, fmt.Errorf("failed to store intent: %w", err)
 		}
 	}
 
