@@ -57,6 +57,9 @@ func TestMigrations(t *testing.T) {
 	if !applied[6] {
 		t.Errorf("expected migration version 6 to be applied")
 	}
+	if !applied[7] {
+		t.Errorf("expected migration version 7 to be applied")
+	}
 
 	tables := []string{
 		"schema_migrations",
@@ -76,6 +79,7 @@ func TestMigrations(t *testing.T) {
 		"memory_decisions",
 		"memory_intents",
 		"memory_facts",
+		"memory_relationships",
 	}
 	for _, table := range tables {
 		var name string
@@ -90,7 +94,50 @@ func TestMigrations(t *testing.T) {
 		t.Fatalf("failed to re-run migrations up: %v", err)
 	}
 
-	// First Rollback (rolls back version 6: memory_facts)
+	// First Rollback (rolls back version 7: memory_relationships)
+	err = Rollback(db)
+	if err != nil {
+		t.Fatalf("failed to rollback migration version 7: %v", err)
+	}
+
+	applied, err = GetAppliedVersions(db)
+	if err != nil {
+		t.Fatalf("failed to get applied versions after first rollback: %v", err)
+	}
+	if applied[7] {
+		t.Errorf("expected migration version 7 to be rolled back")
+	}
+	if !applied[6] {
+		t.Errorf("expected migration version 6 to still be applied")
+	}
+	if !applied[5] {
+		t.Errorf("expected migration version 5 to still be applied")
+	}
+	if !applied[4] {
+		t.Errorf("expected migration version 4 to still be applied")
+	}
+	if !applied[3] {
+		t.Errorf("expected migration version 3 to still be applied")
+	}
+	if !applied[2] {
+		t.Errorf("expected migration version 2 to still be applied")
+	}
+	if !applied[1] {
+		t.Errorf("expected migration version 1 to still be applied")
+	}
+
+	// Verify memory_relationships table is dropped, but memory_facts still exists
+	var name string
+	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='memory_relationships'").Scan(&name)
+	if err == nil {
+		t.Error("expected table 'memory_relationships' to be dropped after first rollback, but it still exists")
+	}
+	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='memory_facts'").Scan(&name)
+	if err != nil {
+		t.Error("expected table 'memory_facts' to still exist after first rollback")
+	}
+
+	// Second Rollback (rolls back version 6: memory_facts)
 	err = Rollback(db)
 	if err != nil {
 		t.Fatalf("failed to rollback migration version 6: %v", err)
@@ -98,7 +145,7 @@ func TestMigrations(t *testing.T) {
 
 	applied, err = GetAppliedVersions(db)
 	if err != nil {
-		t.Fatalf("failed to get applied versions after first rollback: %v", err)
+		t.Fatalf("failed to get applied versions after second rollback: %v", err)
 	}
 	if applied[6] {
 		t.Errorf("expected migration version 6 to be rolled back")
@@ -120,17 +167,16 @@ func TestMigrations(t *testing.T) {
 	}
 
 	// Verify memory_facts table is dropped, but memory_intents still exists
-	var name string
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='memory_facts'").Scan(&name)
 	if err == nil {
-		t.Error("expected table 'memory_facts' to be dropped after first rollback, but it still exists")
+		t.Error("expected table 'memory_facts' to be dropped after second rollback, but it still exists")
 	}
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='memory_intents'").Scan(&name)
 	if err != nil {
-		t.Error("expected table 'memory_intents' to still exist after first rollback")
+		t.Error("expected table 'memory_intents' to still exist after second rollback")
 	}
 
-	// Second Rollback (rolls back version 5: memory_intents)
+	// Third Rollback (rolls back version 5: memory_intents)
 	err = Rollback(db)
 	if err != nil {
 		t.Fatalf("failed to rollback migration version 5: %v", err)
@@ -138,7 +184,7 @@ func TestMigrations(t *testing.T) {
 
 	applied, err = GetAppliedVersions(db)
 	if err != nil {
-		t.Fatalf("failed to get applied versions after second rollback: %v", err)
+		t.Fatalf("failed to get applied versions after third rollback: %v", err)
 	}
 	if applied[5] {
 		t.Errorf("expected migration version 5 to be rolled back")
@@ -159,14 +205,14 @@ func TestMigrations(t *testing.T) {
 	// Verify memory_intents table is dropped, but memory_decisions still exists
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='memory_intents'").Scan(&name)
 	if err == nil {
-		t.Error("expected table 'memory_intents' to be dropped after second rollback, but it still exists")
+		t.Error("expected table 'memory_intents' to be dropped after third rollback, but it still exists")
 	}
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='memory_decisions'").Scan(&name)
 	if err != nil {
-		t.Error("expected table 'memory_decisions' to still exist after second rollback")
+		t.Error("expected table 'memory_decisions' to still exist after third rollback")
 	}
 
-	// Third Rollback (rolls back version 4: memory_decisions)
+	// Fourth Rollback (rolls back version 4: memory_decisions)
 	err = Rollback(db)
 	if err != nil {
 		t.Fatalf("failed to rollback migration version 4: %v", err)
@@ -174,7 +220,7 @@ func TestMigrations(t *testing.T) {
 
 	applied, err = GetAppliedVersions(db)
 	if err != nil {
-		t.Fatalf("failed to get applied versions after third rollback: %v", err)
+		t.Fatalf("failed to get applied versions after fourth rollback: %v", err)
 	}
 	if applied[4] {
 		t.Errorf("expected migration version 4 to be rolled back")
@@ -192,14 +238,14 @@ func TestMigrations(t *testing.T) {
 	// Verify memory_decisions table is dropped, but memory_events still exists
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='memory_decisions'").Scan(&name)
 	if err == nil {
-		t.Error("expected table 'memory_decisions' to be dropped after third rollback, but it still exists")
+		t.Error("expected table 'memory_decisions' to be dropped after fourth rollback, but it still exists")
 	}
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='memory_events'").Scan(&name)
 	if err != nil {
-		t.Error("expected table 'memory_events' to still exist after third rollback")
+		t.Error("expected table 'memory_events' to still exist after fourth rollback")
 	}
 
-	// Fourth Rollback (rolls back version 3: memory_events)
+	// Fifth Rollback (rolls back version 3: memory_events)
 	err = Rollback(db)
 	if err != nil {
 		t.Fatalf("failed to rollback migration version 3: %v", err)
@@ -207,7 +253,7 @@ func TestMigrations(t *testing.T) {
 
 	applied, err = GetAppliedVersions(db)
 	if err != nil {
-		t.Fatalf("failed to get applied versions after fourth rollback: %v", err)
+		t.Fatalf("failed to get applied versions after fifth rollback: %v", err)
 	}
 	if applied[3] {
 		t.Errorf("expected migration version 3 to be rolled back")
@@ -222,14 +268,14 @@ func TestMigrations(t *testing.T) {
 	// Verify memory_events table is dropped, but scan_state still exists
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='memory_events'").Scan(&name)
 	if err == nil {
-		t.Error("expected table 'memory_events' to be dropped after fourth rollback, but it still exists")
+		t.Error("expected table 'memory_events' to be dropped after fifth rollback, but it still exists")
 	}
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='scan_state'").Scan(&name)
 	if err != nil {
-		t.Error("expected table 'scan_state' to still exist after fourth rollback")
+		t.Error("expected table 'scan_state' to still exist after fifth rollback")
 	}
 
-	// Fifth Rollback (rolls back version 2: scan_state)
+	// Sixth Rollback (rolls back version 2: scan_state)
 	err = Rollback(db)
 	if err != nil {
 		t.Fatalf("failed to rollback migration version 2: %v", err)
@@ -237,7 +283,7 @@ func TestMigrations(t *testing.T) {
 
 	applied, err = GetAppliedVersions(db)
 	if err != nil {
-		t.Fatalf("failed to get applied versions after fifth rollback: %v", err)
+		t.Fatalf("failed to get applied versions after sixth rollback: %v", err)
 	}
 	if applied[2] {
 		t.Errorf("expected migration version 2 to be rolled back")
@@ -249,14 +295,14 @@ func TestMigrations(t *testing.T) {
 	// Verify scan_state table is dropped, but repositories table still exists
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='scan_state'").Scan(&name)
 	if err == nil {
-		t.Error("expected table 'scan_state' to be dropped after fifth rollback, but it still exists")
+		t.Error("expected table 'scan_state' to be dropped after sixth rollback, but it still exists")
 	}
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='repositories'").Scan(&name)
 	if err != nil {
-		t.Error("expected table 'repositories' to still exist after fifth rollback")
+		t.Error("expected table 'repositories' to still exist after sixth rollback")
 	}
 
-	// Sixth Rollback (rolls back version 1: initial tables)
+	// Seventh Rollback (rolls back version 1: initial tables)
 	err = Rollback(db)
 	if err != nil {
 		t.Fatalf("failed to rollback migration version 1: %v", err)
@@ -264,7 +310,7 @@ func TestMigrations(t *testing.T) {
 
 	applied, err = GetAppliedVersions(db)
 	if err != nil {
-		t.Fatalf("failed to get applied versions after sixth rollback: %v", err)
+		t.Fatalf("failed to get applied versions after seventh rollback: %v", err)
 	}
 	if applied[1] {
 		t.Errorf("expected migration version 1 to be rolled back")
@@ -286,7 +332,7 @@ func TestMigrations(t *testing.T) {
 		var name string
 		err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name=?", table).Scan(&name)
 		if err == nil {
-			t.Errorf("expected table %q to be dropped after sixth rollback, but it still exists", table)
+			t.Errorf("expected table %q to be dropped after seventh rollback, but it still exists", table)
 		}
 	}
 }

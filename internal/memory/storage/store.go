@@ -21,3 +21,7 @@ type FactStore interface {
 	UpsertFact(ctx context.Context, fact *models.Fact) error
 }
 
+// RelationshipStore defines the persistence interface for memory relationships.
+type RelationshipStore interface {
+	UpsertRelationship(ctx context.Context, relationship *models.Relationship) error
+}
