@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	askcmd "reponerve/internal/cli/ask"
+	contextcmd "reponerve/internal/cli/contextcmd"
 	explaincmd "reponerve/internal/cli/explain"
 	initcmd "reponerve/internal/cli/init"
 	memorycmd "reponerve/internal/cli/memory"
@@ -24,6 +25,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(askcmd.NewCommand())
 	rootCmd.AddCommand(explaincmd.NewCommand())
 	rootCmd.AddCommand(memorycmd.NewCommand())
+	rootCmd.AddCommand(contextcmd.NewCommand())
 
 	return rootCmd
 }
