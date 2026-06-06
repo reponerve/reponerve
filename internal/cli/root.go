@@ -6,6 +6,7 @@ import (
 	askcmd "reponerve/internal/cli/ask"
 	explaincmd "reponerve/internal/cli/explain"
 	initcmd "reponerve/internal/cli/init"
+	memorycmd "reponerve/internal/cli/memory"
 	scancmd "reponerve/internal/cli/scan"
 )
 
@@ -22,6 +23,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(scancmd.NewCommand())
 	rootCmd.AddCommand(askcmd.NewCommand())
 	rootCmd.AddCommand(explaincmd.NewCommand())
+	rootCmd.AddCommand(memorycmd.NewCommand())
 
 	return rootCmd
 }
