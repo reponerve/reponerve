@@ -170,6 +170,35 @@ var allMigrations = []Migration{
 			DROP TABLE IF EXISTS scan_state;
 		`,
 	},
+	{
+		Version: 3,
+		Name:    "create_memory_events_table",
+		Up: `
+			CREATE TABLE IF NOT EXISTS memory_events (
+				id TEXT PRIMARY KEY,
+				repository_id TEXT NOT NULL,
+				event_type TEXT NOT NULL,
+				title TEXT NOT NULL,
+				description TEXT,
+				source_id TEXT NOT NULL,
+				timestamp DATETIME NOT NULL,
+				created_at DATETIME NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id),
+				FOREIGN KEY (source_id) REFERENCES sources(id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_memory_events_repository_id
+			ON memory_events(repository_id);
+
+			CREATE INDEX IF NOT EXISTS idx_memory_events_source_id
+			ON memory_events(source_id);
+		`,
+		Down: `
+			DROP INDEX IF EXISTS idx_memory_events_source_id;
+			DROP INDEX IF EXISTS idx_memory_events_repository_id;
+			DROP TABLE IF EXISTS memory_events;
+		`,
+	},
 }
 
 // GetAppliedVersions returns the list of applied migration versions from the database.

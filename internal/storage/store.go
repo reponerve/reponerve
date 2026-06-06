@@ -30,3 +30,7 @@ type ScanStateStore interface {
 	UpdateScanState(ctx context.Context, repoID string, commitHash string) error
 }
 
+// EventStore defines persistence operations for extracted events.
+type EventStore interface {
+	UpsertEvent(ctx context.Context, event *models.Event) error
+}
