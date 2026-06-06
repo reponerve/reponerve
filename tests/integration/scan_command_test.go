@@ -28,7 +28,7 @@ func TestScanCommandIntegration(t *testing.T) {
 		t.Fatalf("failed to write file: %v", err)
 	}
 	runGitCommand(t, tempDir, "add", "code.go")
-	runGitCommand(t, tempDir, "commit", "-m", "feat: initial repository commit")
+	runGitCommand(t, tempDir, "commit", "-m", "feat: initial repository commit to optimize storage")
 	runGitCommand(t, tempDir, "branch", "-M", "main")
 
 	// Create an ADR
@@ -42,7 +42,7 @@ func TestScanCommandIntegration(t *testing.T) {
 
 Accepted
 
-Go is chosen.`
+We need to simplify configuration and optimize deployment.`
 	if err := os.WriteFile(filepath.Join(adrDir, "0001-use-go.md"), []byte(adrContent), 0644); err != nil {
 		t.Fatalf("failed to write ADR file: %v", err)
 	}
@@ -139,8 +139,8 @@ Go is chosen.`
 	if eventType != "FEATURE_INTRODUCED" {
 		t.Errorf("expected event_type FEATURE_INTRODUCED, got %q", eventType)
 	}
-	if eventTitle != "Initial Repository Commit" {
-		t.Errorf("expected title 'Initial Repository Commit', got %q", eventTitle)
+	if eventTitle != "Initial Repository Commit To Optimize Storage" {
+		t.Errorf("expected title 'Initial Repository Commit To Optimize Storage', got %q", eventTitle)
 	}
 
 	// Verify memory_decisions content
@@ -163,5 +163,44 @@ Go is chosen.`
 	}
 	if decStatus != "Accepted" {
 		t.Errorf("expected status 'Accepted', got %q", decStatus)
+	}
+
+	// Verify memory_intents content
+	var intentCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM memory_intents").Scan(&intentCount)
+	if err != nil {
+		t.Fatalf("failed to query memory_intents count: %v", err)
+	}
+	if intentCount != 3 {
+		t.Errorf("expected 3 intents in memory_intents, got %d", intentCount)
+	}
+
+	// Verify specific descriptions are present
+	rows, err := db.Query("SELECT description FROM memory_intents ORDER BY description ASC")
+	if err != nil {
+		t.Fatalf("failed to query memory_intents: %v", err)
+	}
+	defer rows.Close()
+
+	var descs []string
+	for rows.Next() {
+		var d string
+		if err := rows.Scan(&d); err != nil {
+			t.Fatalf("failed to scan description: %v", err)
+		}
+		descs = append(descs, d)
+	}
+
+	if len(descs) != 3 {
+		t.Fatalf("expected 3 description rows, got %d", len(descs))
+	}
+	if descs[0] != "Optimize Deployment" {
+		t.Errorf("expected 'Optimize Deployment', got %q", descs[0])
+	}
+	if descs[1] != "Optimize Storage" {
+		t.Errorf("expected 'Optimize Storage', got %q", descs[1])
+	}
+	if descs[2] != "Simplify Configuration" {
+		t.Errorf("expected 'Simplify Configuration', got %q", descs[2])
 	}
 }
