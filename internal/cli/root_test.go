@@ -70,6 +70,7 @@ func TestRootCommandHelp(t *testing.T) {
 		"ask",
 		"explain",
 		"context",
+		"mcp",
 	}
 
 	for _, sub := range expectedSubstrings {

@@ -1,0 +1,123 @@
+package mcp
+
+import (
+	"fmt"
+	"sort"
+	"sync"
+)
+
+// Registry manages and provides access to registered MCP tools.
+type Registry struct {
+	mu    sync.RWMutex
+	tools map[string]ToolDefinition
+}
+
+// NewRegistry creates a new Registry and registers default initial tools.
+func NewRegistry() *Registry {
+	r := &Registry{
+		tools: make(map[string]ToolDefinition),
+	}
+
+	// Register initial default tool definitions
+	_ = r.Register(ToolDefinition{
+		Name:        "list_decisions",
+		Description: "List all architectural decisions for a repository",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "get_decision",
+		Description: "Retrieve a specific decision memory by its ID",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "list_events",
+		Description: "List all events for a repository",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "get_event",
+		Description: "Retrieve a specific event memory by its ID",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "list_intents",
+		Description: "List all intents for a repository",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "get_intent",
+		Description: "Retrieve a specific intent memory by its ID",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "list_facts",
+		Description: "List all facts for a repository",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "get_fact",
+		Description: "Retrieve a specific fact memory by its ID",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "trace_decision",
+		Description: "Trace relationships for a specific decision memory",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "trace_event",
+		Description: "Trace relationships for a specific event memory",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "explain_decision",
+		Description: "Explain a decision memory",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "explain_event",
+		Description: "Explain an event memory",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "generate_context",
+		Description: "Generate a structured repository context briefing",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "export_context",
+		Description: "Export repository context as rendered markdown",
+	})
+
+	return r
+}
+
+// Register registers a new tool definition in the registry.
+func (r *Registry) Register(tool ToolDefinition) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if tool.Name == "" {
+		return fmt.Errorf("tool name cannot be empty")
+	}
+
+	if _, exists := r.tools[tool.Name]; exists {
+		return fmt.Errorf("tool %q already registered", tool.Name)
+	}
+
+	r.tools[tool.Name] = tool
+	return nil
+}
+
+// Get retrieves a tool definition by name.
+func (r *Registry) Get(name string) (ToolDefinition, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	t, exists := r.tools[name]
+	return t, exists
+}
+
+// List returns all registered tool definitions, sorted alphabetically by name.
+func (r *Registry) List() []ToolDefinition {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	list := make([]ToolDefinition, 0, len(r.tools))
+	for _, t := range r.tools {
+		list = append(list, t)
+	}
+
+	sort.Slice(list, func(i, j int) bool {
+		return list[i].Name < list[j].Name
+	})
+
+	return list
+}
