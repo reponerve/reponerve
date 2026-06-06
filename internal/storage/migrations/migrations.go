@@ -280,6 +280,36 @@ var allMigrations = []Migration{
 			DROP TABLE IF EXISTS memory_facts;
 		`,
 	},
+	{
+		Version: 7,
+		Name:    "create_memory_relationships_table",
+		Up: `
+			CREATE TABLE IF NOT EXISTS memory_relationships (
+				id TEXT PRIMARY KEY,
+				repository_id TEXT NOT NULL,
+				from_id TEXT NOT NULL,
+				to_id TEXT NOT NULL,
+				relationship_type TEXT NOT NULL,
+				created_at DATETIME NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_memory_relationships_repository_id
+			ON memory_relationships(repository_id);
+
+			CREATE INDEX IF NOT EXISTS idx_memory_relationships_from_id
+			ON memory_relationships(from_id);
+
+			CREATE INDEX IF NOT EXISTS idx_memory_relationships_to_id
+			ON memory_relationships(to_id);
+		`,
+		Down: `
+			DROP INDEX IF EXISTS idx_memory_relationships_to_id;
+			DROP INDEX IF EXISTS idx_memory_relationships_from_id;
+			DROP INDEX IF EXISTS idx_memory_relationships_repository_id;
+			DROP TABLE IF EXISTS memory_relationships;
+		`,
+	},
 }
 
 // GetAppliedVersions returns the list of applied migration versions from the database.

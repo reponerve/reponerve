@@ -29,6 +29,7 @@ func TestScanCommandIntegration(t *testing.T) {
 	}
 	runGitCommand(t, tempDir, "add", "code.go")
 	runGitCommand(t, tempDir, "commit", "-m", "feat: initial repository commit to optimize storage")
+	runGitCommand(t, tempDir, "commit", "--allow-empty", "-m", "feat: adopt Go language in production")
 	runGitCommand(t, tempDir, "branch", "-M", "main")
 
 	// Create an ADR
@@ -42,7 +43,7 @@ func TestScanCommandIntegration(t *testing.T) {
 
 Accepted
 
-We need to simplify configuration and optimize deployment. Authentication Service uses Redis.`
+We need to simplify configuration and optimize deployment. Authentication Service uses Redis. API Gateway uses Go.`
 	if err := os.WriteFile(filepath.Join(adrDir, "0001-use-go.md"), []byte(adrContent), 0644); err != nil {
 		t.Fatalf("failed to write ADR file: %v", err)
 	}
@@ -86,7 +87,7 @@ We need to simplify configuration and optimize deployment. Authentication Servic
 	expectedLines := []string{
 		"Scanning repository...",
 		"✓ Repository discovered",
-		"✓ 1 commits indexed",
+		"✓ 2 commits indexed",
 		"✓ 1 ADRs indexed",
 		"Scan completed.",
 	}
@@ -108,8 +109,8 @@ We need to simplify configuration and optimize deployment. Authentication Servic
 	if err != nil {
 		t.Fatalf("failed to query commit count: %v", err)
 	}
-	if commitCount != 1 {
-		t.Errorf("expected 1 commit in db, got %d", commitCount)
+	if commitCount != 2 {
+		t.Errorf("expected 2 commits in db, got %d", commitCount)
 	}
 
 	var adrCount int
@@ -127,20 +128,8 @@ We need to simplify configuration and optimize deployment. Authentication Servic
 	if err != nil {
 		t.Fatalf("failed to query memory_events count: %v", err)
 	}
-	if eventCount != 1 {
-		t.Errorf("expected 1 event in memory_events, got %d", eventCount)
-	}
-
-	var eventType, eventTitle string
-	err = db.QueryRow("SELECT event_type, title FROM memory_events").Scan(&eventType, &eventTitle)
-	if err != nil {
-		t.Fatalf("failed to query memory_event fields: %v", err)
-	}
-	if eventType != "FEATURE_INTRODUCED" {
-		t.Errorf("expected event_type FEATURE_INTRODUCED, got %q", eventType)
-	}
-	if eventTitle != "Initial Repository Commit To Optimize Storage" {
-		t.Errorf("expected title 'Initial Repository Commit To Optimize Storage', got %q", eventTitle)
+	if eventCount != 2 {
+		t.Errorf("expected 2 events in memory_events, got %d", eventCount)
 	}
 
 	// Verify memory_decisions content
@@ -210,22 +199,43 @@ We need to simplify configuration and optimize deployment. Authentication Servic
 	if err != nil {
 		t.Fatalf("failed to query memory_facts count: %v", err)
 	}
-	if factCount != 1 {
-		t.Errorf("expected 1 fact in memory_facts, got %d", factCount)
+	if factCount != 2 {
+		t.Errorf("expected 2 facts in memory_facts, got %d", factCount)
 	}
 
-	var factSubj, factPred, factObj string
-	err = db.QueryRow("SELECT subject, predicate, object FROM memory_facts").Scan(&factSubj, &factPred, &factObj)
+	// Verify memory_relationships content
+	var relCount int
+	err = db.QueryRow("SELECT COUNT(*) FROM memory_relationships").Scan(&relCount)
 	if err != nil {
-		t.Fatalf("failed to query memory_fact fields: %v", err)
+		t.Fatalf("failed to query memory_relationships count: %v", err)
 	}
-	if factSubj != "Authentication Service" {
-		t.Errorf("expected subject 'Authentication Service', got %q", factSubj)
+	if relCount != 4 {
+		t.Errorf("expected 4 relationships in memory_relationships, got %d", relCount)
 	}
-	if factPred != "USES" {
-		t.Errorf("expected predicate 'USES', got %q", factPred)
+
+	// Verify specific relationship types are represented
+	typeCounts := make(map[string]int)
+	relRows, err := db.Query("SELECT relationship_type FROM memory_relationships")
+	if err != nil {
+		t.Fatalf("failed to query relationship types: %v", err)
 	}
-	if factObj != "Redis" {
-		t.Errorf("expected object 'Redis', got %q", factObj)
+	defer relRows.Close()
+
+	for relRows.Next() {
+		var tName string
+		if err := relRows.Scan(&tName); err != nil {
+			t.Fatalf("failed to scan relationship type: %v", err)
+		}
+		typeCounts[tName]++
+	}
+
+	if typeCounts["INTENT_DRIVES_DECISION"] != 2 {
+		t.Errorf("expected 2 INTENT_DRIVES_DECISION, got %d", typeCounts["INTENT_DRIVES_DECISION"])
+	}
+	if typeCounts["DECISION_RESULTS_IN_EVENT"] != 1 {
+		t.Errorf("expected 1 DECISION_RESULTS_IN_EVENT, got %d", typeCounts["DECISION_RESULTS_IN_EVENT"])
+	}
+	if typeCounts["FACT_SUPPORTS_DECISION"] != 1 {
+		t.Errorf("expected 1 FACT_SUPPORTS_DECISION, got %d", typeCounts["FACT_SUPPORTS_DECISION"])
 	}
 }

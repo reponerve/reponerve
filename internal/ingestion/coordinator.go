@@ -11,6 +11,7 @@ import (
 	"reponerve/internal/extraction/event"
 	"reponerve/internal/extraction/fact"
 	"reponerve/internal/extraction/intent"
+	"reponerve/internal/memory/linker"
 	memorystorage "reponerve/internal/memory/storage"
 	"reponerve/internal/scanner/repository"
 	"reponerve/internal/storage"
@@ -18,15 +19,16 @@ import (
 
 // Coordinator coordinates repository discovery and pipeline execution.
 type Coordinator struct {
-	discovery      *repository.GitDiscovery
-	repoStore      storage.RepositoryStore
-	sourceStore    storage.SourceStore
-	scanStateStore storage.ScanStateStore
-	eventStore     storage.EventStore
-	decisionStore  memorystorage.DecisionStore
-	intentStore    memorystorage.IntentStore
-	factStore      memorystorage.FactStore
-	pipeline       *Pipeline
+	discovery         *repository.GitDiscovery
+	repoStore         storage.RepositoryStore
+	sourceStore       storage.SourceStore
+	scanStateStore    storage.ScanStateStore
+	eventStore        storage.EventStore
+	decisionStore     memorystorage.DecisionStore
+	intentStore       memorystorage.IntentStore
+	factStore         memorystorage.FactStore
+	relationshipStore memorystorage.RelationshipStore
+	pipeline          *Pipeline
 }
 
 // NewCoordinator creates a new Coordinator instance.
@@ -39,18 +41,20 @@ func NewCoordinator(
 	decisionStore memorystorage.DecisionStore,
 	intentStore memorystorage.IntentStore,
 	factStore memorystorage.FactStore,
+	relationshipStore memorystorage.RelationshipStore,
 	pipeline *Pipeline,
 ) *Coordinator {
 	return &Coordinator{
-		discovery:      discovery,
-		repoStore:      repoStore,
-		sourceStore:    sourceStore,
-		scanStateStore: scanStateStore,
-		eventStore:     eventStore,
-		decisionStore:  decisionStore,
-		intentStore:    intentStore,
-		factStore:      factStore,
-		pipeline:       pipeline,
+		discovery:         discovery,
+		repoStore:         repoStore,
+		sourceStore:       sourceStore,
+		scanStateStore:    scanStateStore,
+		eventStore:        eventStore,
+		decisionStore:     decisionStore,
+		intentStore:       intentStore,
+		factStore:         factStore,
+		relationshipStore: relationshipStore,
+		pipeline:          pipeline,
 	}
 }
 
@@ -131,6 +135,23 @@ func (c *Coordinator) Run(ctx context.Context, path string) (*ScanResult, error)
 	for _, f := range facts {
 		if err := c.factStore.UpsertFact(ctx, f); err != nil {
 			return nil, fmt.Errorf("failed to store fact: %w", err)
+		}
+	}
+
+	// Link memories and persist relationships (ISSUE-016)
+	memoryLinker := linker.NewLinker()
+	rels, err := memoryLinker.Link(ctx, linker.LinkInput{
+		Events:    events,
+		Decisions: decisions,
+		Intents:   intents,
+		Facts:     facts,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to link memories: %w", err)
+	}
+	for _, rel := range rels {
+		if err := c.relationshipStore.UpsertRelationship(ctx, rel); err != nil {
+			return nil, fmt.Errorf("failed to store relationship: %w", err)
 		}
 	}
 
