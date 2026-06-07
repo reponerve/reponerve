@@ -3,7 +3,10 @@ package server
 import (
 	"bytes"
 	stdcontext "context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -15,11 +18,17 @@ import (
 	"reponerve/internal/context/render"
 	"reponerve/internal/mcp"
 	memorymodels "reponerve/internal/memory/models"
+	ownershipquery "reponerve/internal/ownership/query"
 	"reponerve/internal/query/storage"
 	"reponerve/internal/storage/migrations"
 	"reponerve/internal/storage/sqlite"
 	models "reponerve/pkg/models"
 )
+
+func testContributorID(repositoryID, email string) string {
+	h := sha256.Sum256([]byte(repositoryID + ":" + email))
+	return "ctr_" + hex.EncodeToString(h[:])
+}
 
 func runServerTest(t *testing.T, registry *mcp.Registry, service *mcp.Service, input string) string {
 	inReader, inWriter := io.Pipe()
@@ -155,25 +164,30 @@ func TestServer_JSONRPC(t *testing.T) {
 			t.Fatalf("failed to unmarshal tools list: %v", err)
 		}
 
-		if len(result.Tools) != 14 {
-			t.Errorf("expected 14 tools, got %d", len(result.Tools))
+		if len(result.Tools) != 19 {
+			t.Errorf("expected 19 tools, got %d", len(result.Tools))
 		}
 
 		expectedTools := map[string]bool{
-			"explain_decision": true,
-			"explain_event":    true,
-			"export_context":   true,
-			"generate_context": true,
-			"get_decision":     true,
-			"get_event":        true,
-			"get_fact":         true,
-			"get_intent":       true,
-			"list_decisions":   true,
-			"list_events":      true,
-			"list_facts":       true,
-			"list_intents":     true,
-			"trace_decision":   true,
-			"trace_event":      true,
+			"explain_decision":    true,
+			"explain_event":       true,
+			"export_context":      true,
+			"generate_context":    true,
+			"get_contributor":     true,
+			"get_decision":        true,
+			"get_event":           true,
+			"get_fact":            true,
+			"get_intent":          true,
+			"list_contributors":   true,
+			"list_decisions":      true,
+			"list_events":         true,
+			"list_expertise":      true,
+			"list_facts":          true,
+			"list_intents":        true,
+			"recommend_reviewers": true,
+			"trace_contributor":   true,
+			"trace_decision":      true,
+			"trace_event":         true,
 		}
 
 		for _, tool := range result.Tools {
@@ -302,18 +316,24 @@ func TestServer_ToolsExecution(t *testing.T) {
 		t.Fatalf("failed to insert relationship 3: %v", err)
 	}
 
+
+
 	// Set up Service
 	er := storage.NewSQLiteEventReader(db)
 	dr := storage.NewSQLiteDecisionReader(db)
 	ir := storage.NewSQLiteIntentReader(db)
 	fr := storage.NewSQLiteFactReader(db)
 	rr := storage.NewSQLiteRelationshipReader(db)
+	cr := storage.NewSQLiteContributorReader(db)
+	expr := storage.NewSQLiteExpertiseReader(db)
+	sr := storage.NewSQLiteSourceReader(db)
 
 	ctxReader := context.NewMemoryContextReader(er, dr, ir, fr)
 	generator := context.NewGenerator(ctxReader)
 	renderer := render.NewRenderer()
+	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
-	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer)
+	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader)
 	registry := mcp.NewRegistry()
 
 	// 1. Test list_decisions (all)
@@ -727,6 +747,273 @@ func TestServer_ToolsExecution(t *testing.T) {
 		text := result.Content[0].Text
 		if text != "No repository context available." {
 			t.Errorf("expected empty context text, got %q", text)
+		}
+	})
+}
+
+func TestServer_OwnershipToolsExecution(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "reponerve-ownership-server-test-*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	dbPath := filepath.Join(tempDir, "test.db")
+	db, err := sqlite.Open(dbPath)
+	if err != nil {
+		t.Fatalf("failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	if err := migrations.RunUp(db); err != nil {
+		t.Fatalf("failed to run migrations: %v", err)
+	}
+
+	repoID := "repo_xxx"
+
+	// Insert test data
+	_, err = db.Exec("INSERT INTO repositories (id, name, path, default_branch, created_at, updated_at) VALUES (?, ?, ?, ?, datetime(), datetime())", repoID, "Repo Test", tempDir, "main")
+	if err != nil {
+		t.Fatalf("failed to insert repository: %v", err)
+	}
+
+	janeID := testContributorID(repoID, "jane@example.com")
+	johnID := testContributorID(repoID, "john@example.com")
+	aliceID := testContributorID(repoID, "alice@example.com")
+
+	// Insert contributors
+	_, err = db.Exec(`INSERT INTO contributors (id, repository_id, name, email, first_seen, last_seen, commit_count) 
+		VALUES (?, ?, ?, ?, datetime(), datetime(), ?)`, janeID, repoID, "Jane Doe", "jane@example.com", 5)
+	if err != nil {
+		t.Fatalf("failed to insert contributor: %v", err)
+	}
+	_, err = db.Exec(`INSERT INTO contributors (id, repository_id, name, email, first_seen, last_seen, commit_count) 
+		VALUES (?, ?, ?, ?, datetime(), datetime(), ?)`, johnID, repoID, "John Smith", "john@example.com", 10)
+	if err != nil {
+		t.Fatalf("failed to insert contributor 2: %v", err)
+	}
+	_, err = db.Exec(`INSERT INTO contributors (id, repository_id, name, email, first_seen, last_seen, commit_count) 
+		VALUES (?, ?, ?, ?, datetime(), datetime(), ?)`, aliceID, repoID, "Alice", "alice@example.com", 3)
+	if err != nil {
+		t.Fatalf("failed to insert contributor 3: %v", err)
+	}
+
+	// Insert expertise
+	_, err = db.Exec(`INSERT INTO expertise (id, repository_id, contributor_id, domain, score, evidence_json) 
+		VALUES (?, ?, ?, ?, ?, ?)`, "exp_1", repoID, janeID, "Storage", 0.95, `{"recent_activity": true}`)
+	if err != nil {
+		t.Fatalf("failed to insert expertise: %v", err)
+	}
+	_, err = db.Exec(`INSERT INTO expertise (id, repository_id, contributor_id, domain, score, evidence_json) 
+		VALUES (?, ?, ?, ?, ?, ?)`, "exp_2", repoID, johnID, "Storage", 0.95, `{"recent_activity": false}`)
+	if err != nil {
+		t.Fatalf("failed to insert expertise 2: %v", err)
+	}
+	_, err = db.Exec(`INSERT INTO expertise (id, repository_id, contributor_id, domain, score, evidence_json) 
+		VALUES (?, ?, ?, ?, ?, ?)`, "exp_3", repoID, aliceID, "Storage", 0.90, `{"recent_activity": true}`)
+	if err != nil {
+		t.Fatalf("failed to insert expertise 3: %v", err)
+	}
+
+	// Insert source, decision, fact, event for Jane Doe to test trace_contributor
+	_, err = db.Exec("INSERT INTO sources (id, repository_id, source_type, reference, title, author, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime(), datetime())", "src_jane", repoID, "git", "commit_jane", "Title Jane", "Jane Doe <jane@example.com>")
+	if err != nil {
+		t.Fatalf("failed to insert source jane: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO memory_decisions (id, repository_id, source_id, title, status, created_at) VALUES (?, ?, ?, ?, ?, datetime())", "dec_jane", repoID, "src_jane", "Jane's Storage Decision", "Accepted")
+	if err != nil {
+		t.Fatalf("failed to insert decision jane: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO memory_facts (id, repository_id, source_id, subject, predicate, object, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime())", "fact_jane", repoID, "src_jane", "Jane Storage", "WORKS", "Fine")
+	if err != nil {
+		t.Fatalf("failed to insert fact jane: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO memory_events (id, repository_id, event_type, title, description, source_id, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime(), datetime())", "evt_jane", repoID, "COMMIT_COMMITTED", "Jane's Event", "Description Jane", "src_jane")
+	if err != nil {
+		t.Fatalf("failed to insert event jane: %v", err)
+	}
+
+	// Set up Service
+	er := storage.NewSQLiteEventReader(db)
+	dr := storage.NewSQLiteDecisionReader(db)
+	ir := storage.NewSQLiteIntentReader(db)
+	fr := storage.NewSQLiteFactReader(db)
+	rr := storage.NewSQLiteRelationshipReader(db)
+	cr := storage.NewSQLiteContributorReader(db)
+	expr := storage.NewSQLiteExpertiseReader(db)
+	sr := storage.NewSQLiteSourceReader(db)
+
+	ctxReader := context.NewMemoryContextReader(er, dr, ir, fr)
+	generator := context.NewGenerator(ctxReader)
+	renderer := render.NewRenderer()
+	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
+
+	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader)
+	registry := mcp.NewRegistry()
+
+	// 1. Test list_contributors
+	t.Run("list_contributors success", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":18,"method":"tools/call","params":{"name":"list_contributors","arguments":{"repository_id":"repo_xxx"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var contributors []*models.Contributor
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &contributors); err != nil {
+			t.Fatalf("failed to parse contributors: %v", err)
+		}
+		// Expect 3 contributors (Alice, Jane Doe, John Smith) sorted by Name: Alice, Jane Doe, John Smith
+		if len(contributors) != 3 {
+			t.Errorf("expected 3 contributors, got %d", len(contributors))
+		}
+		if contributors[0].Name != "Alice" || contributors[1].Name != "Jane Doe" || contributors[2].Name != "John Smith" {
+			t.Errorf("incorrect sort order: %+v", contributors)
+		}
+	})
+
+	// 2. Test get_contributor
+	t.Run("get_contributor success", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":19,"method":"tools/call","params":{"name":"get_contributor","arguments":{"contributor_id":%q,"repository_id":"repo_xxx"}}}`, janeID) + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var c models.Contributor
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &c); err != nil {
+			t.Fatalf("failed to parse contributor: %v", err)
+		}
+		if c.Name != "Jane Doe" {
+			t.Errorf("expected contributor 'Jane Doe', got %q", c.Name)
+		}
+	})
+
+	// 3. Test list_expertise
+	t.Run("list_expertise success", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":20,"method":"tools/call","params":{"name":"list_expertise","arguments":{"repository_id":"repo_xxx"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var expertise []*models.Expertise
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &expertise); err != nil {
+			t.Fatalf("failed to parse expertise: %v", err)
+		}
+		if len(expertise) != 3 {
+			t.Errorf("expected 3 expertise records, got %d", len(expertise))
+		}
+	})
+
+	// 4. Test trace_contributor
+	t.Run("trace_contributor success", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":21,"method":"tools/call","params":{"name":"trace_contributor","arguments":{"contributor_id":%q,"repository_id":"repo_xxx"}}}`, janeID) + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		var trace ownershipquery.ContributorTrace
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &trace); err != nil {
+			t.Fatalf("failed to parse trace: %v", err)
+		}
+		if trace.Contributor.Name != "Jane Doe" {
+			t.Errorf("expected name 'Jane Doe', got %q", trace.Contributor.Name)
+		}
+		if len(trace.Expertise) != 1 || trace.Expertise[0].Domain != "Storage" {
+			t.Errorf("expected 1 expertise 'Storage'")
+		}
+		if len(trace.Decisions) != 1 || trace.Decisions[0].Title != "Jane's Storage Decision" {
+			t.Errorf("expected 1 decision 'Jane's Storage Decision'")
+		}
+		if len(trace.Facts) != 1 || trace.Facts[0].Subject != "Jane Storage" {
+			t.Errorf("expected 1 fact 'Jane Storage'")
+		}
+		if len(trace.Events) != 1 || trace.Events[0].Title != "Jane's Event" {
+			t.Errorf("expected 1 event 'Jane's Event'")
+		}
+	})
+
+	// 5. Test recommend_reviewers
+	t.Run("recommend_reviewers success", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":22,"method":"tools/call","params":{"name":"recommend_reviewers","arguments":{"domain":"Storage","repository_id":"repo_xxx"}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+
+		type ReviewerRecommendation struct {
+			Contributor string      `json:"contributor"`
+			Domain      string      `json:"domain"`
+			Score       float64     `json:"score"`
+			Evidence    interface{} `json:"evidence"`
+		}
+
+		var recommendations []ReviewerRecommendation
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &recommendations); err != nil {
+			t.Fatalf("failed to parse recommendations: %v", err)
+		}
+
+		// Expect exactly 3 recommendations:
+		// 1. Jane Doe (score 0.95, recent_activity true)
+		// 2. John Smith (score 0.95, recent_activity false)
+		// 3. Alice (score 0.90, recent_activity true)
+		if len(recommendations) != 3 {
+			t.Fatalf("expected 3 recommendations, got %d", len(recommendations))
+		}
+		if recommendations[0].Contributor != "Jane Doe" {
+			t.Errorf("expected 1st reviewer to be 'Jane Doe', got %q", recommendations[0].Contributor)
+		}
+		if recommendations[1].Contributor != "John Smith" {
+			t.Errorf("expected 2nd reviewer to be 'John Smith', got %q", recommendations[1].Contributor)
+		}
+		if recommendations[2].Contributor != "Alice" {
+			t.Errorf("expected 3rd reviewer to be 'Alice', got %q", recommendations[2].Contributor)
+		}
+
+		// Verify evidence is preserved
+		evidenceMap, ok := recommendations[0].Evidence.(map[string]interface{})
+		if !ok {
+			t.Fatalf("expected evidence to be a JSON object, got %T", recommendations[0].Evidence)
+		}
+		if evidenceMap["recent_activity"] != true {
+			t.Errorf("expected recent_activity true in evidence, got %v", evidenceMap["recent_activity"])
 		}
 	})
 }

@@ -57,6 +57,15 @@ func TestSQLiteReaders(t *testing.T) {
 		t.Fatalf("failed to insert source: %v", err)
 	}
 
+	_, err = db.Exec("INSERT INTO contributors (id, repository_id, name, email, first_seen, last_seen, commit_count) VALUES (?, ?, ?, ?, datetime(), datetime(), 5)", "c_1", repoID1, "Alice", "alice@example.com")
+	if err != nil {
+		t.Fatalf("failed to insert contributor: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO expertise (id, repository_id, contributor_id, domain, score, evidence_json) VALUES (?, ?, ?, ?, ?, ?)", "exp_1", repoID1, "c_1", "Authentication", 0.95, `{"commits": 5}`)
+	if err != nil {
+		t.Fatalf("failed to insert expertise: %v", err)
+	}
+
 	// Instantiate stores (writers) and readers
 	eventStore := sqlite.NewEventStore(db)
 	eventReader := NewSQLiteEventReader(db)
@@ -72,6 +81,10 @@ func TestSQLiteReaders(t *testing.T) {
 
 	relStore := memorystorage.NewSQLiteRelationshipStore(db)
 	relReader := NewSQLiteRelationshipReader(db)
+
+	contribReader := NewSQLiteContributorReader(db)
+	expertiseReader := NewSQLiteExpertiseReader(db)
+	sourceReader := NewSQLiteSourceReader(db)
 
 	// --- TEST EMPTY RESULT SETS ---
 	t.Run("Empty Database Checks", func(t *testing.T) {
@@ -349,6 +362,58 @@ func TestSQLiteReaders(t *testing.T) {
 		}
 		if len(all) != 1 {
 			t.Errorf("expected 1 relationship, got %d", len(all))
+		}
+	})
+
+	t.Run("Contributor Reader Tests", func(t *testing.T) {
+		contrib, err := contribReader.GetByID(ctx, repoID1, "c_1")
+		if err != nil {
+			t.Fatalf("GetByID failed: %v", err)
+		}
+		if contrib.Name != "Alice" || contrib.Email != "alice@example.com" {
+			t.Errorf("unexpected contributor: %+v", contrib)
+		}
+
+		list, err := contribReader.ListByRepository(ctx, repoID1)
+		if err != nil {
+			t.Fatalf("ListByRepository failed: %v", err)
+		}
+		if len(list) != 1 {
+			t.Errorf("expected 1 contributor, got %d", len(list))
+		}
+	})
+
+	t.Run("Expertise Reader Tests", func(t *testing.T) {
+		list, err := expertiseReader.ListByRepository(ctx, repoID1)
+		if err != nil {
+			t.Fatalf("ListByRepository failed: %v", err)
+		}
+		if len(list) != 1 {
+			t.Errorf("expected 1 expertise record, got %d", len(list))
+		}
+		if list[0].Domain != "Authentication" || list[0].Score != 0.95 {
+			t.Errorf("unexpected expertise: %+v", list[0])
+		}
+
+		listByCont, err := expertiseReader.ListByContributor(ctx, repoID1, "c_1")
+		if err != nil {
+			t.Fatalf("ListByContributor failed: %v", err)
+		}
+		if len(listByCont) != 1 {
+			t.Errorf("expected 1 expertise record for contributor, got %d", len(listByCont))
+		}
+	})
+
+	t.Run("Source Reader Tests", func(t *testing.T) {
+		list, err := sourceReader.ListByRepository(ctx, repoID1)
+		if err != nil {
+			t.Fatalf("ListByRepository failed: %v", err)
+		}
+		if len(list) != 1 {
+			t.Errorf("expected 1 source, got %d", len(list))
+		}
+		if list[0].ID != "src_1" {
+			t.Errorf("expected source src_1, got %s", list[0].ID)
 		}
 	})
 }

@@ -10,6 +10,7 @@ import (
 	"reponerve/internal/context/render"
 	"reponerve/internal/mcp"
 	"reponerve/internal/mcp/server"
+	ownershipquery "reponerve/internal/ownership/query"
 	"reponerve/internal/query/storage"
 	"reponerve/internal/storage/sqlite"
 )
@@ -47,12 +48,18 @@ func NewCommand() *cobra.Command {
 			generator := context.NewGenerator(ctxReader)
 			renderer := render.NewRenderer()
 
-			// 5. Create MCP Service & Registry & Server
-			svc := mcp.NewService(decisionReader, intentReader, factReader, eventReader, relationshipReader, generator, renderer)
+			// 5. Create Ownership Reader
+			qrContrib := storage.NewSQLiteContributorReader(db)
+			qrExpertise := storage.NewSQLiteExpertiseReader(db)
+			qrSource := storage.NewSQLiteSourceReader(db)
+			ownershipReader := ownershipquery.NewReader(qrContrib, qrExpertise, qrSource, decisionReader, factReader, eventReader)
+
+			// 6. Create MCP Service & Registry & Server
+			svc := mcp.NewService(decisionReader, intentReader, factReader, eventReader, relationshipReader, generator, renderer, ownershipReader)
 			registry := mcp.NewRegistry()
 			srv := server.NewServer(registry, svc, cmd.InOrStdin(), cmd.OutOrStdout())
 
-			// 6. Start server
+			// 7. Start server
 			return srv.Start(cmd.Context())
 		},
 	}

@@ -310,6 +310,47 @@ var allMigrations = []Migration{
 			DROP TABLE IF EXISTS memory_relationships;
 		`,
 	},
+	{
+		Version: 8,
+		Name:    "create_ownership_tables",
+		Up: `
+			CREATE TABLE IF NOT EXISTS contributors (
+				id TEXT PRIMARY KEY,
+				repository_id TEXT NOT NULL,
+				name TEXT NOT NULL,
+				email TEXT NOT NULL,
+				first_seen DATETIME NOT NULL,
+				last_seen DATETIME NOT NULL,
+				commit_count INTEGER NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_contributors_repository_id ON contributors(repository_id);
+			CREATE INDEX IF NOT EXISTS idx_contributors_email ON contributors(email);
+
+			CREATE TABLE IF NOT EXISTS expertise (
+				id TEXT PRIMARY KEY,
+				repository_id TEXT NOT NULL,
+				contributor_id TEXT NOT NULL,
+				domain TEXT NOT NULL,
+				score REAL NOT NULL,
+				evidence_json TEXT,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id),
+				FOREIGN KEY (contributor_id) REFERENCES contributors(id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_expertise_repository_id ON expertise(repository_id);
+			CREATE INDEX IF NOT EXISTS idx_expertise_contributor_id ON expertise(contributor_id);
+		`,
+		Down: `
+			DROP INDEX IF EXISTS idx_expertise_contributor_id;
+			DROP INDEX IF EXISTS idx_expertise_repository_id;
+			DROP TABLE IF EXISTS expertise;
+			DROP INDEX IF EXISTS idx_contributors_email;
+			DROP INDEX IF EXISTS idx_contributors_repository_id;
+			DROP TABLE IF EXISTS contributors;
+		`,
+	},
 }
 
 // GetAppliedVersions returns the list of applied migration versions from the database.

@@ -34,3 +34,14 @@ type ScanStateStore interface {
 type EventStore interface {
 	UpsertEvent(ctx context.Context, event *models.Event) error
 }
+
+// ContributorStore defines persistence operations for contributors.
+type ContributorStore interface {
+	UpsertContributor(ctx context.Context, contributor *models.Contributor) error
+}
+
+// ExpertiseStore defines persistence operations for expertise.
+type ExpertiseStore interface {
+	UpsertExpertise(ctx context.Context, expertise *models.Expertise) error
+}
+

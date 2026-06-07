@@ -9,6 +9,7 @@ import (
 	"reponerve/internal/context"
 	"reponerve/internal/context/render"
 	memorymodels "reponerve/internal/memory/models"
+	ownershipquery "reponerve/internal/ownership/query"
 	"reponerve/internal/query/storage"
 	"reponerve/internal/storage/migrations"
 	"reponerve/internal/storage/sqlite"
@@ -77,6 +78,30 @@ func (d *dummyRelationshipReader) ListAll(ctx stdcontext.Context) ([]*memorymode
 	return nil, nil
 }
 
+type dummyContributorReader struct{}
+
+func (d *dummyContributorReader) GetByID(ctx stdcontext.Context, repositoryID string, id string) (*models.Contributor, error) {
+	return nil, nil
+}
+func (d *dummyContributorReader) ListByRepository(ctx stdcontext.Context, repositoryID string) ([]*models.Contributor, error) {
+	return nil, nil
+}
+
+type dummyExpertiseReader struct{}
+
+func (d *dummyExpertiseReader) ListByRepository(ctx stdcontext.Context, repositoryID string) ([]*models.Expertise, error) {
+	return nil, nil
+}
+func (d *dummyExpertiseReader) ListByContributor(ctx stdcontext.Context, repositoryID string, contributorID string) ([]*models.Expertise, error) {
+	return nil, nil
+}
+
+type dummySourceReader struct{}
+
+func (d *dummySourceReader) ListByRepository(ctx stdcontext.Context, repositoryID string) ([]*models.Source, error) {
+	return nil, nil
+}
+
 // --- Unit Tests ---
 
 func TestRegistry_Unit(t *testing.T) {
@@ -84,9 +109,9 @@ func TestRegistry_Unit(t *testing.T) {
 		r := NewRegistry()
 		list := r.List()
 
-		// Expect exactly 14 tools registered initially
-		if len(list) != 14 {
-			t.Errorf("expected 14 initial tools, got %d", len(list))
+		// Expect exactly 19 tools registered initially
+		if len(list) != 19 {
+			t.Errorf("expected 19 initial tools, got %d", len(list))
 		}
 
 		expectedNames := []string{
@@ -94,14 +119,19 @@ func TestRegistry_Unit(t *testing.T) {
 			"explain_event",
 			"export_context",
 			"generate_context",
+			"get_contributor",
 			"get_decision",
 			"get_event",
 			"get_fact",
 			"get_intent",
+			"list_contributors",
 			"list_decisions",
 			"list_events",
+			"list_expertise",
 			"list_facts",
 			"list_intents",
+			"recommend_reviewers",
+			"trace_contributor",
 			"trace_decision",
 			"trace_event",
 		}
@@ -132,10 +162,10 @@ func TestRegistry_Unit(t *testing.T) {
 			t.Errorf("expected description %q, got %q", tool.Description, got.Description)
 		}
 
-		// Verify listing has 15 tools sorted alphabetically
+		// Verify listing has 20 tools sorted alphabetically
 		list := r.List()
-		if len(list) != 15 {
-			t.Errorf("expected 15 tools after registration, got %d", len(list))
+		if len(list) != 20 {
+			t.Errorf("expected 20 tools after registration, got %d", len(list))
 		}
 	})
 
@@ -173,12 +203,16 @@ func TestService_Unit(t *testing.T) {
 		ir := &dummyIntentReader{}
 		fr := &dummyFactReader{}
 		rr := &dummyRelationshipReader{}
+		cr := &dummyContributorReader{}
+		expr := &dummyExpertiseReader{}
+		sr := &dummySourceReader{}
 
 		ctxReader := context.NewMemoryContextReader(er, dr, ir, fr)
 		generator := context.NewGenerator(ctxReader)
 		renderer := render.NewRenderer()
+		ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
-		svc := NewService(dr, ir, fr, er, rr, generator, renderer)
+		svc := NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader)
 		if svc.DecisionReader != dr {
 			t.Error("Service DecisionReader dependency not set correctly")
 		}
@@ -199,6 +233,9 @@ func TestService_Unit(t *testing.T) {
 		}
 		if svc.Renderer != renderer {
 			t.Error("Service Renderer dependency not set correctly")
+		}
+		if svc.OwnershipReader != ownershipReader {
+			t.Error("Service OwnershipReader dependency not set correctly")
 		}
 	})
 }
@@ -229,17 +266,21 @@ func TestService_Integration(t *testing.T) {
 	ir := storage.NewSQLiteIntentReader(db)
 	fr := storage.NewSQLiteFactReader(db)
 	rr := storage.NewSQLiteRelationshipReader(db)
+	cr := storage.NewSQLiteContributorReader(db)
+	expr := storage.NewSQLiteExpertiseReader(db)
+	sr := storage.NewSQLiteSourceReader(db)
 
 	ctxReader := context.NewMemoryContextReader(er, dr, ir, fr)
 	generator := context.NewGenerator(ctxReader)
 	renderer := render.NewRenderer()
+	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
 	// Instantiate Service
-	svc := NewService(dr, ir, fr, er, rr, generator, renderer)
+	svc := NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader)
 
 	// Verify dependencies are set and correctly typed
 	if svc.DecisionReader == nil || svc.IntentReader == nil || svc.FactReader == nil ||
-		svc.EventReader == nil || svc.RelationshipReader == nil || svc.Generator == nil || svc.Renderer == nil {
+		svc.EventReader == nil || svc.RelationshipReader == nil || svc.Generator == nil || svc.Renderer == nil || svc.OwnershipReader == nil {
 		t.Fatal("one or more service dependencies are nil")
 	}
 
@@ -248,20 +289,25 @@ func TestService_Integration(t *testing.T) {
 	tools := r.List()
 
 	expectedTools := map[string]bool{
-		"explain_decision": true,
-		"explain_event":    true,
-		"export_context":   true,
-		"generate_context": true,
-		"get_decision":     true,
-		"get_event":        true,
-		"get_fact":         true,
-		"get_intent":       true,
-		"list_decisions":   true,
-		"list_events":      true,
-		"list_facts":       true,
-		"list_intents":     true,
-		"trace_decision":   true,
-		"trace_event":      true,
+		"explain_decision":    true,
+		"explain_event":       true,
+		"export_context":      true,
+		"generate_context":    true,
+		"get_contributor":     true,
+		"get_decision":        true,
+		"get_event":           true,
+		"get_fact":            true,
+		"get_intent":          true,
+		"list_contributors":   true,
+		"list_decisions":      true,
+		"list_events":         true,
+		"list_expertise":      true,
+		"list_facts":          true,
+		"list_intents":        true,
+		"recommend_reviewers": true,
+		"trace_contributor":   true,
+		"trace_decision":      true,
+		"trace_event":         true,
 	}
 
 	for _, tool := range tools {
