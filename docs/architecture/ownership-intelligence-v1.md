@@ -81,7 +81,7 @@ Agent Intelligence
 
 # Ownership Model
 
-Ownership Intelligence is built on four concepts:
+Ownership Intelligence is built on four concepts.
 
 ## Contributor
 
@@ -272,23 +272,24 @@ Used to connect contributors with repository knowledge.
 
 Proposed model:
 
-```go
 type Contributor struct {
-    ID string
+ID string
 
-    RepositoryID string
-
-    Name string
-
-    Email string
-
-    FirstSeen time.Time
-
-    LastSeen time.Time
-
-    CommitCount int
-}
 ```
+RepositoryID string
+
+Name string
+
+Email string
+
+FirstSeen time.Time
+
+LastSeen time.Time
+
+CommitCount int
+```
+
+}
 
 Contributor records must be deterministic and deduplicated.
 
@@ -298,19 +299,20 @@ Contributor records must be deterministic and deduplicated.
 
 Proposed model:
 
-```go
 type Expertise struct {
-    ID string
+ID string
 
-    RepositoryID string
-
-    ContributorID string
-
-    Domain string
-
-    Score float64
-}
 ```
+RepositoryID string
+
+ContributorID string
+
+Domain string
+
+Score float64
+```
+
+}
 
 Scores must be derived from objective repository evidence.
 
@@ -336,17 +338,108 @@ All relationships must be traceable to repository evidence.
 
 ---
 
+# Explainability
+
+Ownership Intelligence must be explainable.
+
+Every ownership conclusion must be traceable to repository evidence.
+
+RepoNerve must never produce ownership recommendations that cannot be justified using repository artifacts.
+
+Ownership recommendations are derived conclusions, not stored facts.
+
+---
+
+# Evidence-Based Ownership
+
+Ownership recommendations must be supported by measurable evidence.
+
+Examples:
+
+* Commit activity
+* Contribution frequency
+* Decision authorship
+* Fact associations
+* Domain involvement
+* Activity recency
+
+---
+
+# Ownership Transparency
+
+Every ownership recommendation should be explainable.
+
+Example:
+
+Contributor: Alice
+
+Authentication Expertise Score: 0.92
+
+Evidence:
+
+* 87 related commits
+* 4 authentication ADRs
+* Active within last 30 days
+* Contributed to 3 related decisions
+
+---
+
+# Unsupported Conclusions
+
+RepoNerve must not generate:
+
+* Subjective rankings
+* Personality assessments
+* Organizational authority assumptions
+* Team hierarchy assumptions
+* AI-generated ownership claims
+
+Examples:
+
+❌ Alice is the best engineer.
+
+❌ Bob owns authentication because he seems experienced.
+
+❌ Charlie should lead the project.
+
+---
+
+# Supported Conclusions
+
+RepoNerve may generate:
+
+✓ Alice contributed most frequently to authentication.
+
+✓ Bob authored the majority of storage-related decisions.
+
+✓ Charlie has the highest expertise score for the MCP domain.
+
+✓ Dana is a recommended reviewer based on repository activity.
+
+All supported conclusions must reference repository evidence.
+
+---
+
+# Design Rule
+
+Ownership recommendations must be:
+
+* Deterministic
+* Traceable
+* Evidence-Based
+* Explainable
+* Reproducible
+
+---
+
 # Query Capabilities
 
 Examples:
 
-Who contributed most to authentication?
-
-Who authored this decision?
-
-Who has expertise in storage?
-
-Who should review changes related to MCP?
+* Who contributed most to authentication?
+* Who authored this decision?
+* Who has expertise in storage?
+* Who should review changes related to MCP?
 
 ---
 
@@ -356,11 +449,9 @@ Ownership data may enrich repository context.
 
 Examples:
 
-Key Contributors
-
-Relevant Experts
-
-Domain Specialists
+* Key Contributors
+* Relevant Experts
+* Domain Specialists
 
 Context generation remains deterministic.
 
@@ -370,15 +461,11 @@ Context generation remains deterministic.
 
 Future MCP capabilities:
 
-list_contributors
-
-get_contributor
-
-list_expertise
-
-trace_contributor
-
-recommend_reviewers
+* list_contributors
+* get_contributor
+* list_expertise
+* trace_contributor
+* recommend_reviewers
 
 Ownership data must be exposed through existing MCP architecture.
 
@@ -395,13 +482,10 @@ Ownership Intelligence complements:
 
 Future questions:
 
-Who knows this area?
-
-Who should review this change?
-
-Who created this decision?
-
-Who has expertise in this domain?
+* Who knows this area?
+* Who should review this change?
+* Who created this decision?
+* Who has expertise in this domain?
 
 ---
 
@@ -423,15 +507,11 @@ Ownership must remain evidence-based.
 
 RepoNerve can answer:
 
-What happened?
-
-Why?
-
-What is affected?
-
-Who knows about it?
-
-Who should be involved?
+* What happened?
+* Why?
+* What is affected?
+* Who knows about it?
+* Who should be involved?
 
 using deterministic repository evidence.
 
