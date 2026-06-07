@@ -1,106 +1,276 @@
 # RepoNerve
 
-> The Memory and Context Engine for Software Repositories.
+> Repository Intelligence for Humans and AI Agents.
 
-RepoNerve is an open-source platform that preserves repository knowledge and generates optimized context for developers and AI systems.
+RepoNerve is an open-source platform that captures repository knowledge, builds a structured memory graph, generates repository context, and exposes that intelligence through MCP (Model Context Protocol).
 
 Software remembers code.
 
-Software forgets context.
+Software forgets why.
 
-RepoNerve exists to preserve context.
-
----
-
-## Vision
-
-Every software repository should be able to explain itself.
+RepoNerve preserves the why.
 
 ---
 
-## Core Goals
+# Vision
 
-- Preserve engineering knowledge
-- Explain software evolution
-- Improve repository understanding
-- Generate optimized context
-- Reduce AI token consumption
-- Enable repository-aware AI systems
+Every repository should be able to explain itself.
+
+To developers.
+
+To teams.
+
+To AI coding agents.
 
 ---
 
-## Philosophy
+# What RepoNerve Does
+
+RepoNerve transforms repository artifacts into structured knowledge.
+
+Repository
+↓
+Ingestion
+↓
+Memory Graph
+↓
+Query Engine
+↓
+Context Engine
+↓
+MCP Server
+↓
+AI Agents
+
+RepoNerve extracts:
+
+* Events
+* Decisions
+* Intents
+* Facts
+* Relationships
+
+and converts them into actionable repository intelligence.
+
+---
+
+# Core Capabilities
+
+## Memory Engine
+
+Build a repository memory graph from:
+
+* Git history
+* ADRs
+* Repository metadata
+
+Extract:
+
+* Events
+* Decisions
+* Intents
+* Facts
+* Relationships
+
+---
+
+## Query Engine
+
+Explore repository knowledge.
+
+Commands:
+
+```bash
+reponerve memory list decisions
+
+reponerve memory get decision <id>
+
+reponerve memory trace decision <id>
+
+reponerve memory explain decision <id>
+```
+
+---
+
+## Context Engine
+
+Generate repository context.
+
+Commands:
+
+```bash
+reponerve context generate
+
+reponerve context export
+```
+
+Example output:
+
+```text
+Repository Context
+
+Key Decisions
+...
+
+Key Intents
+...
+
+Key Facts
+...
+
+Recent Events
+...
+```
+
+---
+
+## MCP Server
+
+Expose repository intelligence directly to AI coding agents.
+
+Start the server:
+
+```bash
+reponerve mcp
+```
+
+Supported MCP capabilities:
+
+* Memory Queries
+* Decision Tracing
+* Decision Explanations
+* Repository Context Generation
+* Context Export
+
+Compatible with:
+
+* Claude Code
+* Cursor
+* Windsurf
+* Cline
+* Roo
+* Codex
+
+---
+
+# Philosophy
 
 Memory First.
 
 Context Second.
 
-AI Third.
+Agents Third.
 
 ---
 
-## Current Status
+# Current Status
 
-RepoNerve is currently in active development.
+Current Release:
 
-Current milestone:
+```text
+v0.5.0-alpha
+```
 
+Completed Milestones:
+
+```text
 v0.1.0-alpha
+✓ Ingestion Engine
 
-Goals:
+v0.2.0-alpha
+✓ Memory Engine
 
-- Repository initialization
-- Repository scanning
-- Artifact discovery
-- SQLite storage
-- Foundation architecture
+v0.3.0-alpha
+✓ Query Engine
 
----
+v0.4.0-alpha
+✓ Context Engine
 
-## Documentation
+v0.5.0-alpha
+✓ MCP Server
+```
 
-### Vision
+Current Focus:
 
-- docs/vision/vision.md
-- docs/vision/mission.md
-- docs/vision/project-charter.md
-
-### Product
-
-- docs/product/problem-analysis.md
-- docs/product/personas.md
-- docs/product/use-cases.md
-- docs/product/mvp-scope.md
-
-### Architecture
-
-- docs/architecture/architecture-overview.md
-- docs/architecture/memory-model.md
-- docs/architecture/data-model.md
-- docs/architecture/repository-ingestion.md
-- docs/architecture/context-engine.md
-- docs/architecture/package-structure.md
-- docs/architecture/event-flows.md
-- docs/architecture/erd.md
-
-### Roadmap
-
-- docs/roadmap/milestones.md
-- docs/roadmap/v0.1.0-alpha-prd.md
-
----
-
-## MVP Commands
-
-```bash
-reponerve init
-reponerve scan
-reponerve ask
-reponerve explain
+```text
+v0.6.0-alpha
+Agent Intelligence
 ```
 
 ---
 
-## License
+# Quick Start
+
+Initialize a workspace:
+
+```bash
+reponerve init
+```
+
+Scan a repository:
+
+```bash
+reponerve scan
+```
+
+Generate repository context:
+
+```bash
+reponerve context generate
+```
+
+Start MCP:
+
+```bash
+reponerve mcp
+```
+
+---
+
+# Documentation
+
+## Vision
+
+* docs/vision/
+
+## Architecture
+
+* docs/architecture/
+
+## Roadmaps
+
+* docs/roadmap/
+
+## Audits
+
+* docs/audits/
+
+---
+
+# Roadmap
+
+## Completed
+
+* Ingestion Engine
+* Memory Engine
+* Query Engine
+* Context Engine
+* MCP Server
+
+## Planned
+
+* Agent Intelligence
+* Repository Onboarding
+* Repository Q&A
+* Impact Analysis
+* Context Compression
+
+## Deferred
+
+* Ownership Extraction
+
+---
+
+# License
 
 TBD
