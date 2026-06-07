@@ -41,3 +41,20 @@ type RelationshipReader interface {
 	ListByRepository(ctx context.Context, repositoryID string) ([]*memorymodels.Relationship, error)
 	ListAll(ctx context.Context) ([]*memorymodels.Relationship, error)
 }
+
+// ContributorReader defines the read interface for Contributor data.
+type ContributorReader interface {
+	GetByID(ctx context.Context, repositoryID string, id string) (*models.Contributor, error)
+	ListByRepository(ctx context.Context, repositoryID string) ([]*models.Contributor, error)
+}
+
+// ExpertiseReader defines the read interface for Expertise data.
+type ExpertiseReader interface {
+	ListByRepository(ctx context.Context, repositoryID string) ([]*models.Expertise, error)
+	ListByContributor(ctx context.Context, repositoryID string, contributorID string) ([]*models.Expertise, error)
+}
+
+// SourceReader defines the read interface for Source data.
+type SourceReader interface {
+	ListByRepository(ctx context.Context, repositoryID string) ([]*models.Source, error)
+}

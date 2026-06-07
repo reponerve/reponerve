@@ -75,6 +75,26 @@ func NewRegistry() *Registry {
 		Name:        "export_context",
 		Description: "Export repository context as rendered markdown",
 	})
+	_ = r.Register(ToolDefinition{
+		Name:        "list_contributors",
+		Description: "List all repository contributors",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "get_contributor",
+		Description: "Retrieve details of a specific contributor",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "list_expertise",
+		Description: "List all detected expertise records for a repository",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "trace_contributor",
+		Description: "Trace a contributor's complete ownership, decisions, facts, and events",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "recommend_reviewers",
+		Description: "Recommend reviewers for a knowledge domain based on expertise and recency",
+	})
 
 	return r
 }

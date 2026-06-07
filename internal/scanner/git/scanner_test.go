@@ -6,7 +6,7 @@ import (
 )
 
 func TestParseGitLog(t *testing.T) {
-	mockOutput := "a1b2c3d4e5f6\nJohn Doe\n2026-06-05T21:15:26+05:30\nfeat(foundations): initial schema implementation\n- add sqlite DB\n- add migrations\x00f6e5d4c3b2a1\nJane Smith\n2026-06-05T21:20:00+05:30\nfix: issue with DB connection\x00"
+	mockOutput := "a1b2c3d4e5f6\nJohn Doe <john@example.com>\n2026-06-05T21:15:26+05:30\nfeat(foundations): initial schema implementation\n- add sqlite DB\n- add migrations\x00f6e5d4c3b2a1\nJane Smith <jane@example.com>\n2026-06-05T21:20:00+05:30\nfix: issue with DB connection\x00"
 
 	scanner := NewScanner(nil)
 	commits, err := scanner.ParseGitLog("test-repo", mockOutput)
@@ -22,8 +22,8 @@ func TestParseGitLog(t *testing.T) {
 	if c1.Reference != "a1b2c3d4e5f6" {
 		t.Errorf("expected Reference to be 'a1b2c3d4e5f6', got %q", c1.Reference)
 	}
-	if c1.Author != "John Doe" {
-		t.Errorf("expected author to be 'John Doe', got %q", c1.Author)
+	if c1.Author != "John Doe <john@example.com>" {
+		t.Errorf("expected author to be 'John Doe <john@example.com>', got %q", c1.Author)
 	}
 	expectedTime, _ := time.Parse(time.RFC3339, "2026-06-05T21:15:26+05:30")
 	if !c1.Timestamp.Equal(expectedTime) {
@@ -38,8 +38,8 @@ func TestParseGitLog(t *testing.T) {
 	if c2.Reference != "f6e5d4c3b2a1" {
 		t.Errorf("expected Reference to be 'f6e5d4c3b2a1', got %q", c2.Reference)
 	}
-	if c2.Author != "Jane Smith" {
-		t.Errorf("expected author to be 'Jane Smith', got %q", c2.Author)
+	if c2.Author != "Jane Smith <jane@example.com>" {
+		t.Errorf("expected author to be 'Jane Smith <jane@example.com>', got %q", c2.Author)
 	}
 	if c2.Title != "fix: issue with DB connection" {
 		t.Errorf("expected title to be 'fix: issue with DB connection', got %q", c2.Title)

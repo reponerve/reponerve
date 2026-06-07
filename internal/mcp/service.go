@@ -3,6 +3,7 @@ package mcp
 import (
 	"reponerve/internal/context"
 	"reponerve/internal/context/render"
+	ownershipquery "reponerve/internal/ownership/query"
 	"reponerve/internal/query/storage"
 )
 
@@ -15,6 +16,7 @@ type Service struct {
 	RelationshipReader storage.RelationshipReader
 	Generator          *context.Generator
 	Renderer           *render.Renderer
+	OwnershipReader    *ownershipquery.Reader
 }
 
 // NewService creates a new Service instance aggregating the given dependencies.
@@ -26,6 +28,7 @@ func NewService(
 	rr storage.RelationshipReader,
 	g *context.Generator,
 	ren *render.Renderer,
+	or *ownershipquery.Reader,
 ) *Service {
 	return &Service{
 		DecisionReader:     dr,
@@ -35,5 +38,6 @@ func NewService(
 		RelationshipReader: rr,
 		Generator:          g,
 		Renderer:           ren,
+		OwnershipReader:    or,
 	}
 }

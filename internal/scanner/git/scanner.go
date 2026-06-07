@@ -53,14 +53,14 @@ func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.
 		gitArgs = append(gitArgs, "HEAD")
 	}
 
-	gitArgs = append(gitArgs, "--pretty=format:%H%n%an%n%ad%n%B%x00", "--date=iso-strict")
+	gitArgs = append(gitArgs, "--pretty=format:%H%n%an <%ae>%n%ad%n%B%x00", "--date=iso-strict")
 
 	cmd := exec.CommandContext(ctx, "git", gitArgs...)
 	cmd.Dir = repo.Path
 	out, err := cmd.Output()
 	if err != nil {
 		if state != nil {
-			cmd = exec.CommandContext(ctx, "git", "log", "HEAD", "--pretty=format:%H%n%an%n%ad%n%B%x00", "--date=iso-strict")
+			cmd = exec.CommandContext(ctx, "git", "log", "HEAD", "--pretty=format:%H%n%an <%ae>%n%ad%n%B%x00", "--date=iso-strict")
 			cmd.Dir = repo.Path
 			out, err = cmd.Output()
 			if err != nil {

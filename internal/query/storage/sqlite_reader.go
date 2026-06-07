@@ -496,3 +496,191 @@ func (r *SQLiteRelationshipReader) ListAll(ctx context.Context) ([]*memorymodels
 	}
 	return relationships, nil
 }
+
+// SQLiteContributorReader implements ContributorReader for SQLite.
+type SQLiteContributorReader struct {
+	db *sqlite.Database
+}
+
+func NewSQLiteContributorReader(db *sqlite.Database) *SQLiteContributorReader {
+	return &SQLiteContributorReader{db: db}
+}
+
+func (r *SQLiteContributorReader) GetByID(ctx context.Context, repositoryID string, id string) (*models.Contributor, error) {
+	var c models.Contributor
+	query := `
+		SELECT id, repository_id, name, email, first_seen, last_seen, commit_count
+		FROM contributors
+		WHERE repository_id = ? AND id = ?
+	`
+	err := r.db.QueryRowContext(ctx, query, repositoryID, id).Scan(
+		&c.ID,
+		&c.RepositoryID,
+		&c.Name,
+		&c.Email,
+		&c.FirstSeen,
+		&c.LastSeen,
+		&c.CommitCount,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &c, nil
+}
+
+func (r *SQLiteContributorReader) ListByRepository(ctx context.Context, repositoryID string) ([]*models.Contributor, error) {
+	query := `
+		SELECT id, repository_id, name, email, first_seen, last_seen, commit_count
+		FROM contributors
+		WHERE repository_id = ?
+	`
+	rows, err := r.db.QueryContext(ctx, query, repositoryID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list contributors: %w", err)
+	}
+	defer rows.Close()
+
+	var list []*models.Contributor
+	for rows.Next() {
+		var c models.Contributor
+		err := rows.Scan(
+			&c.ID,
+			&c.RepositoryID,
+			&c.Name,
+			&c.Email,
+			&c.FirstSeen,
+			&c.LastSeen,
+			&c.CommitCount,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan contributor: %w", err)
+		}
+		list = append(list, &c)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+	return list, nil
+}
+
+// SQLiteExpertiseReader implements ExpertiseReader for SQLite.
+type SQLiteExpertiseReader struct {
+	db *sqlite.Database
+}
+
+func NewSQLiteExpertiseReader(db *sqlite.Database) *SQLiteExpertiseReader {
+	return &SQLiteExpertiseReader{db: db}
+}
+
+func (r *SQLiteExpertiseReader) ListByRepository(ctx context.Context, repositoryID string) ([]*models.Expertise, error) {
+	query := `
+		SELECT id, repository_id, contributor_id, domain, score, COALESCE(evidence_json, '')
+		FROM expertise
+		WHERE repository_id = ?
+	`
+	rows, err := r.db.QueryContext(ctx, query, repositoryID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list expertise: %w", err)
+	}
+	defer rows.Close()
+
+	var list []*models.Expertise
+	for rows.Next() {
+		var e models.Expertise
+		err := rows.Scan(
+			&e.ID,
+			&e.RepositoryID,
+			&e.ContributorID,
+			&e.Domain,
+			&e.Score,
+			&e.EvidenceJSON,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan expertise: %w", err)
+		}
+		list = append(list, &e)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+	return list, nil
+}
+
+func (r *SQLiteExpertiseReader) ListByContributor(ctx context.Context, repositoryID string, contributorID string) ([]*models.Expertise, error) {
+	query := `
+		SELECT id, repository_id, contributor_id, domain, score, COALESCE(evidence_json, '')
+		FROM expertise
+		WHERE repository_id = ? AND contributor_id = ?
+	`
+	rows, err := r.db.QueryContext(ctx, query, repositoryID, contributorID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list contributor expertise: %w", err)
+	}
+	defer rows.Close()
+
+	var list []*models.Expertise
+	for rows.Next() {
+		var e models.Expertise
+		err := rows.Scan(
+			&e.ID,
+			&e.RepositoryID,
+			&e.ContributorID,
+			&e.Domain,
+			&e.Score,
+			&e.EvidenceJSON,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan expertise: %w", err)
+		}
+		list = append(list, &e)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+	return list, nil
+}
+
+// SQLiteSourceReader implements SourceReader for SQLite.
+type SQLiteSourceReader struct {
+	db *sqlite.Database
+}
+
+func NewSQLiteSourceReader(db *sqlite.Database) *SQLiteSourceReader {
+	return &SQLiteSourceReader{db: db}
+}
+
+func (r *SQLiteSourceReader) ListByRepository(ctx context.Context, repositoryID string) ([]*models.Source, error) {
+	query := `
+		SELECT id, repository_id, source_type, reference, title, author, timestamp, COALESCE(metadata_json, '')
+		FROM sources
+		WHERE repository_id = ?
+	`
+	rows, err := r.db.QueryContext(ctx, query, repositoryID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list sources: %w", err)
+	}
+	defer rows.Close()
+
+	var list []*models.Source
+	for rows.Next() {
+		var src models.Source
+		err := rows.Scan(
+			&src.ID,
+			&src.RepositoryID,
+			&src.SourceType,
+			&src.Reference,
+			&src.Title,
+			&src.Author,
+			&src.Timestamp,
+			&src.MetadataJSON,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan source: %w", err)
+		}
+		list = append(list, &src)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+	return list, nil
+}

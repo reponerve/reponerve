@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
+	"strings"
 
 	"reponerve/internal/mcp"
 	memorymodels "reponerve/internal/memory/models"
@@ -730,6 +732,152 @@ func (s *Server) handleCallTool(ctx context.Context, id *json.RawMessage, params
 		}
 		s.sendResult(id, result)
 
+	case "list_contributors":
+		repoID, err := resolveRepoID()
+		if err != nil || repoID == "" {
+			s.sendToolError(id, "failed to resolve repository ID")
+			return
+		}
+		list, err := s.service.OwnershipReader.ListContributors(ctx, repoID)
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("failed to list contributors: %v", err))
+			return
+		}
+		s.sendToolSuccess(id, list)
+
+	case "get_contributor":
+		contribID, err := getArg("contributor_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		repoID, err := resolveRepoID()
+		if err != nil || repoID == "" {
+			s.sendToolError(id, "failed to resolve repository ID")
+			return
+		}
+		c, err := s.service.OwnershipReader.GetContributor(ctx, repoID, contribID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				s.sendToolError(id, fmt.Sprintf("contributor with ID %q not found", contribID))
+			} else {
+				s.sendToolError(id, fmt.Sprintf("failed to get contributor: %v", err))
+			}
+			return
+		}
+		s.sendToolSuccess(id, c)
+
+	case "list_expertise":
+		repoID, err := resolveRepoID()
+		if err != nil || repoID == "" {
+			s.sendToolError(id, "failed to resolve repository ID")
+			return
+		}
+		list, err := s.service.OwnershipReader.ListExpertise(ctx, repoID)
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("failed to list expertise: %v", err))
+			return
+		}
+		s.sendToolSuccess(id, list)
+
+	case "trace_contributor":
+		contribID, err := getArg("contributor_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		repoID, err := resolveRepoID()
+		if err != nil || repoID == "" {
+			s.sendToolError(id, "failed to resolve repository ID")
+			return
+		}
+		trace, err := s.service.OwnershipReader.TraceContributor(ctx, repoID, contribID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				s.sendToolError(id, fmt.Sprintf("contributor with ID %q not found", contribID))
+			} else {
+				s.sendToolError(id, fmt.Sprintf("failed to trace contributor: %v", err))
+			}
+			return
+		}
+		s.sendToolSuccess(id, trace)
+
+	case "recommend_reviewers":
+		domain, err := getArg("domain", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		repoID, err := resolveRepoID()
+		if err != nil || repoID == "" {
+			s.sendToolError(id, "failed to resolve repository ID")
+			return
+		}
+
+		list, err := s.service.OwnershipReader.ListExpertise(ctx, repoID)
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("failed to query expertise: %v", err))
+			return
+		}
+
+		var filtered []*models.Expertise
+		for _, exp := range list {
+			if strings.EqualFold(exp.Domain, domain) {
+				filtered = append(filtered, exp)
+			}
+		}
+
+		type evidenceHelper struct {
+			RecentActivity bool `json:"recent_activity"`
+		}
+
+		sort.Slice(filtered, func(i, j int) bool {
+			if filtered[i].Score != filtered[j].Score {
+				return filtered[i].Score > filtered[j].Score
+			}
+			var evI, evJ evidenceHelper
+			_ = json.Unmarshal([]byte(filtered[i].EvidenceJSON), &evI)
+			_ = json.Unmarshal([]byte(filtered[j].EvidenceJSON), &evJ)
+			if evI.RecentActivity != evJ.RecentActivity {
+				return evI.RecentActivity
+			}
+			return filtered[i].ContributorID < filtered[j].ContributorID
+		})
+
+		type ReviewerRecommendation struct {
+			Contributor string      `json:"contributor"`
+			Domain      string      `json:"domain"`
+			Score       float64     `json:"score"`
+			Evidence    interface{} `json:"evidence"`
+		}
+
+		recommendations := make([]ReviewerRecommendation, 0)
+		for _, exp := range filtered {
+			contrib, err := s.service.OwnershipReader.GetContributor(ctx, repoID, exp.ContributorID)
+			name := exp.ContributorID
+			if err == nil {
+				if contrib.Name != "" {
+					name = contrib.Name
+				} else if contrib.Email != "" {
+					name = contrib.Email
+				}
+			}
+
+			var evidenceObj interface{}
+			if exp.EvidenceJSON != "" {
+				_ = json.Unmarshal([]byte(exp.EvidenceJSON), &evidenceObj)
+			}
+
+			recommendations = append(recommendations, ReviewerRecommendation{
+				Contributor: name,
+				Domain:      exp.Domain,
+				Score:       exp.Score,
+				Evidence:    evidenceObj,
+			})
+		}
+
+		s.sendToolSuccess(id, recommendations)
+
 	default:
 		s.sendToolError(id, fmt.Sprintf("unknown tool name: %q", params.Name))
 	}
@@ -802,7 +950,29 @@ func getInputSchema(toolName string) InputSchema {
 		}
 		schema.Required = []string{"fact_id"}
 
-	case "list_decisions", "list_events", "list_intents", "list_facts", "generate_context", "export_context":
+	case "get_contributor", "trace_contributor":
+		schema.Properties["contributor_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The unique identifier of the contributor",
+		}
+		schema.Required = []string{"contributor_id"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "recommend_reviewers":
+		schema.Properties["domain"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The knowledge domain to recommend reviewers for",
+		}
+		schema.Required = []string{"domain"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "list_decisions", "list_events", "list_intents", "list_facts", "generate_context", "export_context", "list_contributors", "list_expertise":
 		schema.Properties["repository_id"] = map[string]interface{}{
 			"type":        "string",
 			"description": "Optional repository filter",

@@ -13,6 +13,7 @@ import (
 	"reponerve/internal/extraction/intent"
 	"reponerve/internal/memory/linker"
 	memorystorage "reponerve/internal/memory/storage"
+	ownerextraction "reponerve/internal/ownership/extraction"
 	"reponerve/internal/scanner/repository"
 	"reponerve/internal/storage"
 )
@@ -28,6 +29,7 @@ type Coordinator struct {
 	intentStore       memorystorage.IntentStore
 	factStore         memorystorage.FactStore
 	relationshipStore memorystorage.RelationshipStore
+	contributorStore  storage.ContributorStore
 	pipeline          *Pipeline
 }
 
@@ -42,6 +44,7 @@ func NewCoordinator(
 	intentStore memorystorage.IntentStore,
 	factStore memorystorage.FactStore,
 	relationshipStore memorystorage.RelationshipStore,
+	contributorStore storage.ContributorStore,
 	pipeline *Pipeline,
 ) *Coordinator {
 	return &Coordinator{
@@ -54,6 +57,7 @@ func NewCoordinator(
 		intentStore:       intentStore,
 		factStore:         factStore,
 		relationshipStore: relationshipStore,
+		contributorStore:  contributorStore,
 		pipeline:          pipeline,
 	}
 }
@@ -152,6 +156,18 @@ func (c *Coordinator) Run(ctx context.Context, path string) (*ScanResult, error)
 	for _, rel := range rels {
 		if err := c.relationshipStore.UpsertRelationship(ctx, rel); err != nil {
 			return nil, fmt.Errorf("failed to store relationship: %w", err)
+		}
+	}
+
+	// Extract and persist Contributors (ISSUE-038)
+	contribExtractor := ownerextraction.NewExtractor()
+	contribs, err := contribExtractor.Extract(ctx, sources)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract contributors: %w", err)
+	}
+	for _, contr := range contribs {
+		if err := c.contributorStore.UpsertContributor(ctx, contr); err != nil {
+			return nil, fmt.Errorf("failed to store contributor: %w", err)
 		}
 	}
 
