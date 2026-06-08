@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 func source(id, repoID, title string) *models.Source {

@@ -6,9 +6,9 @@ import (
 	"regexp"
 	"strings"
 
-	"reponerve/internal/agent/guidance"
-	"reponerve/internal/agent/impact"
-	"reponerve/internal/agent/onboarding"
+	"github.com/reponerve/reponerve/internal/agent/guidance"
+	"github.com/reponerve/reponerve/internal/agent/impact"
+	"github.com/reponerve/reponerve/internal/agent/onboarding"
 )
 
 var (

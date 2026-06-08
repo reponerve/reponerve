@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"reponerve/internal/cli"
+	"github.com/reponerve/reponerve/internal/cli"
 )
 
 func TestGetCommandsIntegration(t *testing.T) {

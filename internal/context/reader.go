@@ -3,9 +3,9 @@ package context
 import (
 	stdcontext "context"
 
-	memorymodels "reponerve/internal/memory/models"
-	"reponerve/internal/query/storage"
-	models "reponerve/pkg/models"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 type MemoryContextReader struct {

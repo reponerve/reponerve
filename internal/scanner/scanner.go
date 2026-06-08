@@ -2,7 +2,7 @@ package scanner
 
 import (
 	"context"
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // SourceScanner represents a common interface for all repository scanners (Git, ADR, Docs, etc.)

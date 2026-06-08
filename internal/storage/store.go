@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // RepositoryStore defines persistence operations for repository metadata.

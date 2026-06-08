@@ -5,8 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"reponerve/internal/query/storage"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 func newEventsCommand() *cobra.Command {

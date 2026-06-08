@@ -9,11 +9,11 @@ import (
 	"regexp"
 	"strings"
 
-	"reponerve/internal/graph/relationships"
-	"reponerve/internal/intelligence/discovery"
-	"reponerve/internal/ownership/expertise"
-	"reponerve/internal/query/storage"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/graph/relationships"
+	"github.com/reponerve/reponerve/internal/intelligence/discovery"
+	"github.com/reponerve/reponerve/internal/ownership/expertise"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 var authorRegex = regexp.MustCompile(`^([^<]+)\s*<([^>]+)>$`)

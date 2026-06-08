@@ -7,7 +7,7 @@ This guide describes common error scenarios, root causes, and recovery procedure
 ## 1. Missing Database Error
 
 ### Symptom
-When starting the MCP server via `reponerve mcp` (defined in [mcp.go](file:///Users/dhawal.dyavanpalli/go/src/reponerve/internal/cli/mcp/mcp.go)), the process exits immediately with an error:
+When starting the MCP server via `reponerve mcp` (defined in [mcp.go](../../internal/cli/mcp/mcp.go)), the process exits immediately with an error:
 ```text
 workspace not initialized; run 'reponerve init' first
 ```
@@ -80,7 +80,7 @@ AI client (e.g. Cursor, Claude Desktop) reports:
 * Server connection timed out or process exited with status 1.
 
 ### Cause
-The Model Context Protocol server operates exclusively over STDIO (standard input/output), orchestrated by [server.go](file:///Users/dhawal.dyavanpalli/go/src/reponerve/internal/mcp/server/server.go). Any unexpected logs, warnings, or standard output print statements that do not conform to the JSON-RPC 2.0 protocol will corrupt the stdout stream and cause the client to reject the handshake or disconnect.
+The Model Context Protocol server operates exclusively over STDIO (standard input/output), orchestrated by [server.go](../../internal/mcp/server/server.go). Any unexpected logs, warnings, or standard output print statements that do not conform to the JSON-RPC 2.0 protocol will corrupt the stdout stream and cause the client to reject the handshake or disconnect.
 
 ### Resolution
 1. **Ensure Clean Output**: Never write debug print statements directly to `os.Stdout`. In the CLI implementation of the MCP command, only the JSON-RPC transport stream handles `stdout`.

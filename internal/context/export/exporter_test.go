@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/context"
-	"reponerve/internal/context/render"
-	memorymodels "reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/context"
+	"github.com/reponerve/reponerve/internal/context/render"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
 )
 
 func TestExporter_Unit(t *testing.T) {

@@ -3,8 +3,8 @@ package memorycmd
 import (
 	"github.com/spf13/cobra"
 
-	memorymodels "reponerve/internal/memory/models"
-	"reponerve/internal/query/storage"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/query/storage"
 )
 
 func newFactsCommand() *cobra.Command {

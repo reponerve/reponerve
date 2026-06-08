@@ -9,15 +9,15 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/graph/impact"
-	"reponerve/internal/graph/relationships"
-	"reponerve/internal/graph/traversal"
-	"reponerve/internal/intelligence/discovery"
-	memorymodels "reponerve/internal/memory/models"
-	"reponerve/internal/query/storage"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/graph/impact"
+	"github.com/reponerve/reponerve/internal/graph/relationships"
+	"github.com/reponerve/reponerve/internal/graph/traversal"
+	"github.com/reponerve/reponerve/internal/intelligence/discovery"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // ─── Mock Readers ────────────────────────────────────────────────────────────

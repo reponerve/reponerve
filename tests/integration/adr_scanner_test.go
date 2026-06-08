@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/scanner/adr"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/scanner/adr"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 func TestADRScannerIntegration(t *testing.T) {

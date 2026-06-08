@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // Pipeline orchestrates the execution of all registered scanners.

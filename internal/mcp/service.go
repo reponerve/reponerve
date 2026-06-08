@@ -1,16 +1,16 @@
 package mcp
 
 import (
-	"reponerve/internal/context"
-	"reponerve/internal/context/render"
-	"reponerve/internal/graph/impact"
-	"reponerve/internal/graph/traversal"
-	"reponerve/internal/intelligence/changeplan"
-	"reponerve/internal/intelligence/discovery"
-	"reponerve/internal/intelligence/learning"
-	"reponerve/internal/intelligence/reviewers"
-	ownershipquery "reponerve/internal/ownership/query"
-	"reponerve/internal/query/storage"
+	"github.com/reponerve/reponerve/internal/context"
+	"github.com/reponerve/reponerve/internal/context/render"
+	"github.com/reponerve/reponerve/internal/graph/impact"
+	"github.com/reponerve/reponerve/internal/graph/traversal"
+	"github.com/reponerve/reponerve/internal/intelligence/changeplan"
+	"github.com/reponerve/reponerve/internal/intelligence/discovery"
+	"github.com/reponerve/reponerve/internal/intelligence/learning"
+	"github.com/reponerve/reponerve/internal/intelligence/reviewers"
+	ownershipquery "github.com/reponerve/reponerve/internal/ownership/query"
+	"github.com/reponerve/reponerve/internal/query/storage"
 )
 
 // Service aggregates the core repository intelligence capabilities (readers, generator, renderer).

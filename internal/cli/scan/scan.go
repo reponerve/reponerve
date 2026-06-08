@@ -5,13 +5,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"reponerve/internal/config"
-	"reponerve/internal/ingestion"
-	memorystorage "reponerve/internal/memory/storage"
-	"reponerve/internal/scanner/adr"
-	"reponerve/internal/scanner/git"
-	"reponerve/internal/scanner/repository"
-	"reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/internal/config"
+	"github.com/reponerve/reponerve/internal/ingestion"
+	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
+	"github.com/reponerve/reponerve/internal/scanner/adr"
+	"github.com/reponerve/reponerve/internal/scanner/git"
+	"github.com/reponerve/reponerve/internal/scanner/repository"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 // NewCommand creates and returns the scan subcommand.

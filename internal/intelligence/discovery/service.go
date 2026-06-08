@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"sort"
 
-	"reponerve/internal/graph/impact"
-	"reponerve/internal/graph/model"
-	"reponerve/internal/graph/relationships"
-	"reponerve/internal/graph/traversal"
-	"reponerve/internal/query/storage"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/graph/impact"
+	"github.com/reponerve/reponerve/internal/graph/model"
+	"github.com/reponerve/reponerve/internal/graph/relationships"
+	"github.com/reponerve/reponerve/internal/graph/traversal"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // Service provides repository knowledge discovery capabilities.

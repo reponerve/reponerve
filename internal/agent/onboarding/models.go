@@ -1,8 +1,8 @@
 package onboarding
 
 import (
-	memorymodels "reponerve/internal/memory/models"
-	models "reponerve/pkg/models"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // OnboardingPackage represents a structured repository onboarding snapshot.

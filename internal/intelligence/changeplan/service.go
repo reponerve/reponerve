@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sort"
 
-	"reponerve/internal/graph/impact"
+	"github.com/reponerve/reponerve/internal/graph/impact"
 )
 
 // Service generates change plans based on graph-aware impact analysis.

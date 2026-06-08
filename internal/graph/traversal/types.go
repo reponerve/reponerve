@@ -1,7 +1,7 @@
 package traversal
 
 import (
-	"reponerve/internal/graph/model"
+	"github.com/reponerve/reponerve/internal/graph/model"
 )
 
 // TraversalOptions configures graph traversal limits and filters.

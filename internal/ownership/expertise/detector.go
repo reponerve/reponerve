@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	memorymodels "reponerve/internal/memory/models"
-	"reponerve/pkg/models"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // DomainKeywords defines the domains and the keywords used to detect contributor expertise.

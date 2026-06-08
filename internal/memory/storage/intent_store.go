@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"reponerve/internal/memory/models"
-	"reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 // SQLiteIntentStore implements storage.IntentStore for SQLite database.

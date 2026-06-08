@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/ownership/query"
-	memorymodels "reponerve/internal/memory/models"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/ownership/query"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 type mockContributorReader struct {

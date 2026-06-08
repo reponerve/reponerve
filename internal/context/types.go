@@ -3,8 +3,8 @@ package context
 import (
 	stdcontext "context"
 
-	memorymodels "reponerve/internal/memory/models"
-	models "reponerve/pkg/models"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 type ContextData struct {

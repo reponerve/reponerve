@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/extraction/intent"
-	memorystorage "reponerve/internal/memory/storage"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/extraction/intent"
+	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 func TestIntentExtractorIntegration(t *testing.T) {

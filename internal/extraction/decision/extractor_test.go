@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	models "reponerve/pkg/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 func adrSource(id, repoID, title, status string, validJSON bool) *models.Source {

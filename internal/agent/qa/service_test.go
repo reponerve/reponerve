@@ -9,16 +9,16 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/agent/guidance"
-	"reponerve/internal/agent/impact"
-	"reponerve/internal/agent/onboarding"
-	ctxengine "reponerve/internal/context"
-	memorymodels "reponerve/internal/memory/models"
-	memorystorage "reponerve/internal/memory/storage"
-	"reponerve/internal/query/storage"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/agent/guidance"
+	"github.com/reponerve/reponerve/internal/agent/impact"
+	"github.com/reponerve/reponerve/internal/agent/onboarding"
+	ctxengine "github.com/reponerve/reponerve/internal/context"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // --- Mock Readers for Q&A Unit Testing ---

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // Scanner provides functionality to discover and parse Architecture Decision Records (ADRs).

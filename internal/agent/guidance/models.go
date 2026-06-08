@@ -1,8 +1,8 @@
 package guidance
 
 import (
-	memorymodels "reponerve/internal/memory/models"
-	models "reponerve/pkg/models"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // Guidance represents deterministic architectural guidance for a decision or event.

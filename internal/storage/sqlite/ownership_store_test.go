@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 func TestOwnershipStores(t *testing.T) {

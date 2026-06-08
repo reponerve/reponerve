@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"reponerve/internal/cli"
-	"reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/internal/cli"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 func TestScanCommandIntegration(t *testing.T) {

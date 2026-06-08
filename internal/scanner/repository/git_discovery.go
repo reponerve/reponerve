@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // GitDiscovery implements the Discovery interface for Git repositories.

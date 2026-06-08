@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	agentcontext "reponerve/internal/agent/context"
-	agentsearch "reponerve/internal/agent/search"
+	agentcontext "github.com/reponerve/reponerve/internal/agent/context"
+	agentsearch "github.com/reponerve/reponerve/internal/agent/search"
 )
 
 type Service struct {

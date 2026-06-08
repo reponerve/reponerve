@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 type Discovery interface {

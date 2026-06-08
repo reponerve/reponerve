@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // SourceStore implements storage.SourceStore for SQLite.
