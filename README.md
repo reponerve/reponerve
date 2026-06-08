@@ -295,4 +295,6 @@ reponerve mcp
 
 # License
 
-TBD
+RepoNerve is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2024-2026 RepoNerve Contributors

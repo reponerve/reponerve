@@ -1,0 +1,108 @@
+version: 2
+
+project_name: reponerve
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod download
+
+builds:
+  - id: reponerve
+    main: ./cmd/reponerve/main.go
+    binary: reponerve
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X main.Version={{.Version}} -X main.Commit={{.Commit}} -X main.Date={{.Date}}
+
+archives:
+  - id: reponerve
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+      - goos: darwin
+        format: tar.gz
+      - goos: linux
+        format: tar.gz
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+
+signs:
+  - cmd: gpg
+    args:
+      - --batch
+      - --no-tty
+      - -u
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - --output
+      - $signature
+      - --detach-sign
+      - $artifact
+    artifacts: checksum
+    stdin: "{{ .Env.GPG_PASSPHRASE }}"
+
+release:
+  github:
+    owner: reponerve
+    name: reponerve
+  draft: false
+  prerelease: auto
+  name_template: "Release {{ .Version }}"
+  mode: replace
+
+changelog:
+  use: git
+  sort: asc
+  filters:
+    exclude:
+      - "^test:"
+      - "^chore"
+      - "^docs"
+      - Merge pull request
+      - Merge branch
+
+brews:
+  - repository:
+      owner: reponerve
+      name: homebrew-reponerve
+    homepage: "https://github.com/reponerve/reponerve"
+    description: "Repository Intelligence for Humans and AI Agents"
+    license: "Apache-2.0"
+    folder: Formula
+    caveats: |
+      RepoNerve - Repository Intelligence Platform
+
+      To get started:
+        reponerve init
+        reponerve scan
+        reponerve context generate
+    install: |
+      bin.install "reponerve"
+    test: |
+      assert_match "reponerve", shell_output("#{bin}/reponerve version")
+
+announce:
+  skip: false
+  twitter:
+    enabled: false
+  mastodon:
+    enabled: false
+  discord:
+    enabled: false
+  slack:
+    enabled: false
