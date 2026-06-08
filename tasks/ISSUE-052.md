@@ -94,6 +94,122 @@ Packages Intelligence
 
 ---
 
+## Context Authority Rule
+
+Repository Intelligence remains the authoritative source of repository intelligence.
+
+Agent Context Builder must consume Repository Intelligence outputs.
+
+Agent Context Builder must not:
+
+- Generate discovery results
+- Generate learning paths
+- Generate reviewer recommendations
+- Generate change plans
+- Recompute scores
+- Recompute priorities
+- Recompute positions
+
+Responsibilities:
+
+Repository Intelligence
+↓
+Generates Intelligence
+
+Agent Context Builder
+↓
+Packages Intelligence
+
+Agent Context Builder is a composition layer.
+
+It is not an intelligence layer.
+
+---
+
+## Context Packaging Rule
+
+Agent Context Packages should preserve original intelligence structures whenever possible.
+
+Valid:
+
+Discovery Report
+↓
+Included in Context Package
+
+Learning Path
+↓
+Included in Context Package
+
+Reviewer Recommendation Report
+↓
+Included in Context Package
+
+Change Plan
+↓
+Included in Context Package
+
+Invalid:
+
+Discovery Report
+↓
+Converted into custom ranking
+
+Learning Path
+↓
+Reordered
+
+Reviewer Recommendation
+↓
+Rescored
+
+Change Plan
+↓
+Reprioritized
+
+Agent Context Builder must preserve upstream intelligence.
+
+---
+
+## Section Authority Rule
+
+Each section remains owned by its originating service.
+
+Examples:
+
+Discovery Section
+↓
+Owned by Discovery Service
+
+Learning Section
+↓
+Owned by Learning Service
+
+Reviewer Section
+↓
+Owned by Reviewer Service
+
+Change Planning Section
+↓
+Owned by Change Planning Service
+
+Agent Context Builder must not modify section conclusions.
+
+---
+
+## Serialization Rule
+
+Context packages should preserve machine-readable structures.
+
+Avoid:
+
+- Flattening intelligence objects
+- Removing evidence
+- Removing explanations
+
+Context packages should remain suitable for direct agent consumption.
+
+---
+
 # Architecture Requirements
 
 Reuse:
@@ -123,6 +239,38 @@ type ContextSection struct {
     Data json.RawMessage `json:"data"`
 }
 ```
+
+---
+
+### Source Field
+
+The Source field identifies which subsystem produced the section.
+
+Supported values:
+
+- discovery
+- learning
+- reviewers
+- changeplan
+- context
+
+Examples:
+
+```json
+{
+  "name": "Discovery",
+  "source": "discovery"
+}
+```
+
+```json
+{
+  "name": "Learning",
+  "source": "learning"
+}
+```
+
+The Source field improves traceability and allows agents to understand where context originated.
 
 ---
 
@@ -197,13 +345,15 @@ Contributor Context Package should include:
 
 Packages must preserve:
 
-* EvidenceJSON
-* Explanations
-* Scores
-* Priorities
-* Positions
+- EvidenceJSON
+- Explanations
+- Scores
+- Priorities
+- Positions
 
 No information loss is permitted.
+
+Agent Context Builder must preserve upstream intelligence outputs without modification.
 
 ---
 
@@ -343,7 +493,13 @@ Agent Context Packages are generated successfully.
 
 Repository Intelligence is reused.
 
+No Repository Intelligence is recomputed.
+
 Evidence is preserved.
+
+Explanations are preserved.
+
+Section ownership is preserved.
 
 Ordering is deterministic.
 
