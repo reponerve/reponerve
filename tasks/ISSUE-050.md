@@ -235,6 +235,14 @@ Determines Action Priority
 
 ---
 
+Change Plans should consider:
+
+- Impact Analysis results
+- Ownership information
+- Repository context
+
+---
+
 # Ordering
 
 Sort by:
