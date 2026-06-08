@@ -93,7 +93,19 @@ func NewRegistry() *Registry {
 	})
 	_ = r.Register(ToolDefinition{
 		Name:        "recommend_reviewers",
-		Description: "Recommend reviewers for a knowledge domain based on expertise and recency",
+		Description: "Recommend reviewers using repository intelligence and ownership",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "discover_knowledge",
+		Description: "Discover important repository knowledge and rank key artifacts",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "generate_learning_path",
+		Description: "Generate a structured learning path for repository onboarding",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "generate_change_plan",
+		Description: "Generate a change plan listing repository entities to examine before modifying code",
 	})
 	_ = r.Register(ToolDefinition{
 		Name:        "trace_graph",
