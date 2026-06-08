@@ -1,6 +1,6 @@
 # ISSUE-049 — Reviewer Recommendation Engine
 
-Status: Planned
+Status: Implemented
 
 Milestone: v0.9.0-alpha
 

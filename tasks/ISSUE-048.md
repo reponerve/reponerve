@@ -1,6 +1,6 @@
 # ISSUE-048 — Repository Learning Paths
 
-Status: Planned
+Status: Implemented
 
 Milestone: v0.9.0-alpha
 

@@ -1,6 +1,6 @@
 # ISSUE-050 — Change Planning Engine
 
-Status: Planned
+Status: Implemented
 
 Milestone: v0.9.0-alpha
 

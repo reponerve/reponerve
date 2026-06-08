@@ -1,6 +1,6 @@
 # ISSUE-047 — Knowledge Discovery Engine
 
-Status: Planned
+Status: Implemented
 
 Milestone: v0.9.0-alpha
 
