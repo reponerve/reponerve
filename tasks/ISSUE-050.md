@@ -215,6 +215,26 @@ Explanations must be deterministic.
 
 ---
 
+## Impact Authority Rule
+
+Impact Analysis is the canonical source of repository impact information.
+
+Change Planning must consume Impact Analysis results.
+
+Change Planning must not independently compute impact relationships.
+
+Responsibilities:
+
+Impact Analysis
+↓
+Determines Impact
+
+Change Planning
+↓
+Determines Action Priority
+
+---
+
 # Ordering
 
 Sort by:
