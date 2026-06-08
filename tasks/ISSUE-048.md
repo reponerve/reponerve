@@ -83,6 +83,16 @@ Learning Paths do not create repository knowledge.
 
 ---
 
+## Ranking Rule
+
+Learning Paths must consume Knowledge Discovery results when determining repository knowledge importance.
+
+Learning Paths are responsible for sequencing repository knowledge.
+
+Learning Paths must not independently compute repository importance rankings.
+
+---
+
 # Learning Path Models
 
 Implement:
