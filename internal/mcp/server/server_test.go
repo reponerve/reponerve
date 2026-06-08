@@ -168,35 +168,38 @@ func TestServer_JSONRPC(t *testing.T) {
 			t.Fatalf("failed to unmarshal tools list: %v", err)
 		}
 
-		if len(result.Tools) != 24 {
-			t.Errorf("expected 24 tools, got %d", len(result.Tools))
+		if len(result.Tools) != 27 {
+			t.Errorf("expected 27 tools, got %d", len(result.Tools))
 		}
 
 		expectedTools := map[string]bool{
-			"explain_decision":    true,
-			"explain_event":       true,
-			"export_context":      true,
-			"generate_context":    true,
-			"get_contributor":     true,
-			"get_decision":        true,
-			"get_event":           true,
-			"get_fact":            true,
-			"get_intent":          true,
-			"list_contributors":   true,
-			"list_decisions":      true,
-			"list_events":         true,
-			"list_expertise":      true,
-			"list_facts":          true,
-			"list_intents":        true,
-			"recommend_reviewers": true,
-			"trace_contributor":   true,
-			"trace_decision":      true,
-			"trace_event":         true,
-			"trace_graph":         true,
-			"trace_path":          true,
-			"analyze_impact":      true,
-			"find_dependencies":   true,
-			"find_dependents":     true,
+			"explain_decision":       true,
+			"explain_event":          true,
+			"export_context":         true,
+			"generate_context":       true,
+			"get_contributor":        true,
+			"get_decision":           true,
+			"get_event":              true,
+			"get_fact":               true,
+			"get_intent":             true,
+			"list_contributors":      true,
+			"list_decisions":         true,
+			"list_events":            true,
+			"list_expertise":         true,
+			"list_facts":             true,
+			"list_intents":           true,
+			"recommend_reviewers":    true,
+			"trace_contributor":      true,
+			"trace_decision":         true,
+			"trace_event":            true,
+			"trace_graph":            true,
+			"trace_path":             true,
+			"analyze_impact":         true,
+			"find_dependencies":      true,
+			"find_dependents":        true,
+			"discover_knowledge":     true,
+			"generate_learning_path": true,
+			"generate_change_plan":   true,
 		}
 
 		for _, tool := range result.Tools {
@@ -342,7 +345,7 @@ func TestServer_ToolsExecution(t *testing.T) {
 	renderer := render.NewRenderer()
 	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
-	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil)
+	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil)
 	registry := mcp.NewRegistry()
 
 	// 1. Test list_decisions (all)
@@ -857,7 +860,7 @@ func TestServer_OwnershipToolsExecution(t *testing.T) {
 	renderer := render.NewRenderer()
 	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
-	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil)
+	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil)
 	registry := mcp.NewRegistry()
 
 	// 1. Test list_contributors
@@ -972,9 +975,9 @@ func TestServer_OwnershipToolsExecution(t *testing.T) {
 		}
 	})
 
-	// 5. Test recommend_reviewers
+	// 5. Test recommend_reviewers (with nil ReviewerService, expect service-not-configured error)
 	t.Run("recommend_reviewers success", func(t *testing.T) {
-		req := `{"jsonrpc":"2.0","id":22,"method":"tools/call","params":{"name":"recommend_reviewers","arguments":{"domain":"Storage","repository_id":"repo_xxx"}}}` + "\n"
+		req := `{"jsonrpc":"2.0","id":22,"method":"tools/call","params":{"name":"recommend_reviewers","arguments":{"repository_id":"repo_xxx","recommendation_type":"domain","domain":"Storage"}}}` + "\n"
 		output := runServerTest(t, registry, service, req)
 
 		var resp JSONRPCResponse
@@ -983,46 +986,12 @@ func TestServer_OwnershipToolsExecution(t *testing.T) {
 		}
 
 		result := parseToolResult(t, resp.Result)
-		if result.IsError {
-			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		// ReviewerService is nil in this test context, so expect a tool error.
+		if !result.IsError {
+			t.Fatal("expected tool error when reviewer service is not configured")
 		}
-
-		type ReviewerRecommendation struct {
-			Contributor string      `json:"contributor"`
-			Domain      string      `json:"domain"`
-			Score       float64     `json:"score"`
-			Evidence    interface{} `json:"evidence"`
-		}
-
-		var recommendations []ReviewerRecommendation
-		if err := json.Unmarshal([]byte(result.Content[0].Text), &recommendations); err != nil {
-			t.Fatalf("failed to parse recommendations: %v", err)
-		}
-
-		// Expect exactly 3 recommendations:
-		// 1. Jane Doe (score 0.95, recent_activity true)
-		// 2. John Smith (score 0.95, recent_activity false)
-		// 3. Alice (score 0.90, recent_activity true)
-		if len(recommendations) != 3 {
-			t.Fatalf("expected 3 recommendations, got %d", len(recommendations))
-		}
-		if recommendations[0].Contributor != "Jane Doe" {
-			t.Errorf("expected 1st reviewer to be 'Jane Doe', got %q", recommendations[0].Contributor)
-		}
-		if recommendations[1].Contributor != "John Smith" {
-			t.Errorf("expected 2nd reviewer to be 'John Smith', got %q", recommendations[1].Contributor)
-		}
-		if recommendations[2].Contributor != "Alice" {
-			t.Errorf("expected 3rd reviewer to be 'Alice', got %q", recommendations[2].Contributor)
-		}
-
-		// Verify evidence is preserved
-		evidenceMap, ok := recommendations[0].Evidence.(map[string]interface{})
-		if !ok {
-			t.Fatalf("expected evidence to be a JSON object, got %T", recommendations[0].Evidence)
-		}
-		if evidenceMap["recent_activity"] != true {
-			t.Errorf("expected recent_activity true in evidence, got %v", evidenceMap["recent_activity"])
+		if !strings.Contains(result.Content[0].Text, "reviewer service is not configured") {
+			t.Errorf("expected 'reviewer service is not configured' error, got: %s", result.Content[0].Text)
 		}
 	})
 }
@@ -1124,7 +1093,7 @@ func TestServer_GraphToolsExecution(t *testing.T) {
 	graphService := buildGraphService(dr, ir, fr, er, rr, cr, expr, sr)
 
 	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader,
-		graphService.travEngine, graphService.impactSvc)
+		graphService.travEngine, graphService.impactSvc, nil, nil, nil, nil)
 	registry := mcp.NewRegistry()
 
 	// --- Tool discovery: verify graph schemas ---

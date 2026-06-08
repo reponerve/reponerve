@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -806,80 +805,158 @@ func (s *Server) handleCallTool(ctx context.Context, id *json.RawMessage, params
 		s.sendToolSuccess(id, trace)
 
 	case "recommend_reviewers":
-		domain, err := getArg("domain", true)
+		repoID, err := getArg("repository_id", true)
 		if err != nil {
 			s.sendToolError(id, err.Error())
 			return
 		}
-		repoID, err := resolveRepoID()
-		if err != nil || repoID == "" {
-			s.sendToolError(id, "failed to resolve repository ID")
-			return
-		}
-
-		list, err := s.service.OwnershipReader.ListExpertise(ctx, repoID)
+		recType, err := getArg("recommendation_type", true)
 		if err != nil {
-			s.sendToolError(id, fmt.Sprintf("failed to query expertise: %v", err))
+			s.sendToolError(id, err.Error())
 			return
 		}
 
-		var filtered []*models.Expertise
-		for _, exp := range list {
-			if strings.EqualFold(exp.Domain, domain) {
-				filtered = append(filtered, exp)
-			}
+		if s.service.ReviewerService == nil {
+			s.sendToolError(id, "reviewer service is not configured")
+			return
 		}
 
-		type evidenceHelper struct {
-			RecentActivity bool `json:"recent_activity"`
+		var report interface{}
+		switch recType {
+		case "repository":
+			report, err = s.service.ReviewerService.RecommendRepositoryReviewers(ctx, repoID)
+		case "domain":
+			domain, errArg := getArg("domain", true)
+			if errArg != nil {
+				s.sendToolError(id, errArg.Error())
+				return
+			}
+			report, err = s.service.ReviewerService.RecommendDomainReviewers(ctx, repoID, domain)
+		case "impact":
+			entID, errArg := getArg("entity_id", true)
+			if errArg != nil {
+				s.sendToolError(id, errArg.Error())
+				return
+			}
+			report, err = s.service.ReviewerService.RecommendImpactReviewers(ctx, repoID, entID)
+		default:
+			s.sendToolError(id, fmt.Sprintf("unsupported recommendation_type %q: must be one of repository, domain, impact", recType))
+			return
 		}
 
-		sort.Slice(filtered, func(i, j int) bool {
-			if filtered[i].Score != filtered[j].Score {
-				return filtered[i].Score > filtered[j].Score
-			}
-			var evI, evJ evidenceHelper
-			_ = json.Unmarshal([]byte(filtered[i].EvidenceJSON), &evI)
-			_ = json.Unmarshal([]byte(filtered[j].EvidenceJSON), &evJ)
-			if evI.RecentActivity != evJ.RecentActivity {
-				return evI.RecentActivity
-			}
-			return filtered[i].ContributorID < filtered[j].ContributorID
-		})
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("failed to recommend reviewers: %v", err))
+			return
+		}
+		s.sendToolSuccess(id, report)
 
-		type ReviewerRecommendation struct {
-			Contributor string      `json:"contributor"`
-			Domain      string      `json:"domain"`
-			Score       float64     `json:"score"`
-			Evidence    interface{} `json:"evidence"`
+	case "discover_knowledge":
+		repoID, err := getArg("repository_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
 		}
 
-		recommendations := make([]ReviewerRecommendation, 0)
-		for _, exp := range filtered {
-			contrib, err := s.service.OwnershipReader.GetContributor(ctx, repoID, exp.ContributorID)
-			name := exp.ContributorID
-			if err == nil {
-				if contrib.Name != "" {
-					name = contrib.Name
-				} else if contrib.Email != "" {
-					name = contrib.Email
-				}
-			}
-
-			var evidenceObj interface{}
-			if exp.EvidenceJSON != "" {
-				_ = json.Unmarshal([]byte(exp.EvidenceJSON), &evidenceObj)
-			}
-
-			recommendations = append(recommendations, ReviewerRecommendation{
-				Contributor: name,
-				Domain:      exp.Domain,
-				Score:       exp.Score,
-				Evidence:    evidenceObj,
-			})
+		if s.service.DiscoveryService == nil {
+			s.sendToolError(id, "discovery service is not configured")
+			return
 		}
 
-		s.sendToolSuccess(id, recommendations)
+		report, err := s.service.DiscoveryService.Discover(ctx, repoID)
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("failed to discover knowledge: %v", err))
+			return
+		}
+		s.sendToolSuccess(id, report)
+
+	case "generate_learning_path":
+		repoID, err := getArg("repository_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		pathType, err := getArg("path_type", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+
+		if s.service.LearningService == nil {
+			s.sendToolError(id, "learning service is not configured")
+			return
+		}
+
+		var path interface{}
+		switch pathType {
+		case "repository":
+			path, err = s.service.LearningService.GenerateRepositoryPath(ctx, repoID)
+		case "domain":
+			domain, errArg := getArg("domain", true)
+			if errArg != nil {
+				s.sendToolError(id, errArg.Error())
+				return
+			}
+			path, err = s.service.LearningService.GenerateDomainPath(ctx, repoID, domain)
+		case "contributor":
+			contribID, errArg := getArg("contributor_id", true)
+			if errArg != nil {
+				s.sendToolError(id, errArg.Error())
+				return
+			}
+			path, err = s.service.LearningService.GenerateContributorPath(ctx, repoID, contribID)
+		default:
+			s.sendToolError(id, fmt.Sprintf("unsupported path_type %q: must be one of repository, domain, contributor", pathType))
+			return
+		}
+
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("failed to generate learning path: %v", err))
+			return
+		}
+		s.sendToolSuccess(id, path)
+
+	case "generate_change_plan":
+		repoID, err := getArg("repository_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		entityType, err := getArg("entity_type", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		entityID, err := getArg("entity_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+
+		if s.service.ChangePlanService == nil {
+			s.sendToolError(id, "change plan service is not configured")
+			return
+		}
+
+		var plan interface{}
+		switch strings.ToLower(entityType) {
+		case "decision":
+			plan, err = s.service.ChangePlanService.GenerateDecisionPlan(ctx, repoID, entityID)
+		case "fact":
+			plan, err = s.service.ChangePlanService.GenerateFactPlan(ctx, repoID, entityID)
+		case "event":
+			plan, err = s.service.ChangePlanService.GenerateEventPlan(ctx, repoID, entityID)
+		case "contributor":
+			plan, err = s.service.ChangePlanService.GenerateContributorPlan(ctx, repoID, entityID)
+		default:
+			s.sendToolError(id, fmt.Sprintf("unsupported entity_type %q: must be one of decision, fact, event, contributor", entityType))
+			return
+		}
+
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("failed to generate change plan: %v", err))
+			return
+		}
+		s.sendToolSuccess(id, plan)
 
 	case "trace_graph":
 		nodeID, err := getArg("node_id", true)
@@ -1136,15 +1213,64 @@ func getInputSchema(toolName string) InputSchema {
 		}
 
 	case "recommend_reviewers":
-		schema.Properties["domain"] = map[string]interface{}{
-			"type":        "string",
-			"description": "The knowledge domain to recommend reviewers for",
-		}
-		schema.Required = []string{"domain"}
 		schema.Properties["repository_id"] = map[string]interface{}{
 			"type":        "string",
-			"description": "Optional repository filter",
+			"description": "The unique identifier of the repository",
 		}
+		schema.Properties["recommendation_type"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The type of reviewer recommendation: repository, domain, or impact",
+		}
+		schema.Properties["domain"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The knowledge domain to recommend reviewers for (required for domain type)",
+		}
+		schema.Properties["entity_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The entity ID to analyze impact for (required for impact type)",
+		}
+		schema.Required = []string{"repository_id", "recommendation_type"}
+
+	case "discover_knowledge":
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The unique identifier of the repository",
+		}
+		schema.Required = []string{"repository_id"}
+
+	case "generate_learning_path":
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The unique identifier of the repository",
+		}
+		schema.Properties["path_type"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The learning path type (repository, domain, or contributor)",
+		}
+		schema.Properties["domain"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The domain name (required for domain path type)",
+		}
+		schema.Properties["contributor_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The contributor ID (required for contributor path type)",
+		}
+		schema.Required = []string{"repository_id", "path_type"}
+
+	case "generate_change_plan":
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The unique identifier of the repository",
+		}
+		schema.Properties["entity_type"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The type of entity being changed (decision, fact, event, or contributor)",
+		}
+		schema.Properties["entity_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The ID of the entity being changed",
+		}
+		schema.Required = []string{"repository_id", "entity_type", "entity_id"}
 
 	case "list_decisions", "list_events", "list_intents", "list_facts", "generate_context", "export_context", "list_contributors", "list_expertise":
 		schema.Properties["repository_id"] = map[string]interface{}{

@@ -109,19 +109,22 @@ func TestRegistry_Unit(t *testing.T) {
 		r := NewRegistry()
 		list := r.List()
 
-		// Expect exactly 24 tools registered initially
-		if len(list) != 24 {
-			t.Errorf("expected 24 initial tools, got %d", len(list))
+		// Expect exactly 27 tools registered initially
+		if len(list) != 27 {
+			t.Errorf("expected 27 initial tools, got %d", len(list))
 		}
 
 		expectedNames := []string{
 			"analyze_impact",
+			"discover_knowledge",
 			"explain_decision",
 			"explain_event",
 			"export_context",
 			"find_dependencies",
 			"find_dependents",
+			"generate_change_plan",
 			"generate_context",
+			"generate_learning_path",
 			"get_contributor",
 			"get_decision",
 			"get_event",
@@ -167,10 +170,10 @@ func TestRegistry_Unit(t *testing.T) {
 			t.Errorf("expected description %q, got %q", tool.Description, got.Description)
 		}
 
-		// Verify listing has 25 tools sorted alphabetically
+		// Verify listing has 28 tools (27 defaults + 1 custom) sorted alphabetically
 		list := r.List()
-		if len(list) != 25 {
-			t.Errorf("expected 25 tools after registration, got %d", len(list))
+		if len(list) != 28 {
+			t.Errorf("expected 28 tools after registration, got %d", len(list))
 		}
 	})
 
@@ -217,7 +220,7 @@ func TestService_Unit(t *testing.T) {
 		renderer := render.NewRenderer()
 		ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
-		svc := NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil)
+		svc := NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil)
 		if svc.DecisionReader != dr {
 			t.Error("Service DecisionReader dependency not set correctly")
 		}
@@ -281,7 +284,7 @@ func TestService_Integration(t *testing.T) {
 	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
 	// Instantiate Service
-	svc := NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil)
+	svc := NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil)
 
 	// Verify dependencies are set and correctly typed
 	if svc.DecisionReader == nil || svc.IntentReader == nil || svc.FactReader == nil ||
@@ -309,15 +312,18 @@ func TestService_Integration(t *testing.T) {
 		"list_expertise":      true,
 		"list_facts":          true,
 		"list_intents":        true,
-		"recommend_reviewers": true,
-		"trace_contributor":   true,
-		"trace_decision":      true,
-		"trace_event":         true,
-		"trace_graph":         true,
-		"trace_path":          true,
-		"analyze_impact":      true,
-		"find_dependencies":   true,
-		"find_dependents":     true,
+		"recommend_reviewers":   true,
+		"trace_contributor":     true,
+		"trace_decision":        true,
+		"trace_event":           true,
+		"trace_graph":           true,
+		"trace_path":            true,
+		"analyze_impact":        true,
+		"find_dependencies":     true,
+		"find_dependents":       true,
+		"discover_knowledge":    true,
+		"generate_learning_path": true,
+		"generate_change_plan": true,
 	}
 
 	for _, tool := range tools {

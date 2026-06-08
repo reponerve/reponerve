@@ -11,6 +11,10 @@ import (
 	"reponerve/internal/graph/impact"
 	"reponerve/internal/graph/relationships"
 	"reponerve/internal/graph/traversal"
+	"reponerve/internal/intelligence/changeplan"
+	"reponerve/internal/intelligence/discovery"
+	"reponerve/internal/intelligence/learning"
+	"reponerve/internal/intelligence/reviewers"
 	"reponerve/internal/mcp"
 	"reponerve/internal/mcp/server"
 	ownershipquery "reponerve/internal/ownership/query"
@@ -65,11 +69,26 @@ func NewCommand() *cobra.Command {
 			travEngine := traversal.NewEngine(relEngine)
 			impactSvc := impact.NewService(travEngine)
 
+			// 6b. Create Intelligence Services
+			discoverySvc := discovery.NewService(
+				decisionReader, factReader, eventReader, qrContrib, qrExpertise,
+				relationshipReader, relEngine, travEngine, impactSvc,
+			)
+			learningSvc := learning.NewService(
+				discoverySvc, decisionReader, factReader, eventReader,
+				qrContrib, qrExpertise, qrSource, relEngine,
+			)
+			reviewerSvc := reviewers.NewService(
+				discoverySvc, decisionReader, factReader, eventReader,
+				qrContrib, qrExpertise, qrSource, impactSvc,
+			)
+			changePlanSvc := changeplan.NewService(impactSvc)
+
 			// 7. Create MCP Service & Registry & Server
 			svc := mcp.NewService(
 				decisionReader, intentReader, factReader, eventReader,
 				relationshipReader, generator, renderer, ownershipReader,
-				travEngine, impactSvc,
+				travEngine, impactSvc, discoverySvc, learningSvc, reviewerSvc, changePlanSvc,
 			)
 			registry := mcp.NewRegistry()
 			srv := server.NewServer(registry, svc, cmd.InOrStdin(), cmd.OutOrStdout())

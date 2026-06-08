@@ -5,6 +5,10 @@ import (
 	"reponerve/internal/context/render"
 	"reponerve/internal/graph/impact"
 	"reponerve/internal/graph/traversal"
+	"reponerve/internal/intelligence/changeplan"
+	"reponerve/internal/intelligence/discovery"
+	"reponerve/internal/intelligence/learning"
+	"reponerve/internal/intelligence/reviewers"
 	ownershipquery "reponerve/internal/ownership/query"
 	"reponerve/internal/query/storage"
 )
@@ -21,6 +25,10 @@ type Service struct {
 	OwnershipReader      *ownershipquery.Reader
 	GraphTraversalEngine *traversal.Engine
 	GraphImpactService   *impact.Service
+	DiscoveryService     *discovery.Service
+	LearningService      *learning.Service
+	ReviewerService      *reviewers.Service
+	ChangePlanService    *changeplan.Service
 }
 
 // NewService creates a new Service instance aggregating the given dependencies.
@@ -35,6 +43,10 @@ func NewService(
 	or *ownershipquery.Reader,
 	travEngine *traversal.Engine,
 	impactSvc *impact.Service,
+	discoverySvc *discovery.Service,
+	learningSvc *learning.Service,
+	reviewerSvc *reviewers.Service,
+	changePlanSvc *changeplan.Service,
 ) *Service {
 	return &Service{
 		DecisionReader:       dr,
@@ -47,5 +59,9 @@ func NewService(
 		OwnershipReader:      or,
 		GraphTraversalEngine: travEngine,
 		GraphImpactService:   impactSvc,
+		DiscoveryService:     discoverySvc,
+		LearningService:      learningSvc,
+		ReviewerService:      reviewerSvc,
+		ChangePlanService:    changePlanSvc,
 	}
 }
