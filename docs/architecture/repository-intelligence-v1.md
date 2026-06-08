@@ -77,8 +77,9 @@ Repository Intelligence introduces:
 
 1. Knowledge Discovery
 2. Learning Paths
-3. Reviewer Recommendations
-4. Change Planning
+3. Ranking Authority
+4. Reviewer Recommendations
+5. Change Planning
 
 ---
 
@@ -118,6 +119,18 @@ Inputs:
 Outputs:
 
 LearningPath
+
+---
+
+## Ranking Authority
+
+Learning Paths must consume Knowledge Discovery results when determining repository knowledge importance.
+
+Learning Paths are responsible for sequencing repository knowledge.
+
+Learning Paths are not responsible for independently ranking repository knowledge.
+
+Knowledge Discovery remains the canonical source of repository importance scoring.
 
 ---
 
