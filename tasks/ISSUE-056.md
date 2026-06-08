@@ -88,6 +88,31 @@ Validate Features
 
 ---
 
+## Release Freeze Rule
+
+ISSUE-056 establishes a feature freeze.
+
+Only the following categories of changes are permitted:
+
+* Bug fixes
+* Documentation corrections
+* Test corrections
+* Build corrections
+* Release preparation
+
+The following are prohibited:
+
+* New features
+* New APIs
+* New MCP tools
+* New intelligence systems
+* New workflow types
+* New search capabilities
+
+Any exception requires explicit architectural review.
+
+---
+
 # Deliverables
 
 ## Architecture Audit
@@ -160,7 +185,7 @@ PASS / FAIL
 
 ---
 
-## Performance Assessment
+## Performance Audit
 
 Create:
 
@@ -193,6 +218,15 @@ Review:
 
 Verify consistency.
 
+Documentation review must verify:
+
+* Every milestone has an audit
+* Every milestone has a task file
+* Architecture documents remain current
+* Roadmaps remain current
+* AGENTS.md remains current
+* Release notes are complete
+
 ---
 
 ## Release Notes
@@ -207,6 +241,21 @@ Include:
 * Architecture summary
 * Milestone history
 * Known limitations
+
+---
+
+Create:
+
+docs/releases/v1.0.0-checklist.md
+
+Checklist must contain:
+
+* Tests passed
+* Race tests passed
+* Audits completed
+* Documentation reviewed
+* Release review completed
+* Tag created
 
 ---
 
@@ -237,6 +286,58 @@ Verify:
 * Clean compilation
 * No failing tests
 * No broken documentation references
+
+---
+
+## Critical Blocker Definition
+
+A release blocker is any issue that causes:
+
+* Incorrect repository intelligence
+* Loss of evidence
+* Non-deterministic behavior
+* Data corruption
+* Failing tests
+* Failing race tests
+* Broken MCP functionality
+
+Critical blockers must be resolved before release.
+
+Non-critical issues may be documented as known limitations.
+
+---
+
+## Release Candidate Validation
+
+Create a clean repository.
+
+Execute the complete RepoNerve flow:
+
+Repository
+↓
+Memory
+↓
+Context
+↓
+Ownership
+↓
+Knowledge Graph
+↓
+Repository Intelligence
+↓
+Agent Context
+↓
+Search
+↓
+Session
+↓
+Workflow
+↓
+MCP
+
+Verify successful execution.
+
+Document results.
 
 ---
 
@@ -289,3 +390,27 @@ PASS / FAIL
 Recommendation:
 
 Release / Do Not Release
+
+---
+
+## Post Release
+
+After v1.0 approval:
+
+Create:
+
+docs/roadmap/v1.x-backlog.md
+
+Move deferred ideas into the backlog.
+
+Examples:
+
+* Workflow Templates
+* Session Export
+* Search Adapters
+* Semantic Search Experiments
+* Hybrid Search
+* User Defined Workflows
+* Agent Handoff Bundles
+
+These items are explicitly excluded from v1.0.
