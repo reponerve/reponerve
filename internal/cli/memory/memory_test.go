@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/config"
-	memorymodels "reponerve/internal/memory/models"
-	memorystorage "reponerve/internal/memory/storage"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/config"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 func TestMemoryListCommands(t *testing.T) {

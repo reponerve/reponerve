@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // EventStore implements storage.EventStore for SQLite.

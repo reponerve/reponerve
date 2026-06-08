@@ -5,9 +5,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"reponerve/internal/config"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/internal/config"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 // NewCommand creates and returns the init subcommand.

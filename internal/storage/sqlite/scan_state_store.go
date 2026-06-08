@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"reponerve/internal/storage"
+	"github.com/reponerve/reponerve/internal/storage"
 )
 
 // ScanStateStore implements storage.ScanStateStore for SQLite.

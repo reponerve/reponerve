@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"reponerve/internal/query/storage"
+	"github.com/reponerve/reponerve/internal/query/storage"
 )
 
 func newEventExplainCommand() *cobra.Command {

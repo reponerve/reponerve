@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // Extractor extracts Contributor records from commit sources.

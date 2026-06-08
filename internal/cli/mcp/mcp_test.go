@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 func executeMcpCommand(ctx context.Context, stdin *bytes.Buffer, args ...string) (string, error) {

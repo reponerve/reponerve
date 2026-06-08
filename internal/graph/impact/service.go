@@ -15,8 +15,8 @@ import (
 	"fmt"
 	"sort"
 
-	"reponerve/internal/graph/model"
-	"reponerve/internal/graph/traversal"
+	"github.com/reponerve/reponerve/internal/graph/model"
+	"github.com/reponerve/reponerve/internal/graph/traversal"
 )
 
 // Service provides graph-aware impact analysis built on the traversal engine.

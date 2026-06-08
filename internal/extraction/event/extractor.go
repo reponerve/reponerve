@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // EventType constants defined by extraction-rules-v1.md.

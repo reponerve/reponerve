@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"reponerve/internal/intelligence/discovery"
-	"reponerve/internal/query/storage"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/intelligence/discovery"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 var supportedPrefixes = map[string]bool{

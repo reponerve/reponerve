@@ -1,7 +1,7 @@
 package impact
 
 import (
-	"reponerve/internal/graph/traversal"
+	"github.com/reponerve/reponerve/internal/graph/traversal"
 )
 
 // ImpactPath represents a single traversal path demonstrating how a change propagates to a target node, accompanied by a reason.

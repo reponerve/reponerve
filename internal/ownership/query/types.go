@@ -1,8 +1,8 @@
 package query
 
 import (
-	memorymodels "reponerve/internal/memory/models"
-	models "reponerve/pkg/models"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // ContributorTrace provides a complete trace of a contributor's ownership/involvement.

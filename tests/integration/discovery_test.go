@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"reponerve/internal/scanner/repository"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/internal/scanner/repository"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 func runGitCommand(t *testing.T, dir string, args ...string) {

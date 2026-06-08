@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
-	memorystorage "reponerve/internal/memory/storage"
-	"reponerve/internal/scanner/repository"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	"reponerve/pkg/models"
+	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
+	"github.com/reponerve/reponerve/internal/scanner/repository"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 func containsStr(s, substr string) bool {

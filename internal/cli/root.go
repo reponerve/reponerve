@@ -3,13 +3,13 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
-	askcmd "reponerve/internal/cli/ask"
-	contextcmd "reponerve/internal/cli/contextcmd"
-	explaincmd "reponerve/internal/cli/explain"
-	initcmd "reponerve/internal/cli/init"
-	memorycmd "reponerve/internal/cli/memory"
-	mcpcmd "reponerve/internal/cli/mcp"
-	scancmd "reponerve/internal/cli/scan"
+	askcmd "github.com/reponerve/reponerve/internal/cli/ask"
+	contextcmd "github.com/reponerve/reponerve/internal/cli/contextcmd"
+	explaincmd "github.com/reponerve/reponerve/internal/cli/explain"
+	initcmd "github.com/reponerve/reponerve/internal/cli/init"
+	memorycmd "github.com/reponerve/reponerve/internal/cli/memory"
+	mcpcmd "github.com/reponerve/reponerve/internal/cli/mcp"
+	scancmd "github.com/reponerve/reponerve/internal/cli/scan"
 )
 
 // NewRootCmd creates the root command for the reponerve CLI.

@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"reponerve/internal/context"
-	"reponerve/internal/context/render"
+	"github.com/reponerve/reponerve/internal/context"
+	"github.com/reponerve/reponerve/internal/context/render"
 )
 
 type Exporter struct {

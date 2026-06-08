@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
-	memorymodels "reponerve/internal/memory/models"
-	memorystorage "reponerve/internal/memory/storage"
-	repository "reponerve/internal/scanner/repository"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
+	repository "github.com/reponerve/reponerve/internal/scanner/repository"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 func executeContextCommand(args ...string) (string, error) {

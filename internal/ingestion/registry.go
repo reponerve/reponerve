@@ -1,6 +1,6 @@
 package ingestion
 
-import "reponerve/internal/scanner"
+import "github.com/reponerve/reponerve/internal/scanner"
 
 // RegisteredScanner pairs a scanner with its name for identification and error attribution.
 type RegisteredScanner struct {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	memorymodels "reponerve/internal/memory/models"
-	"reponerve/internal/storage/sqlite"
-	models "reponerve/pkg/models"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // SQLiteEventReader implements EventReader for SQLite.

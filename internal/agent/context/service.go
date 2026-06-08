@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	appcontext "reponerve/internal/context"
-	"reponerve/internal/intelligence/changeplan"
-	"reponerve/internal/intelligence/discovery"
-	"reponerve/internal/intelligence/learning"
-	"reponerve/internal/intelligence/reviewers"
+	appcontext "github.com/reponerve/reponerve/internal/context"
+	"github.com/reponerve/reponerve/internal/intelligence/changeplan"
+	"github.com/reponerve/reponerve/internal/intelligence/discovery"
+	"github.com/reponerve/reponerve/internal/intelligence/learning"
+	"github.com/reponerve/reponerve/internal/intelligence/reviewers"
 )
 
 // Service packages Repository Intelligence into deterministic AgentContextPackages.

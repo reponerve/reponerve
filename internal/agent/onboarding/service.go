@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	ctxengine "reponerve/internal/context"
+	ctxengine "github.com/reponerve/reponerve/internal/context"
 )
 
 // Service provides deterministic repository onboarding packages.

@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/ownership/expertise"
-	memorymodels "reponerve/internal/memory/models"
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/ownership/expertise"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 func testContributorID(repositoryID, name, email string) string {

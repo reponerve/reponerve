@@ -5,13 +5,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"reponerve/internal/config"
-	"reponerve/internal/context"
-	"reponerve/internal/context/export"
-	"reponerve/internal/context/render"
-	"reponerve/internal/query/storage"
-	"reponerve/internal/scanner/repository"
-	"reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/internal/config"
+	"github.com/reponerve/reponerve/internal/context"
+	"github.com/reponerve/reponerve/internal/context/export"
+	"github.com/reponerve/reponerve/internal/context/render"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	"github.com/reponerve/reponerve/internal/scanner/repository"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 func newExportCommand() *cobra.Command {

@@ -7,14 +7,14 @@ import (
 	"testing"
 	"time"
 
-	memorymodels "reponerve/internal/memory/models"
-	"reponerve/internal/graph/model"
-	"reponerve/internal/graph/relationships"
-	"reponerve/internal/graph/traversal"
-	"reponerve/internal/query/storage"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	models "reponerve/pkg/models"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/graph/model"
+	"github.com/reponerve/reponerve/internal/graph/relationships"
+	"github.com/reponerve/reponerve/internal/graph/traversal"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // --- Mock Readers (copied from traversal tests to avoid cross-package dependency) ---

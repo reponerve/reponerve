@@ -3,7 +3,7 @@ package relationships
 import (
 	"encoding/json"
 
-	"reponerve/internal/graph/model"
+	"github.com/reponerve/reponerve/internal/graph/model"
 )
 
 // DerivedRelationship represents a derived connection computed from repository memory.

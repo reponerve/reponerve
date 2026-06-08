@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"reponerve/internal/agent/onboarding"
-	ctxengine "reponerve/internal/context"
-	memorymodels "reponerve/internal/memory/models"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/agent/onboarding"
+	ctxengine "github.com/reponerve/reponerve/internal/context"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // Service provides deterministic context compression.

@@ -7,15 +7,15 @@ import (
 	"strings"
 	"time"
 
-	"reponerve/internal/extraction/decision"
-	"reponerve/internal/extraction/event"
-	"reponerve/internal/extraction/fact"
-	"reponerve/internal/extraction/intent"
-	"reponerve/internal/memory/linker"
-	memorystorage "reponerve/internal/memory/storage"
-	ownerextraction "reponerve/internal/ownership/extraction"
-	"reponerve/internal/scanner/repository"
-	"reponerve/internal/storage"
+	"github.com/reponerve/reponerve/internal/extraction/decision"
+	"github.com/reponerve/reponerve/internal/extraction/event"
+	"github.com/reponerve/reponerve/internal/extraction/fact"
+	"github.com/reponerve/reponerve/internal/extraction/intent"
+	"github.com/reponerve/reponerve/internal/memory/linker"
+	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
+	ownerextraction "github.com/reponerve/reponerve/internal/ownership/extraction"
+	"github.com/reponerve/reponerve/internal/scanner/repository"
+	"github.com/reponerve/reponerve/internal/storage"
 )
 
 // Coordinator coordinates repository discovery and pipeline execution.

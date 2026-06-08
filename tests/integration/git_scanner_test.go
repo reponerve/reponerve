@@ -7,10 +7,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"reponerve/internal/scanner/git"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/scanner/git"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 func runGit(t *testing.T, dir string, args ...string) {

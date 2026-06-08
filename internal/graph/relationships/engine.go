@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"reponerve/internal/graph/model"
-	"reponerve/internal/query/storage"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/graph/model"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // Engine derives graph relationships from existing repository memory and ownership intelligence.

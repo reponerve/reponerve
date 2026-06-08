@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // SQLiteContributorStore implements storage.ContributorStore for SQLite.

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sort"
 
-	"reponerve/internal/graph/model"
-	"reponerve/internal/graph/relationships"
+	"github.com/reponerve/reponerve/internal/graph/model"
+	"github.com/reponerve/reponerve/internal/graph/relationships"
 )
 
 // Engine traces and queries the repository knowledge graph.

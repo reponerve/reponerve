@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	models "reponerve/pkg/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 func commitSource(id, repoID, title string) *models.Source {

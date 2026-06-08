@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 func TestMigrations(t *testing.T) {

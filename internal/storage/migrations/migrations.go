@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"reponerve/internal/storage/sqlite"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 // Migration represents a versioned database schema migration.

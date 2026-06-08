@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	memorymodels "reponerve/internal/memory/models"
-	models "reponerve/pkg/models"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 func TestLink_IntentDrivesDecision(t *testing.T) {

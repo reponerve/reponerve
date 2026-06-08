@@ -6,14 +6,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	"reponerve/internal/context"
-	"reponerve/internal/context/render"
-	memorymodels "reponerve/internal/memory/models"
-	ownershipquery "reponerve/internal/ownership/query"
-	"reponerve/internal/query/storage"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/context"
+	"github.com/reponerve/reponerve/internal/context/render"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	ownershipquery "github.com/reponerve/reponerve/internal/ownership/query"
+	"github.com/reponerve/reponerve/internal/query/storage"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // --- Mock/Dummy Readers satisfying Query Reader interfaces ---

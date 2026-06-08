@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"strings"
 
-	"reponerve/internal/graph/model"
-	"reponerve/internal/graph/traversal"
-	"reponerve/internal/mcp"
-	memorymodels "reponerve/internal/memory/models"
-	models "reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/graph/model"
+	"github.com/reponerve/reponerve/internal/graph/traversal"
+	"github.com/reponerve/reponerve/internal/mcp"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // JSONRPCRequest represents a JSON-RPC 2.0 request or notification.

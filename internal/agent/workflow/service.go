@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"strings"
 
-	agentcontext "reponerve/internal/agent/context"
-	agentsearch "reponerve/internal/agent/search"
-	agentsession "reponerve/internal/agent/session"
-	"reponerve/internal/intelligence/changeplan"
-	"reponerve/internal/intelligence/discovery"
-	"reponerve/internal/intelligence/learning"
-	"reponerve/internal/intelligence/reviewers"
+	agentcontext "github.com/reponerve/reponerve/internal/agent/context"
+	agentsearch "github.com/reponerve/reponerve/internal/agent/search"
+	agentsession "github.com/reponerve/reponerve/internal/agent/session"
+	"github.com/reponerve/reponerve/internal/intelligence/changeplan"
+	"github.com/reponerve/reponerve/internal/intelligence/discovery"
+	"github.com/reponerve/reponerve/internal/intelligence/learning"
+	"github.com/reponerve/reponerve/internal/intelligence/reviewers"
 )
 
 type Service struct {

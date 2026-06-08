@@ -10,14 +10,14 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/ownership/expertise"
-	ownerextraction "reponerve/internal/ownership/extraction"
-	ownershipquery "reponerve/internal/ownership/query"
-	querystorage "reponerve/internal/query/storage"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	memorymodels "reponerve/internal/memory/models"
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/ownership/expertise"
+	ownerextraction "github.com/reponerve/reponerve/internal/ownership/extraction"
+	ownershipquery "github.com/reponerve/reponerve/internal/ownership/query"
+	querystorage "github.com/reponerve/reponerve/internal/query/storage"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 func TestOwnershipQueryIntegration(t *testing.T) {

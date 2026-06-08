@@ -10,11 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"reponerve/internal/ownership/expertise"
-	"reponerve/internal/storage/migrations"
-	"reponerve/internal/storage/sqlite"
-	memorymodels "reponerve/internal/memory/models"
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/ownership/expertise"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 func TestExpertiseDetectorIntegration(t *testing.T) {

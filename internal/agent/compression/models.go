@@ -1,8 +1,8 @@
 package compression
 
 import (
-	memorymodels "reponerve/internal/memory/models"
-	models "reponerve/pkg/models"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	models "github.com/reponerve/reponerve/pkg/models"
 )
 
 // CompressionOptions specifies limit thresholds for each entity type in the context.

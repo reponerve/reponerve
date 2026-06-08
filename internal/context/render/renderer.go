@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"reponerve/internal/context"
+	"github.com/reponerve/reponerve/internal/context"
 )
 
 type Renderer struct{}

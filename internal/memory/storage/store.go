@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	"reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/memory/models"
 )
 
 // DecisionStore defines the persistence interface for extracted Decision records.

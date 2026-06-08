@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"reponerve/internal/storage"
-	"reponerve/pkg/models"
+	"github.com/reponerve/reponerve/internal/storage"
+	"github.com/reponerve/reponerve/pkg/models"
 )
 
 // Scanner provides functionality to discover Git commits.

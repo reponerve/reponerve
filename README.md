@@ -211,51 +211,84 @@ Backlog curation and post-release follow-up
 
 ---
 
+# Installation
+
+## Option 1: Install From Release Artifacts
+
+Download the archive for your OS and architecture from GitHub Releases, then place the `reponerve` binary on your `PATH`.
+
+## Option 2: Build From Source
+
+```bash
+git clone https://github.com/reponerve/reponerve.git
+cd reponerve
+make build
+```
+
+The binary is produced at the repository root as `./reponerve`.
+
+## Option 3: Homebrew (After Tap Is Published)
+
+```bash
+brew tap reponerve/reponerve
+brew install reponerve
+```
+
+---
+
 # Quick Start
 
-Initialize a workspace:
+From the root of the repository you want to analyze:
+
+1. Initialize workspace metadata and database:
 
 ```bash
 reponerve init
 ```
 
-Scan a repository:
+2. Ingest repository signals (commits, ADRs, metadata):
 
 ```bash
 reponerve scan
 ```
 
-Generate repository context:
+3. Inspect extracted decisions:
+
+```bash
+reponerve memory list decisions
+```
+
+4. Generate repository context:
 
 ```bash
 reponerve context generate
 ```
 
-Start MCP:
+5. Start MCP server for agent integrations:
 
 ```bash
 reponerve mcp
 ```
 
+If output is empty after scan, add commits and/or ADR files, then run `reponerve scan` again.
+
 ---
 
 # Documentation
 
-## Vision
+## Start Here
 
-* docs/vision/
+* Product Overview: `README.md`
+* Contributor Setup: `docs/governance/contribution-guide.md`
+* MCP Troubleshooting: `docs/mcp/troubleshooting.md`
 
-## Architecture
+## By Goal
 
-* docs/architecture/
-
-## Roadmaps
-
-* docs/roadmap/
-
-## Audits
-
-* docs/audits/
+* Understand product direction: `docs/vision/`
+* Understand architecture: `docs/architecture/`
+* Track planned work: `docs/roadmap/`
+* Review quality and release readiness: `docs/audits/`
+* Follow release process: `docs/releases/v1.0.0-checklist.md` and `docs/releases/v1.0.0.md`
 
 ---
 
