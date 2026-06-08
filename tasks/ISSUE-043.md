@@ -2,72 +2,271 @@
 
 ## Objective
 
-Generate derived graph relationships from repository memory.
+Generate deterministic, evidence-backed derived graph relationships from existing repository knowledge.
 
 ---
 
 # Background
 
-Knowledge Graph Intelligence requires relationships beyond direct stored memory links.
+The Memory Engine stores repository facts.
 
-This issue introduces graph relationship generation.
+The Knowledge Graph introduces derived relationships that connect repository knowledge in meaningful ways.
+
+Derived relationships are conclusions.
+
+Derived relationships are not facts.
+
+Every derived relationship must be explainable and evidence-backed.
+
+---
+
+# Philosophy
+
+Evidence First.
+
+Derived relationships without evidence are invalid.
+
+Stored relationships are facts.
+
+Derived relationships are conclusions.
+
+The same repository state must always generate the same graph relationships.
 
 ---
 
 # Scope
 
-## Relationship Engine
-
 Create:
 
 internal/graph/relationships/
 
-Generate:
+Files:
 
-* Derived relationships
-* Relationship evidence
-
----
-
-## Initial Relationship Types
-
-Examples:
-
-* DECISION_DEPENDS_ON_DECISION
-* FACT_SUPPORTS_FACT
-* DOMAIN_RELATES_TO_DOMAIN
-
-All relationships must remain evidence-based.
+* engine.go
+* types.go
+* engine_test.go
 
 ---
 
-## Evidence Requirements
+# Architecture Requirements
 
-Every derived relationship must include:
+The Relationship Engine must consume:
 
-* Source evidence
-* Relationship explanation
+* Memory Engine entities
+* Existing relationship records
+* Ownership Intelligence entities
+
+The Relationship Engine must NOT:
+
+* Re-scan repositories
+* Execute Git commands
+* Access SQLite directly
+* Generate AI-derived relationships
+
+Relationship generation must be deterministic.
+
+---
+
+# Derived Relationship Model
+
+Create:
+
+```go
+type DerivedRelationship struct {
+    Edge *model.GraphEdge
+
+    Evidence json.RawMessage
+
+    Explanation string
+}
+```
+
+Explanation must be human-readable.
+
+Example:
+
+Decision A depends on Decision B because Decision A references Decision B in repository memory.
+
+---
+
+# Supported Derived Relationships
+
+## Decision Relationships
+
+DECISION_DEPENDS_ON_DECISION
+
+Represents:
+
+Decision A cannot be understood without Decision B.
+
+Evidence examples:
+
+* Explicit references
+* Existing memory links
+* Repository metadata
+
+---
+
+## Fact Relationships
+
+FACT_SUPPORTS_FACT
+
+Represents:
+
+Fact A provides supporting evidence for Fact B.
+
+Evidence must identify the supporting chain.
+
+---
+
+## Domain Relationships
+
+DOMAIN_RELATES_TO_DOMAIN
+
+Represents:
+
+Two expertise domains are connected through repository activity.
+
+Evidence must identify contributors and repository activity linking the domains.
+
+---
+
+# Evidence Requirements
+
+Every relationship must include:
+
+Evidence JSON
+
+Human-readable Explanation
+
+GraphEdge EvidenceJSON
+
+All three are required.
 
 Derived relationships without evidence are invalid.
 
 ---
 
-## Deterministic Behavior
+# Duplicate Prevention
 
-Same repository state must generate identical relationships.
+Relationship generation must be idempotent.
+
+Repeated generation over the same repository state must produce:
+
+* identical relationship IDs
+* identical relationship counts
+* identical evidence
+
+Duplicate relationships are invalid.
 
 ---
 
-## Testing
+# Deterministic Ordering
+
+Output ordering must be stable.
+
+Recommended:
+
+* EdgeType ascending
+* FromNodeID ascending
+* ToNodeID ascending
+
+Same repository state must always generate identical ordering.
+
+---
+
+# Relationship Generation Rules
+
+Rule 1:
+
+Generate only relationships that can be supported by repository evidence.
+
+Rule 2:
+
+Do not infer speculative relationships.
+
+Rule 3:
+
+Do not generate relationships based on AI reasoning.
+
+Rule 4:
+
+Derived relationships must remain reproducible.
+
+Rule 5:
+
+Evidence must be sufficient to explain relationship existence.
+
+---
+
+# Engine API
+
+Implement:
+
+```go
+type Engine struct {
+}
+```
+
+```go
+func NewEngine() *Engine
+```
+
+```go
+func (e *Engine) Generate(
+    ctx context.Context,
+    repositoryID string,
+) ([]*DerivedRelationship, error)
+```
+
+---
+
+# Explainability Requirement
+
+Every relationship must be explainable.
+
+Unsupported:
+
+Decision A depends on Decision B because they seem related.
+
+Supported:
+
+Decision A depends on Decision B because repository memory contains explicit dependency references.
+
+---
+
+# Unit Tests
 
 Cover:
 
+* Empty repositories
 * Relationship generation
 * Evidence generation
+* Explanation generation
 * Duplicate prevention
-* Deterministic output
+* Deterministic ordering
+* Deterministic IDs
 
-Include integration tests.
+---
+
+# Integration Tests
+
+Verify:
+
+Repository Memory
+↓
+Relationship Engine
+↓
+Graph Edges
+
+using migration-backed SQLite repositories.
+
+Verify:
+
+* generated relationships
+* evidence persistence
+* explanation correctness
+* deterministic output
 
 ---
 
@@ -75,7 +274,7 @@ Include integration tests.
 
 Do NOT implement:
 
-* Traversal
+* Graph traversal
 * Impact analysis
 * MCP tools
 
@@ -87,6 +286,10 @@ Only implement relationship generation.
 
 Derived relationships are generated deterministically.
 
-Evidence is attached to every relationship.
+All relationships contain evidence.
+
+All relationships contain explanations.
+
+Duplicate relationships are prevented.
 
 All tests pass.

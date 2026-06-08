@@ -524,6 +524,30 @@ Derived relationships must always include supporting evidence.
 
 ---
 
+# Graph Node Design
+
+Graph nodes are wrappers around existing repository entities.
+
+Graph nodes do not duplicate repository entities.
+
+Examples:
+
+GraphNode
+    NodeType=DECISION
+    EntityID=<decision-id>
+
+GraphNode
+    NodeType=FACT
+    EntityID=<fact-id>
+
+The Memory Engine remains the source of truth.
+
+Knowledge Graph Intelligence references repository entities through graph nodes.
+
+This prevents duplication, preserves consistency, and allows new entity types to participate in the graph without changing graph architecture.
+
+---
+
 # Future Vision
 
 Memory Engine remembers repository knowledge.

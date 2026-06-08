@@ -95,6 +95,26 @@ func NewRegistry() *Registry {
 		Name:        "recommend_reviewers",
 		Description: "Recommend reviewers for a knowledge domain based on expertise and recency",
 	})
+	_ = r.Register(ToolDefinition{
+		Name:        "trace_graph",
+		Description: "Trace all reachable graph paths originating from a node",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "trace_path",
+		Description: "Find graph paths connecting a start node to an end node",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "find_dependencies",
+		Description: "Find outbound dependency paths from a node in the knowledge graph",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "find_dependents",
+		Description: "Find inbound dependency paths pointing to a node in the knowledge graph",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "analyze_impact",
+		Description: "Analyze the impact of a decision, fact, event, or contributor through the knowledge graph",
+	})
 
 	return r
 }

@@ -3,20 +3,24 @@ package mcp
 import (
 	"reponerve/internal/context"
 	"reponerve/internal/context/render"
+	"reponerve/internal/graph/impact"
+	"reponerve/internal/graph/traversal"
 	ownershipquery "reponerve/internal/ownership/query"
 	"reponerve/internal/query/storage"
 )
 
 // Service aggregates the core repository intelligence capabilities (readers, generator, renderer).
 type Service struct {
-	DecisionReader     storage.DecisionReader
-	IntentReader       storage.IntentReader
-	FactReader         storage.FactReader
-	EventReader        storage.EventReader
-	RelationshipReader storage.RelationshipReader
-	Generator          *context.Generator
-	Renderer           *render.Renderer
-	OwnershipReader    *ownershipquery.Reader
+	DecisionReader       storage.DecisionReader
+	IntentReader         storage.IntentReader
+	FactReader           storage.FactReader
+	EventReader          storage.EventReader
+	RelationshipReader   storage.RelationshipReader
+	Generator            *context.Generator
+	Renderer             *render.Renderer
+	OwnershipReader      *ownershipquery.Reader
+	GraphTraversalEngine *traversal.Engine
+	GraphImpactService   *impact.Service
 }
 
 // NewService creates a new Service instance aggregating the given dependencies.
@@ -29,15 +33,19 @@ func NewService(
 	g *context.Generator,
 	ren *render.Renderer,
 	or *ownershipquery.Reader,
+	travEngine *traversal.Engine,
+	impactSvc *impact.Service,
 ) *Service {
 	return &Service{
-		DecisionReader:     dr,
-		IntentReader:       ir,
-		FactReader:         fr,
-		EventReader:        er,
-		RelationshipReader: rr,
-		Generator:          g,
-		Renderer:           ren,
-		OwnershipReader:    or,
+		DecisionReader:       dr,
+		IntentReader:         ir,
+		FactReader:           fr,
+		EventReader:          er,
+		RelationshipReader:   rr,
+		Generator:            g,
+		Renderer:             ren,
+		OwnershipReader:      or,
+		GraphTraversalEngine: travEngine,
+		GraphImpactService:   impactSvc,
 	}
 }

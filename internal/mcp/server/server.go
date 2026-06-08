@@ -9,8 +9,11 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
 	"strings"
 
+	"reponerve/internal/graph/model"
+	"reponerve/internal/graph/traversal"
 	"reponerve/internal/mcp"
 	memorymodels "reponerve/internal/memory/models"
 	models "reponerve/pkg/models"
@@ -878,6 +881,177 @@ func (s *Server) handleCallTool(ctx context.Context, id *json.RawMessage, params
 
 		s.sendToolSuccess(id, recommendations)
 
+	case "trace_graph":
+		nodeID, err := getArg("node_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		if s.service.GraphTraversalEngine == nil {
+			s.sendToolError(id, "graph traversal engine is not configured")
+			return
+		}
+		repoID, err := resolveRepoID()
+		if err != nil || repoID == "" {
+			s.sendToolError(id, "failed to resolve repository ID")
+			return
+		}
+		maxDepth := 10
+		if d, _ := getArg("max_depth", false); d != "" {
+			if v, err := strconv.Atoi(d); err == nil && v > 0 {
+				maxDepth = v
+			}
+		}
+		opts := traversal.TraversalOptions{
+			MaxDepth:       maxDepth,
+			IncludeStored:  true,
+			IncludeDerived: true,
+		}
+		result, err := s.service.GraphTraversalEngine.TraceGraph(ctx, repoID, nodeID, opts)
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("graph traversal failed: %v", err))
+			return
+		}
+		s.sendToolSuccess(id, result)
+
+	case "trace_path":
+		startNodeID, err := getArg("start_node_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		endNodeID, err := getArg("end_node_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		if s.service.GraphTraversalEngine == nil {
+			s.sendToolError(id, "graph traversal engine is not configured")
+			return
+		}
+		repoID, err := resolveRepoID()
+		if err != nil || repoID == "" {
+			s.sendToolError(id, "failed to resolve repository ID")
+			return
+		}
+		opts := traversal.TraversalOptions{
+			MaxDepth:       10,
+			IncludeStored:  true,
+			IncludeDerived: true,
+		}
+		allPaths, err := s.service.GraphTraversalEngine.FindDependencies(ctx, repoID, startNodeID, opts)
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("graph traversal failed: %v", err))
+			return
+		}
+		// Filter to paths ending at endNodeID
+		var matchedPaths []*traversal.TraversalPath
+		for _, p := range allPaths.Paths {
+			if len(p.Nodes) > 0 && p.Nodes[len(p.Nodes)-1].ID == endNodeID {
+				matchedPaths = append(matchedPaths, p)
+			}
+		}
+		if matchedPaths == nil {
+			matchedPaths = []*traversal.TraversalPath{}
+		}
+		s.sendToolSuccess(id, matchedPaths)
+
+	case "find_dependencies":
+		nodeID, err := getArg("node_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		if s.service.GraphTraversalEngine == nil {
+			s.sendToolError(id, "graph traversal engine is not configured")
+			return
+		}
+		repoID, err := resolveRepoID()
+		if err != nil || repoID == "" {
+			s.sendToolError(id, "failed to resolve repository ID")
+			return
+		}
+		opts := traversal.TraversalOptions{
+			MaxDepth:       10,
+			IncludeStored:  true,
+			IncludeDerived: true,
+		}
+		result, err := s.service.GraphTraversalEngine.FindDependencies(ctx, repoID, nodeID, opts)
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("find dependencies failed: %v", err))
+			return
+		}
+		s.sendToolSuccess(id, result)
+
+	case "find_dependents":
+		nodeID, err := getArg("node_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		if s.service.GraphTraversalEngine == nil {
+			s.sendToolError(id, "graph traversal engine is not configured")
+			return
+		}
+		repoID, err := resolveRepoID()
+		if err != nil || repoID == "" {
+			s.sendToolError(id, "failed to resolve repository ID")
+			return
+		}
+		opts := traversal.TraversalOptions{
+			MaxDepth:       10,
+			IncludeStored:  true,
+			IncludeDerived: true,
+		}
+		result, err := s.service.GraphTraversalEngine.FindDependents(ctx, repoID, nodeID, opts)
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("find dependents failed: %v", err))
+			return
+		}
+		s.sendToolSuccess(id, result)
+
+	case "analyze_impact":
+		// node_id is the entity ID (decision ID, fact ID, etc.)
+		// node_type indicates which impact analysis to run
+		entityID, err := getArg("node_id", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		nodeType, err := getArg("node_type", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return
+		}
+		if s.service.GraphImpactService == nil {
+			s.sendToolError(id, "graph impact service is not configured")
+			return
+		}
+		repoID, err := resolveRepoID()
+		if err != nil || repoID == "" {
+			s.sendToolError(id, "failed to resolve repository ID")
+			return
+		}
+		var impactReport interface{}
+		switch model.NodeType(strings.ToUpper(nodeType)) {
+		case model.NodeTypeDecision:
+			impactReport, err = s.service.GraphImpactService.AnalyzeDecisionImpact(ctx, repoID, entityID)
+		case model.NodeTypeFact:
+			impactReport, err = s.service.GraphImpactService.AnalyzeFactImpact(ctx, repoID, entityID)
+		case model.NodeTypeEvent:
+			impactReport, err = s.service.GraphImpactService.AnalyzeEventImpact(ctx, repoID, entityID)
+		case model.NodeTypeContributor:
+			impactReport, err = s.service.GraphImpactService.AnalyzeContributorImpact(ctx, repoID, entityID)
+		default:
+			s.sendToolError(id, fmt.Sprintf("unsupported node_type %q: must be one of DECISION, FACT, EVENT, CONTRIBUTOR", nodeType))
+			return
+		}
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("impact analysis failed: %v", err))
+			return
+		}
+		s.sendToolSuccess(id, impactReport)
+
 	default:
 		s.sendToolError(id, fmt.Sprintf("unknown tool name: %q", params.Name))
 	}
@@ -973,6 +1147,53 @@ func getInputSchema(toolName string) InputSchema {
 		}
 
 	case "list_decisions", "list_events", "list_intents", "list_facts", "generate_context", "export_context", "list_contributors", "list_expertise":
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "trace_graph", "find_dependencies", "find_dependents":
+		schema.Properties["node_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The graph node ID to start traversal from",
+		}
+		schema.Required = []string{"node_id"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+		if toolName == "trace_graph" {
+			schema.Properties["max_depth"] = map[string]interface{}{
+				"type":        "string",
+				"description": "Maximum traversal depth (default: 10)",
+			}
+		}
+
+	case "trace_path":
+		schema.Properties["start_node_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The graph node ID to start from",
+		}
+		schema.Properties["end_node_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The graph node ID to find paths to",
+		}
+		schema.Required = []string{"start_node_id", "end_node_id"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "analyze_impact":
+		schema.Properties["node_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The entity ID to analyze impact for (e.g. decision ID, fact ID)",
+		}
+		schema.Properties["node_type"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The entity type: DECISION, FACT, EVENT, or CONTRIBUTOR",
+		}
+		schema.Required = []string{"node_id", "node_type"}
 		schema.Properties["repository_id"] = map[string]interface{}{
 			"type":        "string",
 			"description": "Optional repository filter",
