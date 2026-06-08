@@ -63,6 +63,10 @@ Every graph edge must include evidence.
 
 Graph edges without evidence are invalid.
 
+Graph nodes must reference existing repository entities.
+
+Graph nodes must not duplicate repository entity structures.
+
 ---
 
 ## Storage

@@ -16,6 +16,10 @@ import (
 
 	"reponerve/internal/context"
 	"reponerve/internal/context/render"
+	"reponerve/internal/graph/impact"
+	"reponerve/internal/graph/model"
+	"reponerve/internal/graph/relationships"
+	"reponerve/internal/graph/traversal"
 	"reponerve/internal/mcp"
 	memorymodels "reponerve/internal/memory/models"
 	ownershipquery "reponerve/internal/ownership/query"
@@ -164,8 +168,8 @@ func TestServer_JSONRPC(t *testing.T) {
 			t.Fatalf("failed to unmarshal tools list: %v", err)
 		}
 
-		if len(result.Tools) != 19 {
-			t.Errorf("expected 19 tools, got %d", len(result.Tools))
+		if len(result.Tools) != 24 {
+			t.Errorf("expected 24 tools, got %d", len(result.Tools))
 		}
 
 		expectedTools := map[string]bool{
@@ -188,6 +192,11 @@ func TestServer_JSONRPC(t *testing.T) {
 			"trace_contributor":   true,
 			"trace_decision":      true,
 			"trace_event":         true,
+			"trace_graph":         true,
+			"trace_path":          true,
+			"analyze_impact":      true,
+			"find_dependencies":   true,
+			"find_dependents":     true,
 		}
 
 		for _, tool := range result.Tools {
@@ -333,7 +342,7 @@ func TestServer_ToolsExecution(t *testing.T) {
 	renderer := render.NewRenderer()
 	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
-	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader)
+	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil)
 	registry := mcp.NewRegistry()
 
 	// 1. Test list_decisions (all)
@@ -848,7 +857,7 @@ func TestServer_OwnershipToolsExecution(t *testing.T) {
 	renderer := render.NewRenderer()
 	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
-	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader)
+	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil)
 	registry := mcp.NewRegistry()
 
 	// 1. Test list_contributors
@@ -1017,3 +1026,424 @@ func TestServer_OwnershipToolsExecution(t *testing.T) {
 		}
 	})
 }
+
+func TestServer_GraphToolsExecution(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "reponerve-graph-server-test-*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	dbPath := filepath.Join(tempDir, "test.db")
+	db, err := sqlite.Open(dbPath)
+	if err != nil {
+		t.Fatalf("failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	if err := migrations.RunUp(db); err != nil {
+		t.Fatalf("failed to run migrations: %v", err)
+	}
+
+	repoID := "repo_graph_test"
+
+	// Insert repository
+	_, err = db.Exec("INSERT INTO repositories (id, name, path, default_branch, created_at, updated_at) VALUES (?, ?, ?, ?, datetime(), datetime())", repoID, "Graph Test Repo", tempDir, "main")
+	if err != nil {
+		t.Fatalf("failed to insert repository: %v", err)
+	}
+
+	// Insert source
+	_, err = db.Exec("INSERT INTO sources (id, repository_id, source_type, reference, title, author, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime(), datetime())", "src_g1", repoID, "adr", "docs/adr/0001.md", "Author", "2024-01-01T00:00:00Z")
+	if err != nil {
+		t.Fatalf("failed to insert source: %v", err)
+	}
+
+	// Insert two decisions with an explicit reference in content
+	_, err = db.Exec("INSERT INTO memory_decisions (id, repository_id, source_id, title, status, created_at) VALUES (?, ?, ?, ?, ?, datetime())", "dec_g1", repoID, "src_g1", "Use PostgreSQL", "Accepted")
+	if err != nil {
+		t.Fatalf("failed to insert decision g1: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO memory_decisions (id, repository_id, source_id, title, status, created_at) VALUES (?, ?, ?, ?, ?, datetime())", "dec_g2", repoID, "src_g1", "Add Connection Pooling", "Accepted")
+	if err != nil {
+		t.Fatalf("failed to insert decision g2: %v", err)
+	}
+
+	// Insert fact (subject chain: PostgreSQL -> SUPPORTS -> JSONB)
+	_, err = db.Exec("INSERT INTO memory_facts (id, repository_id, source_id, subject, predicate, object, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime())", "fact_g1", repoID, "src_g1", "PostgreSQL", "SUPPORTS", "JSONB")
+	if err != nil {
+		t.Fatalf("failed to insert fact g1: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO memory_facts (id, repository_id, source_id, subject, predicate, object, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime())", "fact_g2", repoID, "src_g1", "JSONB", "ENABLES", "SchemalessStorage")
+	if err != nil {
+		t.Fatalf("failed to insert fact g2: %v", err)
+	}
+
+	// Insert event
+	_, err = db.Exec("INSERT INTO memory_events (id, repository_id, event_type, title, description, source_id, timestamp, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime(), datetime())", "evt_g1", repoID, "FEATURE_INTRODUCED", "Introduce Pooling", "Connection pool added", "src_g1")
+	if err != nil {
+		t.Fatalf("failed to insert event: %v", err)
+	}
+
+	// Insert stored relationships
+	_, err = db.Exec("INSERT INTO memory_relationships (id, repository_id, from_id, to_id, relationship_type, created_at) VALUES (?, ?, ?, ?, ?, datetime())", "rel_g1", repoID, "fact_g1", "dec_g1", "FACT_SUPPORTS_DECISION")
+	if err != nil {
+		t.Fatalf("failed to insert rel g1: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO memory_relationships (id, repository_id, from_id, to_id, relationship_type, created_at) VALUES (?, ?, ?, ?, ?, datetime())", "rel_g2", repoID, "dec_g1", "evt_g1", "DECISION_RESULTS_IN_EVENT")
+	if err != nil {
+		t.Fatalf("failed to insert rel g2: %v", err)
+	}
+
+	// Insert contributor and expertise
+	_, err = db.Exec("INSERT INTO contributors (id, repository_id, email, name, first_seen, last_seen, commit_count) VALUES (?, ?, ?, ?, datetime(), datetime(), ?)", "contrib_g1", repoID, "dev@example.com", "Dev User", 5)
+	if err != nil {
+		t.Fatalf("failed to insert contributor: %v", err)
+	}
+	_, err = db.Exec("INSERT INTO expertise (id, repository_id, contributor_id, domain, score, evidence_json) VALUES (?, ?, ?, ?, ?, ?)", "exp_g1", repoID, "contrib_g1", "storage", 0.9, `{"commits":5,"recent_activity":true}`)
+	if err != nil {
+		t.Fatalf("failed to insert expertise: %v", err)
+	}
+
+	// Set up graph stack
+	er := storage.NewSQLiteEventReader(db)
+	dr := storage.NewSQLiteDecisionReader(db)
+	ir := storage.NewSQLiteIntentReader(db)
+	fr := storage.NewSQLiteFactReader(db)
+	rr := storage.NewSQLiteRelationshipReader(db)
+	cr := storage.NewSQLiteContributorReader(db)
+	expr := storage.NewSQLiteExpertiseReader(db)
+	sr := storage.NewSQLiteSourceReader(db)
+
+	ctxReader := context.NewMemoryContextReader(er, dr, ir, fr)
+	generator := context.NewGenerator(ctxReader)
+	renderer := render.NewRenderer()
+	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
+
+	// Build graph services using the test helper to avoid import cycle
+	graphService := buildGraphService(dr, ir, fr, er, rr, cr, expr, sr)
+
+	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader,
+		graphService.travEngine, graphService.impactSvc)
+	registry := mcp.NewRegistry()
+
+	// --- Tool discovery: verify graph schemas ---
+	t.Run("tools/list includes graph tools", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":1,"method":"tools/list"}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		if err := json.Unmarshal([]byte(output), &resp); err != nil {
+			t.Fatalf("failed to parse response: %v", err)
+		}
+		resultData, _ := json.Marshal(resp.Result)
+		var listResult ListToolsResult
+		_ = json.Unmarshal(resultData, &listResult)
+
+		graphToolNames := map[string]bool{
+			"trace_graph": false, "trace_path": false,
+			"find_dependencies": false, "find_dependents": false,
+			"analyze_impact": false,
+		}
+		for _, tool := range listResult.Tools {
+			if _, ok := graphToolNames[tool.Name]; ok {
+				graphToolNames[tool.Name] = true
+			}
+		}
+		for name, found := range graphToolNames {
+			if !found {
+				t.Errorf("graph tool %q not found in tools/list", name)
+			}
+		}
+
+		// Verify schema for analyze_impact has required fields
+		for _, tool := range listResult.Tools {
+			if tool.Name == "analyze_impact" {
+				if len(tool.InputSchema.Required) == 0 {
+					t.Error("analyze_impact schema missing required fields")
+				}
+				found := false
+				for _, req := range tool.InputSchema.Required {
+					if req == "node_type" {
+						found = true
+					}
+				}
+				if !found {
+					t.Error("analyze_impact schema required does not include node_type")
+				}
+			}
+		}
+	})
+
+	// --- trace_graph: empty start node (no outbound edges) ---
+	t.Run("trace_graph no paths", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"trace_graph","arguments":{"node_id":%q,"repository_id":%q}}}`+"\n",
+			"nod_nonexistent", repoID)
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+		// Should return a traversal result with empty paths
+		var travResult map[string]interface{}
+		_ = json.Unmarshal([]byte(result.Content[0].Text), &travResult)
+		if paths, ok := travResult["paths"]; ok {
+			if paths != nil {
+				pathsSlice, ok := paths.([]interface{})
+				if ok && len(pathsSlice) > 0 {
+					t.Errorf("expected no paths for unknown node, got %d", len(pathsSlice))
+				}
+			}
+		}
+	})
+
+	// --- trace_graph: decision node with outbound stored edges ---
+	t.Run("trace_graph from decision node", func(t *testing.T) {
+		// Compute the graph node ID for dec_g1
+		h := fmt.Sprintf("%s:%s:%s", repoID, "DECISION", "dec_g1")
+		_ = h // node ID is sha256 of this
+		// Use the entity ID to compute node ID via model.NodeID logic: sha256(repoID:nodeType:entityID)[:16]
+		nodeID := computeNodeID(repoID, "DECISION", "dec_g1")
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"trace_graph","arguments":{"node_id":%q,"repository_id":%q}}}`+"\n",
+			nodeID, repoID)
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+		// Traversal result should have at least one path (decision→event)
+		var travResult map[string]interface{}
+		_ = json.Unmarshal([]byte(result.Content[0].Text), &travResult)
+		paths, ok := travResult["paths"]
+		if !ok {
+			t.Fatal("expected 'paths' key in traversal result")
+		}
+		pathsSlice, _ := paths.([]interface{})
+		if len(pathsSlice) == 0 {
+			t.Error("expected at least one traversal path from decision node, got 0")
+		}
+		// Verify the path has nodes and edges
+		if len(pathsSlice) > 0 {
+			path0, _ := pathsSlice[0].(map[string]interface{})
+			if path0 == nil {
+				t.Fatal("expected path[0] to be an object")
+			}
+			if _, ok := path0["nodes"]; !ok {
+				t.Error("expected 'nodes' in path")
+			}
+			if _, ok := path0["edges"]; !ok {
+				t.Error("expected 'edges' in path")
+			}
+		}
+	})
+
+	// --- trace_path: no matching path ---
+	t.Run("trace_path no match", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"trace_path","arguments":{"start_node_id":%q,"end_node_id":%q,"repository_id":%q}}}`+"\n",
+			"nod_start", "nod_end", repoID)
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+		// Should return empty array (not error)
+		var paths []interface{}
+		_ = json.Unmarshal([]byte(result.Content[0].Text), &paths)
+		if len(paths) != 0 {
+			t.Errorf("expected 0 paths for no match, got %d", len(paths))
+		}
+	})
+
+	// --- find_dependencies: empty result ---
+	t.Run("find_dependencies empty", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"find_dependencies","arguments":{"node_id":%q,"repository_id":%q}}}`+"\n",
+			"nod_unknown", repoID)
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+	})
+
+	// --- find_dependents: empty result ---
+	t.Run("find_dependents empty", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"find_dependents","arguments":{"node_id":%q,"repository_id":%q}}}`+"\n",
+			"nod_unknown", repoID)
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+	})
+
+	// --- analyze_impact DECISION ---
+	t.Run("analyze_impact decision", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"analyze_impact","arguments":{"node_id":%q,"node_type":"DECISION","repository_id":%q}}}`+"\n",
+			"dec_g1", repoID)
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+		// Verify impact report structure
+		var report map[string]interface{}
+		if err := json.Unmarshal([]byte(result.Content[0].Text), &report); err != nil {
+			t.Fatalf("failed to parse impact report: %v", err)
+		}
+		paths, ok := report["impact_paths"]
+		if !ok {
+			t.Fatal("expected 'impact_paths' in impact report")
+		}
+		pathsSlice, _ := paths.([]interface{})
+		if len(pathsSlice) == 0 {
+			t.Error("expected at least one impact path for dec_g1, got 0")
+		}
+		// Verify reason and evidence preservation
+		if len(pathsSlice) > 0 {
+			ip0, _ := pathsSlice[0].(map[string]interface{})
+			if ip0 == nil {
+				t.Fatal("expected impact_paths[0] to be an object")
+			}
+			if reason, ok := ip0["reason"]; !ok || reason == "" {
+				t.Error("expected non-empty reason in impact path")
+			}
+			pathObj, _ := ip0["path"].(map[string]interface{})
+			if pathObj == nil {
+				t.Fatal("expected 'path' object in impact path")
+			}
+			if _, hasEdges := pathObj["edges"]; !hasEdges {
+				t.Error("expected 'edges' in impact path.path (evidence preservation)")
+			}
+		}
+	})
+
+	// --- analyze_impact FACT ---
+	t.Run("analyze_impact fact", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"analyze_impact","arguments":{"node_id":%q,"node_type":"FACT","repository_id":%q}}}`+"\n",
+			"fact_g1", repoID)
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+		var report map[string]interface{}
+		_ = json.Unmarshal([]byte(result.Content[0].Text), &report)
+		if _, ok := report["impact_paths"]; !ok {
+			t.Error("expected 'impact_paths' key in fact impact report")
+		}
+	})
+
+	// --- analyze_impact CONTRIBUTOR ---
+	t.Run("analyze_impact contributor", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"analyze_impact","arguments":{"node_id":%q,"node_type":"CONTRIBUTOR","repository_id":%q}}}`+"\n",
+			"contrib_g1", repoID)
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if result.IsError {
+			t.Fatalf("unexpected tool error: %s", result.Content[0].Text)
+		}
+		var report map[string]interface{}
+		_ = json.Unmarshal([]byte(result.Content[0].Text), &report)
+		if _, ok := report["impact_paths"]; !ok {
+			t.Error("expected 'impact_paths' key in contributor impact report")
+		}
+	})
+
+	// --- analyze_impact unsupported type ---
+	t.Run("analyze_impact unsupported type", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"analyze_impact","arguments":{"node_id":%q,"node_type":"UNKNOWN_TYPE","repository_id":%q}}}`+"\n",
+			"dec_g1", repoID)
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if !result.IsError {
+			t.Fatal("expected isError=true for unsupported node_type")
+		}
+		if !strings.Contains(result.Content[0].Text, "unsupported node_type") {
+			t.Errorf("expected error to mention 'unsupported node_type', got: %s", result.Content[0].Text)
+		}
+	})
+
+	// --- Error: missing node_id ---
+	t.Run("trace_graph missing node_id", func(t *testing.T) {
+		req := `{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"trace_graph","arguments":{}}}` + "\n"
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if !result.IsError {
+			t.Fatal("expected isError=true for missing node_id")
+		}
+	})
+
+	// --- Error: missing node_type for analyze_impact ---
+	t.Run("analyze_impact missing node_type", func(t *testing.T) {
+		req := fmt.Sprintf(`{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"analyze_impact","arguments":{"node_id":%q}}}`+"\n",
+			"dec_g1")
+		output := runServerTest(t, registry, service, req)
+
+		var resp JSONRPCResponse
+		_ = json.Unmarshal([]byte(output), &resp)
+		result := parseToolResult(t, resp.Result)
+		if !result.IsError {
+			t.Fatal("expected isError=true for missing node_type")
+		}
+	})
+}
+
+// graphServiceDeps holds graph service dependencies for tests.
+type graphServiceDeps struct {
+	travEngine *traversal.Engine
+	impactSvc  *impact.Service
+}
+
+func buildGraphService(
+	dr storage.DecisionReader,
+	ir storage.IntentReader,
+	fr storage.FactReader,
+	er storage.EventReader,
+	rr storage.RelationshipReader,
+	cr storage.ContributorReader,
+	expr storage.ExpertiseReader,
+	sr storage.SourceReader,
+) graphServiceDeps {
+	relEngine := relationships.NewEngine(dr, ir, fr, er, rr, cr, expr, sr)
+	travEngine := traversal.NewEngine(relEngine)
+	impactSvc := impact.NewService(travEngine)
+	return graphServiceDeps{
+		travEngine: travEngine,
+		impactSvc:  impactSvc,
+	}
+}
+
+func computeNodeID(repoID string, nodeType string, entityID string) string {
+	return model.NodeID(repoID, model.NodeType(nodeType), entityID)
+}
+
