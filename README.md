@@ -136,11 +136,11 @@ reponerve mcp
 
 Supported MCP capabilities:
 
-* Memory Queries
-* Decision Tracing
-* Decision Explanations
-* Repository Context Generation
-* Context Export
+* Memory Queries, Trace, and Explain
+* Repository Context Generation and Export
+* Ownership and Contributor Queries
+* Repository Intelligence
+* Knowledge Graph Traversal and Impact Analysis
 
 Compatible with:
 
@@ -165,10 +165,10 @@ Agents Third.
 
 # Current Status
 
-Current Release:
+Release Status:
 
 ```text
-v0.5.0-alpha
+v1.0.0 release-ready
 ```
 
 Completed Milestones:
@@ -188,13 +188,25 @@ v0.4.0-alpha
 
 v0.5.0-alpha
 ✓ MCP Server
+
+v0.7.0-alpha
+✓ Ownership Intelligence
+
+v0.8.0-alpha
+✓ Knowledge Graph Intelligence
+
+v0.9.0-alpha
+✓ Repository Intelligence
+
+v1.0.0
+✓ Agent Context, Search, Session, Workflow, and Production Readiness
 ```
 
 Current Focus:
 
 ```text
-v0.6.0-alpha
-Agent Intelligence
+v1.x
+Backlog curation and post-release follow-up
 ```
 
 ---
@@ -256,18 +268,28 @@ reponerve mcp
 * Query Engine
 * Context Engine
 * MCP Server
-
-## Planned
-
-* Agent Intelligence
+* Ownership Intelligence
+* Knowledge Graph Intelligence
+* Repository Intelligence
 * Repository Onboarding
 * Repository Q&A
 * Impact Analysis
+* Architectural Guidance
 * Context Compression
+* Agent Context Builder
+* Repository Search
+* Agent Session Intelligence
+* Workflow Intelligence
 
-## Deferred
+## Planned
 
-* Ownership Extraction
+* Workflow Templates
+* Session Export
+* Search Adapters
+* Semantic Search Experiments
+* Hybrid Search
+* User Defined Workflows
+* Agent Handoff Bundles
 
 ---
 

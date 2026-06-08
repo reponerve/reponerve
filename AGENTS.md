@@ -20,11 +20,11 @@ AI Third.
 
 ## Current Development Phase
 
-Phase 0 - Foundation
+Phase 7 - Release Readiness
 
 Current Release Target:
 
-v0.1.0-alpha
+v1.0.0
 
 ---
 
@@ -142,7 +142,7 @@ Before implementation:
 
 ## Current Goal
 
-Deliver v0.1.0-alpha.
+Approve RepoNerve for v1.0.0 release.
 
 # RepoNerve Architecture Rules
 

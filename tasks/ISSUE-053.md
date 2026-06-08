@@ -1,6 +1,6 @@
 # ISSUE-053 — Repository Search
 
-Status: Planned
+Status: Implemented
 
 Milestone: v1.0
 

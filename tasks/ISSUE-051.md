@@ -1,6 +1,6 @@
 # ISSUE-051 — Repository Intelligence MCP Tools
 
-Status: Planned
+Status: Implemented
 
 Milestone: v0.9.0-alpha
 
