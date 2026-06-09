@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
 	"github.com/reponerve/reponerve/internal/ownership/expertise"
 	ownerextraction "github.com/reponerve/reponerve/internal/ownership/extraction"
 	ownershipquery "github.com/reponerve/reponerve/internal/ownership/query"
 	querystorage "github.com/reponerve/reponerve/internal/query/storage"
 	"github.com/reponerve/reponerve/internal/storage/migrations"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
-	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
 	"github.com/reponerve/reponerve/pkg/models"
 )
 

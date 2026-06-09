@@ -23,54 +23,98 @@ import (
 type mockDecisionReader struct {
 	decisions []*memorymodels.Decision
 }
-func (m *mockDecisionReader) GetByID(ctx context.Context, id string) (*memorymodels.Decision, error) { return nil, nil }
-func (m *mockDecisionReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Decision, error) { return m.decisions, nil }
-func (m *mockDecisionReader) ListAll(ctx context.Context) ([]*memorymodels.Decision, error) { return nil, nil }
+
+func (m *mockDecisionReader) GetByID(ctx context.Context, id string) (*memorymodels.Decision, error) {
+	return nil, nil
+}
+func (m *mockDecisionReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Decision, error) {
+	return m.decisions, nil
+}
+func (m *mockDecisionReader) ListAll(ctx context.Context) ([]*memorymodels.Decision, error) {
+	return nil, nil
+}
 
 type mockIntentReader struct {
 	intents []*memorymodels.Intent
 }
-func (m *mockIntentReader) GetByID(ctx context.Context, id string) (*memorymodels.Intent, error) { return nil, nil }
-func (m *mockIntentReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Intent, error) { return m.intents, nil }
-func (m *mockIntentReader) ListAll(ctx context.Context) ([]*memorymodels.Intent, error) { return nil, nil }
+
+func (m *mockIntentReader) GetByID(ctx context.Context, id string) (*memorymodels.Intent, error) {
+	return nil, nil
+}
+func (m *mockIntentReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Intent, error) {
+	return m.intents, nil
+}
+func (m *mockIntentReader) ListAll(ctx context.Context) ([]*memorymodels.Intent, error) {
+	return nil, nil
+}
 
 type mockFactReader struct {
 	facts []*memorymodels.Fact
 }
-func (m *mockFactReader) GetByID(ctx context.Context, id string) (*memorymodels.Fact, error) { return nil, nil }
-func (m *mockFactReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Fact, error) { return m.facts, nil }
+
+func (m *mockFactReader) GetByID(ctx context.Context, id string) (*memorymodels.Fact, error) {
+	return nil, nil
+}
+func (m *mockFactReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Fact, error) {
+	return m.facts, nil
+}
 func (m *mockFactReader) ListAll(ctx context.Context) ([]*memorymodels.Fact, error) { return nil, nil }
 
 type mockEventReader struct {
 	events []*models.Event
 }
-func (m *mockEventReader) GetByID(ctx context.Context, id string) (*models.Event, error) { return nil, nil }
-func (m *mockEventReader) ListByRepository(ctx context.Context, repoID string) ([]*models.Event, error) { return m.events, nil }
+
+func (m *mockEventReader) GetByID(ctx context.Context, id string) (*models.Event, error) {
+	return nil, nil
+}
+func (m *mockEventReader) ListByRepository(ctx context.Context, repoID string) ([]*models.Event, error) {
+	return m.events, nil
+}
 func (m *mockEventReader) ListAll(ctx context.Context) ([]*models.Event, error) { return nil, nil }
 
 type mockRelationshipReader struct {
 	rels []*memorymodels.Relationship
 }
-func (m *mockRelationshipReader) GetByID(ctx context.Context, id string) (*memorymodels.Relationship, error) { return nil, nil }
-func (m *mockRelationshipReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Relationship, error) { return m.rels, nil }
-func (m *mockRelationshipReader) ListAll(ctx context.Context) ([]*memorymodels.Relationship, error) { return nil, nil }
+
+func (m *mockRelationshipReader) GetByID(ctx context.Context, id string) (*memorymodels.Relationship, error) {
+	return nil, nil
+}
+func (m *mockRelationshipReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Relationship, error) {
+	return m.rels, nil
+}
+func (m *mockRelationshipReader) ListAll(ctx context.Context) ([]*memorymodels.Relationship, error) {
+	return nil, nil
+}
 
 type mockContributorReader struct {
 	contribs []*models.Contributor
 }
-func (m *mockContributorReader) GetByID(ctx context.Context, repoID string, id string) (*models.Contributor, error) { return nil, nil }
-func (m *mockContributorReader) ListByRepository(ctx context.Context, repoID string) ([]*models.Contributor, error) { return m.contribs, nil }
+
+func (m *mockContributorReader) GetByID(ctx context.Context, repoID string, id string) (*models.Contributor, error) {
+	return nil, nil
+}
+func (m *mockContributorReader) ListByRepository(ctx context.Context, repoID string) ([]*models.Contributor, error) {
+	return m.contribs, nil
+}
 
 type mockExpertiseReader struct {
 	expertise []*models.Expertise
 }
-func (m *mockExpertiseReader) ListByRepository(ctx context.Context, repoID string) ([]*models.Expertise, error) { return m.expertise, nil }
-func (m *mockExpertiseReader) ListByContributor(ctx context.Context, repoID string, cID string) ([]*models.Expertise, error) { return nil, nil }
+
+func (m *mockExpertiseReader) ListByRepository(ctx context.Context, repoID string) ([]*models.Expertise, error) {
+	return m.expertise, nil
+}
+func (m *mockExpertiseReader) ListByContributor(ctx context.Context, repoID string, cID string) ([]*models.Expertise, error) {
+	return nil, nil
+}
 
 type mockSourceReader struct {
 	sources []*models.Source
 }
-func (m *mockSourceReader) ListByRepository(ctx context.Context, repoID string) ([]*models.Source, error) { return m.sources, nil }
+
+func (m *mockSourceReader) ListByRepository(ctx context.Context, repoID string) ([]*models.Source, error) {
+	return m.sources, nil
+}
 
 // --- Unit Tests ---
 

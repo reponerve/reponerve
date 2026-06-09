@@ -40,9 +40,9 @@ type parsedQuery struct {
 }
 
 type fieldSpec struct {
-	name string
+	name  string
 	value string
-	weak bool
+	weak  bool
 }
 
 type matchEvidence struct {

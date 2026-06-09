@@ -1,8 +1,8 @@
 package contextcmd
 
 import (
-	stdcontext "context"
 	"bytes"
+	stdcontext "context"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -378,4 +378,3 @@ func TestContextExportCommand(t *testing.T) {
 		}
 	})
 }
-

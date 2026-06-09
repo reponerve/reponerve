@@ -110,8 +110,9 @@ func classifyCommit(title string) (string, bool) {
 // commit title and returns a cleaned, title-cased string.
 //
 // Examples:
-//   "feat(cache): introduce redis cache" → "Introduce Redis Cache"
-//   "fix: resolve null pointer"          → "Resolve Null Pointer"
+//
+//	"feat(cache): introduce redis cache" → "Introduce Redis Cache"
+//	"fix: resolve null pointer"          → "Resolve Null Pointer"
 func deriveTitle(commitTitle string) string {
 	// Find the colon separator
 	idx := strings.Index(commitTitle, ":")

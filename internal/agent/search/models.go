@@ -15,11 +15,11 @@ const (
 
 // Entity type constants for search hits.
 const (
-	EntityTypeDecision    = "DECISION"
-	EntityTypeFact        = "FACT"
-	EntityTypeEvent       = "EVENT"
-	EntityTypeContributor = "CONTRIBUTOR"
-	EntityTypeExpertise   = "EXPERTISE"
+	EntityTypeDecision     = "DECISION"
+	EntityTypeFact         = "FACT"
+	EntityTypeEvent        = "EVENT"
+	EntityTypeContributor  = "CONTRIBUTOR"
+	EntityTypeExpertise    = "EXPERTISE"
 	EntityTypeRelationship = "RELATIONSHIP"
 )
 

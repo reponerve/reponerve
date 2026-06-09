@@ -37,7 +37,9 @@ func (m *mockDecisionReader) GetByID(_ context.Context, id string) (*memorymodel
 func (m *mockDecisionReader) ListByRepository(_ context.Context, _ string) ([]*memorymodels.Decision, error) {
 	return m.decisions, nil
 }
-func (m *mockDecisionReader) ListAll(_ context.Context) ([]*memorymodels.Decision, error) { return nil, nil }
+func (m *mockDecisionReader) ListAll(_ context.Context) ([]*memorymodels.Decision, error) {
+	return nil, nil
+}
 
 type mockFactReader struct {
 	facts []*memorymodels.Fact
@@ -122,7 +124,9 @@ func (m *mockIntentReader) GetByID(_ context.Context, _ string) (*memorymodels.I
 func (m *mockIntentReader) ListByRepository(_ context.Context, _ string) ([]*memorymodels.Intent, error) {
 	return nil, nil
 }
-func (m *mockIntentReader) ListAll(_ context.Context) ([]*memorymodels.Intent, error) { return nil, nil }
+func (m *mockIntentReader) ListAll(_ context.Context) ([]*memorymodels.Intent, error) {
+	return nil, nil
+}
 
 type mockSourceReader struct{}
 

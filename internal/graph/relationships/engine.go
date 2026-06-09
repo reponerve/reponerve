@@ -48,9 +48,9 @@ func NewEngine(
 }
 
 func (e *Engine) DecisionReader() storage.DecisionReader { return e.decisionReader }
-func (e *Engine) IntentReader() storage.IntentReader         { return e.intentReader }
-func (e *Engine) FactReader() storage.FactReader             { return e.factReader }
-func (e *Engine) EventReader() storage.EventReader           { return e.eventReader }
+func (e *Engine) IntentReader() storage.IntentReader     { return e.intentReader }
+func (e *Engine) FactReader() storage.FactReader         { return e.factReader }
+func (e *Engine) EventReader() storage.EventReader       { return e.eventReader }
 func (e *Engine) RelationshipReader() storage.RelationshipReader {
 	return e.relationshipReader
 }
@@ -159,8 +159,7 @@ func (e *Engine) Generate(ctx context.Context, repositoryID string) ([]*DerivedR
 				strings.Contains(contentLower, "depends on "+idLower) ||
 				strings.Contains(contentLower, "depends on: "+idLower)
 
-			containsPrefixToRef := refLower != "" && (
-				strings.Contains(contentLower, "see "+refLower) ||
+			containsPrefixToRef := refLower != "" && (strings.Contains(contentLower, "see "+refLower) ||
 				strings.Contains(contentLower, "depends on "+refLower) ||
 				strings.Contains(contentLower, "depends on: "+refLower))
 

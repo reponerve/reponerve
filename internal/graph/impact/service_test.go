@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
 	"github.com/reponerve/reponerve/internal/graph/model"
 	"github.com/reponerve/reponerve/internal/graph/relationships"
 	"github.com/reponerve/reponerve/internal/graph/traversal"
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
 	"github.com/reponerve/reponerve/internal/query/storage"
 	"github.com/reponerve/reponerve/internal/storage/migrations"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"

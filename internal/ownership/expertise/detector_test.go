@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/reponerve/reponerve/internal/ownership/expertise"
 	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/ownership/expertise"
 	"github.com/reponerve/reponerve/pkg/models"
 )
 
@@ -68,7 +68,7 @@ func TestDetector_Detect(t *testing.T) {
 	// Timestamps:
 	// Anchor: 2026-06-02T12:00:00Z (latest commit timestamp)
 	tAnchor := time.Date(2026, 6, 2, 12, 0, 0, 0, time.UTC)
-	tAliceCommit := time.Date(2026, 6, 1, 12, 0, 0, 0, time.UTC) // 1 day before anchor -> recent
+	tAliceCommit := time.Date(2026, 6, 1, 12, 0, 0, 0, time.UTC)   // 1 day before anchor -> recent
 	tBobAuthCommit := time.Date(2026, 5, 1, 12, 0, 0, 0, time.UTC) // 32 days before anchor -> not recent
 
 	sources := []*models.Source{

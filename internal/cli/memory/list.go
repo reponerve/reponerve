@@ -81,4 +81,3 @@ func loadDB() (*sqlite.Database, error) {
 	}
 	return db, nil
 }
-

@@ -328,8 +328,6 @@ func TestServer_ToolsExecution(t *testing.T) {
 		t.Fatalf("failed to insert relationship 3: %v", err)
 	}
 
-
-
 	// Set up Service
 	er := storage.NewSQLiteEventReader(db)
 	dr := storage.NewSQLiteDecisionReader(db)
@@ -1415,4 +1413,3 @@ func buildGraphService(
 func computeNodeID(repoID string, nodeType string, entityID string) string {
 	return model.NodeID(repoID, model.NodeType(nodeType), entityID)
 }
-
