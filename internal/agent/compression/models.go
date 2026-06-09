@@ -15,9 +15,9 @@ type CompressionOptions struct {
 
 // CompressedContext holds the deterministically truncated repository context.
 type CompressedContext struct {
-	RepositoryID string                    `json:"repositoryId"`
-	Decisions    []*memorymodels.Decision  `json:"decisions"`
-	Intents      []*memorymodels.Intent    `json:"intents"`
-	Facts        []*memorymodels.Fact      `json:"facts"`
-	Events       []*models.Event           `json:"events"`
+	RepositoryID string                   `json:"repositoryId"`
+	Decisions    []*memorymodels.Decision `json:"decisions"`
+	Intents      []*memorymodels.Intent   `json:"intents"`
+	Facts        []*memorymodels.Fact     `json:"facts"`
+	Events       []*models.Event          `json:"events"`
 }

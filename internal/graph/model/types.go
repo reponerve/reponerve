@@ -21,19 +21,19 @@ import (
 type NodeType string
 
 const (
-	NodeTypeIntent       NodeType = "INTENT"
-	NodeTypeDecision     NodeType = "DECISION"
-	NodeTypeFact         NodeType = "FACT"
-	NodeTypeEvent        NodeType = "EVENT"
-	NodeTypeContributor  NodeType = "CONTRIBUTOR"
-	NodeTypeExpertise    NodeType = "EXPERTISE"
+	NodeTypeIntent      NodeType = "INTENT"
+	NodeTypeDecision    NodeType = "DECISION"
+	NodeTypeFact        NodeType = "FACT"
+	NodeTypeEvent       NodeType = "EVENT"
+	NodeTypeContributor NodeType = "CONTRIBUTOR"
+	NodeTypeExpertise   NodeType = "EXPERTISE"
 )
 
 // RelationshipCategory indicates whether a connection is explicitly stored (fact) or derived (conclusion).
 type RelationshipCategory string
 
 const (
-	CategoryStored RelationshipCategory = "STORED"
+	CategoryStored  RelationshipCategory = "STORED"
 	CategoryDerived RelationshipCategory = "DERIVED"
 )
 
@@ -70,7 +70,7 @@ type GraphEdge struct {
 	// EvidenceJSON stores evidence supporting the edge.
 	// ISSUE-042 validates JSON syntax only.
 	// Evidence meaning is validated by future graph relationship engines.
-	EvidenceJSON string               `json:"evidence_json"`
+	EvidenceJSON string `json:"evidence_json"`
 }
 
 // NodeID computes a deterministic ID for a GraphNode.

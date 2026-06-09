@@ -44,4 +44,3 @@ type ContributorStore interface {
 type ExpertiseStore interface {
 	UpsertExpertise(ctx context.Context, expertise *models.Expertise) error
 }
-

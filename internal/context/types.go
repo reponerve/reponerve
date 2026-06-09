@@ -34,4 +34,3 @@ type FactContextReader interface {
 type ContextReader interface {
 	ReadContext(ctx stdcontext.Context, repositoryID string) (*ContextData, error)
 }
-

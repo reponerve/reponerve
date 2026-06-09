@@ -7,8 +7,8 @@ import (
 	contextcmd "github.com/reponerve/reponerve/internal/cli/contextcmd"
 	explaincmd "github.com/reponerve/reponerve/internal/cli/explain"
 	initcmd "github.com/reponerve/reponerve/internal/cli/init"
-	memorycmd "github.com/reponerve/reponerve/internal/cli/memory"
 	mcpcmd "github.com/reponerve/reponerve/internal/cli/mcp"
+	memorycmd "github.com/reponerve/reponerve/internal/cli/memory"
 	scancmd "github.com/reponerve/reponerve/internal/cli/scan"
 )
 

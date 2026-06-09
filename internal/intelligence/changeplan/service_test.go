@@ -36,17 +36,23 @@ func (m *mockDecisionReader) GetByID(ctx context.Context, id string) (*memorymod
 func (m *mockDecisionReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Decision, error) {
 	return m.decisions, nil
 }
-func (m *mockDecisionReader) ListAll(ctx context.Context) ([]*memorymodels.Decision, error) { return nil, nil }
+func (m *mockDecisionReader) ListAll(ctx context.Context) ([]*memorymodels.Decision, error) {
+	return nil, nil
+}
 
 type mockIntentReader struct {
 	intents []*memorymodels.Intent
 }
 
-func (m *mockIntentReader) GetByID(ctx context.Context, id string) (*memorymodels.Intent, error) { return nil, nil }
+func (m *mockIntentReader) GetByID(ctx context.Context, id string) (*memorymodels.Intent, error) {
+	return nil, nil
+}
 func (m *mockIntentReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Intent, error) {
 	return m.intents, nil
 }
-func (m *mockIntentReader) ListAll(ctx context.Context) ([]*memorymodels.Intent, error) { return nil, nil }
+func (m *mockIntentReader) ListAll(ctx context.Context) ([]*memorymodels.Intent, error) {
+	return nil, nil
+}
 
 type mockFactReader struct {
 	facts []*memorymodels.Fact
@@ -92,7 +98,9 @@ func (m *mockRelationshipReader) GetByID(ctx context.Context, id string) (*memor
 func (m *mockRelationshipReader) ListByRepository(ctx context.Context, repoID string) ([]*memorymodels.Relationship, error) {
 	return m.rels, nil
 }
-func (m *mockRelationshipReader) ListAll(ctx context.Context) ([]*memorymodels.Relationship, error) { return nil, nil }
+func (m *mockRelationshipReader) ListAll(ctx context.Context) ([]*memorymodels.Relationship, error) {
+	return nil, nil
+}
 
 type mockContributorReader struct {
 	contribs []*models.Contributor

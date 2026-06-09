@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
+	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
 	"github.com/reponerve/reponerve/internal/ownership/expertise"
 	"github.com/reponerve/reponerve/internal/storage/migrations"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
-	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
 	"github.com/reponerve/reponerve/pkg/models"
 )
 

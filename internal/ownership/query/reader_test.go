@@ -3,14 +3,14 @@ package query_test
 import (
 	"context"
 	"crypto/sha256"
-	"encoding/hex"
 	"database/sql"
+	"encoding/hex"
 	"errors"
 	"testing"
 	"time"
 
-	"github.com/reponerve/reponerve/internal/ownership/query"
 	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/ownership/query"
 	models "github.com/reponerve/reponerve/pkg/models"
 )
 
@@ -199,7 +199,7 @@ func TestReader_DeterministicSorting(t *testing.T) {
 
 func TestReader_TraceContributor(t *testing.T) {
 	repoID := "repo_1"
-	
+
 	testContributorID := func(repositoryID, name, email string) string {
 		var input string
 		if email != "" {

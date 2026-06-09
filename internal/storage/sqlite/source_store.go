@@ -42,4 +42,3 @@ func (s *SourceStore) UpsertSource(ctx context.Context, src *models.Source) erro
 	}
 	return nil
 }
-

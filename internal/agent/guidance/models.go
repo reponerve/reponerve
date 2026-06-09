@@ -7,9 +7,9 @@ import (
 
 // Guidance represents deterministic architectural guidance for a decision or event.
 type Guidance struct {
-	EntityID        string                  `json:"entityId"`
-	Reasons         []string                `json:"reasons"`
-	SupportingFacts []*memorymodels.Fact    `json:"supportingFacts"`
-	RelatedIntents  []*memorymodels.Intent  `json:"relatedIntents"`
-	RelatedEvents   []*models.Event         `json:"relatedEvents"`
+	EntityID        string                 `json:"entityId"`
+	Reasons         []string               `json:"reasons"`
+	SupportingFacts []*memorymodels.Fact   `json:"supportingFacts"`
+	RelatedIntents  []*memorymodels.Intent `json:"relatedIntents"`
+	RelatedEvents   []*models.Event        `json:"relatedEvents"`
 }
