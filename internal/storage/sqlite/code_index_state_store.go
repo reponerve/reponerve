@@ -2,7 +2,9 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"time"
 
 	codemodels "github.com/reponerve/reponerve/internal/code/models"
 )
@@ -15,6 +17,32 @@ type SQLiteCodeIndexStateStore struct {
 // NewSQLiteCodeIndexStateStore creates a new SQLiteCodeIndexStateStore.
 func NewSQLiteCodeIndexStateStore(db *Database) *SQLiteCodeIndexStateStore {
 	return &SQLiteCodeIndexStateStore{db: db}
+}
+
+// GetByRepository returns code index state for a repository.
+func (s *SQLiteCodeIndexStateStore) GetByRepository(ctx context.Context, repositoryID string) (*codemodels.CodeIndexState, error) {
+	query := `
+		SELECT repository_id, last_indexed_at, module_count, file_count,
+		       entity_count, relationship_count, link_count
+		FROM code_index_state
+		WHERE repository_id = ?
+	`
+	var state codemodels.CodeIndexState
+	var indexedAt string
+	err := s.db.QueryRowContext(ctx, query, repositoryID).Scan(
+		&state.RepositoryID, &indexedAt, &state.ModuleCount, &state.FileCount,
+		&state.EntityCount, &state.RelationshipCount, &state.LinkCount,
+	)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("get code index state: %w", err)
+	}
+	if t, parseErr := time.Parse(time.RFC3339, indexedAt); parseErr == nil {
+		state.LastIndexedAt = t
+	}
+	return &state, nil
 }
 
 // UpsertCodeIndexState inserts or updates code index state for a repository.

@@ -32,6 +32,7 @@ type builder struct {
 	rels        []*codemodels.CodeRelationship
 	packageIDs  map[string]string
 	fileIDs     map[string]string
+	funcIndex   map[string]string
 	relKeys     map[string]struct{}
 }
 
@@ -43,6 +44,7 @@ func newBuilder(repositoryID, modulePath, repoPath string, at time.Time) *builde
 		indexedAt:    at,
 		packageIDs:   make(map[string]string),
 		fileIDs:      make(map[string]string),
+		funcIndex:    make(map[string]string),
 		relKeys:      make(map[string]struct{}),
 	}
 }
@@ -144,6 +146,8 @@ func (b *builder) parseFile(filePath, moduleID string) error {
 	b.fileIDs[filePath] = fileID
 	b.link(relBelongsToPackage, fileID, packageID, filePath, "", "", startLine)
 
+	importMap := buildImportMap(file, b.modulePath)
+
 	for _, decl := range file.Decls {
 		switch d := decl.(type) {
 		case *ast.GenDecl:
@@ -155,12 +159,19 @@ func (b *builder) parseFile(filePath, moduleID string) error {
 				if !ok {
 					continue
 				}
-				b.addTypeSymbol(file, fset, filePath, packagePath, packageID, fileID, typeSpec)
+				structID := b.addTypeSymbol(file, fset, filePath, packagePath, packageID, fileID, typeSpec)
+				if structID != "" {
+					b.extractStructDependencies(file, fset, filePath, packagePath, typeSpec, structID)
+				}
 			}
 		case *ast.FuncDecl:
-			b.addFuncSymbol(file, fset, filePath, packagePath, packageID, fileID, d)
+			callerID := b.addFuncSymbol(file, fset, filePath, packagePath, packageID, fileID, d)
+			b.extractCalls(file, fset, filePath, packagePath, callerID, d, importMap)
 		}
 	}
+
+	b.extractEndpoints(file, fset, filePath, packagePath, packageID, fileID, importMap)
+	b.extractImplementsAssertions(file, fset, filePath, packagePath)
 
 	for _, imp := range file.Imports {
 		importPath := strings.Trim(imp.Path.Value, `"`)
@@ -176,7 +187,7 @@ func (b *builder) parseFile(filePath, moduleID string) error {
 	return nil
 }
 
-func (b *builder) addTypeSymbol(file *ast.File, fset *token.FileSet, filePath, packagePath, packageID, fileID string, spec *ast.TypeSpec) {
+func (b *builder) addTypeSymbol(file *ast.File, fset *token.FileSet, filePath, packagePath, packageID, fileID string, spec *ast.TypeSpec) string {
 	entityType := codemodels.EntityTypeTypeAlias
 	switch spec.Type.(type) {
 	case *ast.StructType:
@@ -211,9 +222,13 @@ func (b *builder) addTypeSymbol(file *ast.File, fset *token.FileSet, filePath, p
 	})
 	b.link(relBelongsToPackage, id, packageID, filePath, spec.Name.Name, "", startLine)
 	b.link(relDefinedInFile, id, fileID, filePath, spec.Name.Name, filepath.Base(filePath), startLine)
+	if entityType == codemodels.EntityTypeStruct {
+		return id
+	}
+	return ""
 }
 
-func (b *builder) addFuncSymbol(file *ast.File, fset *token.FileSet, filePath, packagePath, packageID, fileID string, decl *ast.FuncDecl) {
+func (b *builder) addFuncSymbol(file *ast.File, fset *token.FileSet, filePath, packagePath, packageID, fileID string, decl *ast.FuncDecl) string {
 	startLine := fset.Position(decl.Pos()).Line
 	endLine := fset.Position(decl.End()).Line
 
@@ -248,6 +263,8 @@ func (b *builder) addFuncSymbol(file *ast.File, fset *token.FileSet, filePath, p
 	})
 	b.link(relBelongsToPackage, id, packageID, filePath, decl.Name.Name, "", startLine)
 	b.link(relDefinedInFile, id, fileID, filePath, decl.Name.Name, filepath.Base(filePath), startLine)
+	b.funcIndex[funcIndexKey(packagePath, decl.Name.Name)] = id
+	return id
 }
 
 func (b *builder) link(relType, fromID, toID, filePath, fromSymbol, toSymbol string, line int) {

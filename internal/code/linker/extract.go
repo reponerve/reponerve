@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	goFilePathPattern = regexp.MustCompile(`(?:^|[\s"'(,])([a-zA-Z0-9][\w./-]*\.go)`)
-	packagePathPattern = regexp.MustCompile(`(?:^|[\s"'(,])((?:internal|cmd|pkg)/[\w./-]+)`)
+	goFilePathPattern    = regexp.MustCompile(`(?:^|[\s"'(,])([a-zA-Z0-9][\w./-]*\.go)`)
+	packagePathPattern   = regexp.MustCompile(`(?:^|[\s"'(,])((?:internal|cmd|pkg)/[\w./-]+)`)
+	camelCaseSymbolPattern = regexp.MustCompile(`\b([A-Z][a-zA-Z0-9]{2,})\b`)
 )
 
 type textMatch struct {
@@ -59,6 +60,30 @@ func extractPackagePaths(text, field string) []textMatch {
 		}
 		seen[path] = struct{}{}
 		matches = append(matches, textMatch{Value: path, Field: field})
+	}
+	return matches
+}
+
+func extractShortSymbols(text, field string, nameIndex map[string][]string) []textMatch {
+	if strings.TrimSpace(text) == "" || len(nameIndex) == 0 {
+		return nil
+	}
+	seen := make(map[string]struct{})
+	var matches []textMatch
+	for _, sub := range camelCaseSymbolPattern.FindAllStringSubmatch(text, -1) {
+		if len(sub) < 2 {
+			continue
+		}
+		name := sub[1]
+		qualified, ok := nameIndex[name]
+		if !ok || len(qualified) != 1 {
+			continue
+		}
+		if _, exists := seen[qualified[0]]; exists {
+			continue
+		}
+		seen[qualified[0]] = struct{}{}
+		matches = append(matches, textMatch{Value: qualified[0], Field: field})
 	}
 	return matches
 }

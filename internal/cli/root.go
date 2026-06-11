@@ -6,6 +6,11 @@ import (
 	askcmd "github.com/reponerve/reponerve/internal/cli/ask"
 	contextcmd "github.com/reponerve/reponerve/internal/cli/contextcmd"
 	explaincmd "github.com/reponerve/reponerve/internal/cli/explain"
+	explainfilecmd "github.com/reponerve/reponerve/internal/cli/explainfile"
+	explainfunctioncmd "github.com/reponerve/reponerve/internal/cli/explainfunction"
+	explaininterfacecmd "github.com/reponerve/reponerve/internal/cli/explaininterface"
+	explainstructcmd "github.com/reponerve/reponerve/internal/cli/explainstruct"
+	explaintypecmd "github.com/reponerve/reponerve/internal/cli/explaintype"
 	impactcmd "github.com/reponerve/reponerve/internal/cli/impactcmd"
 	initcmd "github.com/reponerve/reponerve/internal/cli/init"
 	searchcmd "github.com/reponerve/reponerve/internal/cli/search"
@@ -28,6 +33,11 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(askcmd.NewCommand())
 	rootCmd.AddCommand(searchcmd.NewCommand())
 	rootCmd.AddCommand(explaincmd.NewCommand())
+	rootCmd.AddCommand(explainfilecmd.NewCommand())
+	rootCmd.AddCommand(explainfunctioncmd.NewCommand())
+	rootCmd.AddCommand(explainstructcmd.NewCommand())
+	rootCmd.AddCommand(explaininterfacecmd.NewCommand())
+	rootCmd.AddCommand(explaintypecmd.NewCommand())
 	rootCmd.AddCommand(impactcmd.NewCommand())
 	rootCmd.AddCommand(memorycmd.NewCommand())
 	rootCmd.AddCommand(contextcmd.NewCommand())

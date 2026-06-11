@@ -66,6 +66,7 @@ type RepositoryCodeRelationshipStore interface {
 
 // CodeIndexStateStore defines persistence for code index state.
 type CodeIndexStateStore interface {
+	GetByRepository(ctx context.Context, repositoryID string) (*codemodels.CodeIndexState, error)
 	UpsertCodeIndexState(ctx context.Context, state *codemodels.CodeIndexState) error
 	UpdateLinkCount(ctx context.Context, repositoryID string, linkCount int) error
 }
