@@ -6,7 +6,7 @@ Status: Draft
 
 Authors: RepoNerve Contributors
 
-Last Updated: 2026-06-05
+Last Updated: 2026-06-11
 
 ---
 
@@ -14,20 +14,9 @@ Last Updated: 2026-06-05
 
 This document defines the engineering and product milestones required to deliver RepoNerve.
 
-The roadmap is designed around a single principle:
+The product mission is **Software Understanding** — preserving and transferring software knowledge so humans and AI can understand, change, and evolve software without repeated repository exploration.
 
-> Build repository memory first.
-
-Everything else is layered on top of memory.
-
-The roadmap intentionally prioritizes:
-
-1. Memory
-2. Understanding
-3. Context
-4. AI Integration
-
-in that order.
+The roadmap principle remains: build repository memory first, then deliver Software Understanding through Development Experience.
 
 ---
 
@@ -64,7 +53,8 @@ AI Skills
 | Phase 4 | Context Engine          |
 | Phase 5 | MCP Skills              |
 | Phase 6 | Repository Intelligence |
-| Phase 7 | v1.0 Release            |
+| Phase 7 | v0.x Iterations (ISSUE-059–062) → v1.0 scope |
+| Phase 8 | v1.0.0 Release                                 |
 
 ---
 
@@ -644,11 +634,151 @@ Repository understanding exceeds simple retrieval.
 
 ---
 
-# Phase 7: v1.0 Release
+# Phase 7: Code Intelligence & Development Experience
 
 Status:
 
-Release Readiness
+Planned
+
+Target:
+
+Code Understanding + Development-Facing Orchestration
+
+Issue:
+
+ISSUE-057
+
+Depends On:
+
+ARCH-001 — Architecture Realignment For Software Understanding (architecture approval)
+
+Strategy and iteration plan:
+
+* `docs/roadmap/v1.0-iteration-plan.md` — **authoritative v0.x → v1.0 path**
+* `docs/product/implementation-status.md` — honest code snapshot
+* `docs/product/token-economics.md` — AI cost optimization thesis
+* `docs/product/market-positioning.md` — competitive landscape
+
+---
+
+## Release Strategy
+
+**v1.0.0 is the only product release.** All scoped capabilities ship together.
+
+**v0.x.0-alpha tags are engineering iterations** toward v1.0 — not partial product releases.
+
+| Tag | Issue | Focus |
+| --- | --- | --- |
+| `v0.10.0-alpha` | ISSUE-059 | Foundation fixes (expertise, CLI exposure, debt) |
+| `v0.11.0-alpha` | ISSUE-057 steps 1–4 | Code Intelligence core |
+| `v0.12.0-alpha` | ISSUE-057 steps 5–9 | Development Experience + linking |
+| `v0.13.0-alpha` | ISSUE-060 | Token Intelligence layer |
+| `v0.14.0-alpha` | ISSUE-061 | Evidence Graph + Session Memory |
+| `v0.15.0-alpha` | ISSUE-062 | Multi-language code intelligence |
+| `v1.0.0` | Phase 8 | Full acceptance + release tag |
+
+Alpha tags validate incremental progress. `v1.0.0` is tagged only when **all** rows above are complete.
+
+---
+
+## Objective
+
+Deliver Code Intelligence, Repository-Code Linking, Feature Understanding, and Development Experience — completing RepoNerve v1.0.
+
+Repository Intelligence is complete.
+
+This phase delivers:
+
+```text
+Code Intelligence
+    +
+Repository-Code Linking
+    +
+Feature Understanding
+    +
+Development Experience
+    =
+Software Understanding
+```
+
+---
+
+## Deliverables
+
+### Code Intelligence
+
+```text
+Symbol extraction
+File graph
+Package graph
+Call graph
+Symbol dependency analysis
+```
+
+Entities: Files, Packages, Types, Interfaces, Functions, Methods, API Endpoints
+
+Relationships: CALLS, IMPORTS, IMPLEMENTS, DEPENDS_ON, EXPOSES_ENDPOINT
+
+---
+
+### Repository-Code Linking
+
+```text
+Cross-authority link extraction
+repository_code_relationships storage
+Bidirectional link traversal
+Evidence on every link
+```
+
+---
+
+### Feature Understanding
+
+```text
+Feature topic resolution
+Feature → Code → Ownership → Decisions → Impact
+```
+
+---
+
+### Development Experience
+
+```text
+ask
+explain
+explain-file
+explain-function
+explain-struct
+explain-interface
+explain-type
+plan
+impact
+review
+```
+
+Explain output combines Code Context + Repository Context.
+
+---
+
+## Exit Criteria
+
+Code structure indexed deterministically.
+
+All development-facing CLI commands work end-to-end.
+
+Explain output combines code and repository context.
+
+Evidence and provenance preserved.
+
+Humans and AI agents can understand and evolve software with minimal repository exploration.
+
+---
+
+# Phase 8: v1.0 Release
+
+Status:
+
+Blocked on Phase 7 (ISSUE-059 through ISSUE-062)
 
 Target:
 
@@ -658,7 +788,7 @@ Production-Ready Open Source Release
 
 ## Objective
 
-Release stable RepoNerve platform.
+Release stable RepoNerve v1.0 with Code Intelligence, Repository-Code Linking, Feature Understanding, and Development Experience.
 
 ---
 
@@ -668,27 +798,32 @@ Release stable RepoNerve platform.
 
 ```text
 init
-
 scan
-
 ask
-
 explain
-
+explain-file
+explain-function
+explain-struct
+explain-interface
+explain-type
+plan
+impact
+review
 context
+mcp
 ```
 
 ---
 
-### Stable Memory Engine
+### Stable Code Intelligence
 
 ---
 
-### Stable Query Engine
+### Stable Development Experience
 
 ---
 
-### Stable Context Engine
+### Stable Repository Intelligence
 
 ---
 
@@ -708,11 +843,24 @@ context
 
 Public v1.0 release completed.
 
+Release state:
+
+| Capability | Required |
+| --- | --- |
+| Knowledge Preservation | ✅ Core platform operational |
+| Repository Intelligence | ✅ |
+| Code Intelligence | ✅ |
+| Repository-Code Linking | ✅ |
+| Feature Understanding | ✅ |
+| Development Experience | ✅ |
+| Software Understanding | ✅ |
+| RepoNerve v1.0 | 🚀 Released |
+
 ---
 
-# Future Roadmap
+# Out of Scope (Not v1.0)
 
-The following are intentionally outside the current roadmap.
+The following are intentionally outside v1.0 and not planned as a separate product release:
 
 ---
 
@@ -822,12 +970,8 @@ Local First
 
 # Guiding Statement
 
-RepoNerve will not become valuable because it generates code.
+RepoNerve preserves software knowledge and transfers understanding.
 
-RepoNerve will become valuable because it preserves and serves the knowledge behind software systems.
+Understanding first. Evidence second. AI third.
 
-Memory first.
-
-Context second.
-
-AI third.
+Software Understanding is the outcome. Development Experience is how users consume RepoNerve.

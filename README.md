@@ -1,60 +1,99 @@
 # RepoNerve
 
-> Repository Intelligence for Humans and AI Agents.
+> The intelligence layer for software understanding.
 
-RepoNerve is an open-source platform that captures repository knowledge, builds a structured memory graph, generates repository context, and exposes that intelligence through MCP (Model Context Protocol).
+RepoNerve preserves, organizes, and transfers software knowledge so that understanding survives beyond individual contributors and remains accessible to both humans and AI systems.
 
 Software remembers code.
 
-Software forgets why.
+Software forgets context.
 
-RepoNerve preserves the why.
+RepoNerve prevents knowledge loss and reduces the cost of software understanding.
 
 ---
 
 # Vision
 
-Every repository should be able to explain itself.
+RepoNerve reduces the time, effort, and token consumption required for humans and AI systems to understand and evolve software.
 
-To developers.
+Every repository should be self-explaining — how it works, why it exists, who owns it, and how to change it safely.
 
-To teams.
+---
 
-To AI coding agents.
+# What Problems Does RepoNerve Solve?
+
+RepoNerve answers the questions developers and AI agents ask every day:
+
+* **Explain this code** — Which files, packages, functions, and APIs are involved? What is the call graph?
+* **Explain this feature** — Why does it exist? What decisions shaped it?
+* **Who owns this area?** — Who created it? Who has expertise?
+* **What breaks if I change this?** — What depends on it? What is impacted?
+* **Who should review this?** — Which reviewers have the required expertise?
+* **Add OAuth login** — What areas are affected? Where should I start?
+
+Examples:
+
+```bash
+reponerve explain "metadata panel"
+reponerve explain-file "metadata-panel.tsx"
+reponerve explain-function "BuildMetadataPanel"
+reponerve ask "Who owns authentication?"
+reponerve impact "user-service"
+reponerve review "metadata panel"
+reponerve plan "Add OAuth login"
+```
 
 ---
 
 # What RepoNerve Does
 
-RepoNerve transforms repository artifacts into structured knowledge.
+RepoNerve delivers **Software Understanding** through knowledge preservation, software memory, intelligence capabilities, and Development Experience.
 
-Repository
-↓
-Ingestion
-↓
-Memory Graph
-↓
-Query Engine
-↓
-Context Engine
-↓
-MCP Server
-↓
-AI Agents
+```text
+Knowledge Preservation          (Core Platform Capability)
+    ↓
+Software Memory
+    ↓
+Repository Intelligence + Code Intelligence
+    ↓
+Repository-Code Linking
+    ↓
+Feature Understanding
+    ↓
+Development Experience
+    ↓
+Software Understanding
+    ↓
+CLI / MCP
+    ↓
+Developers and AI Agents
+```
 
-RepoNerve extracts:
+**Knowledge Preservation** — core platform foundation. Stores memory, ownership, context, code entities, and repository-code links. All intelligence layers depend on it.
 
-* Events
-* Decisions
-* Intents
-* Facts
-* Relationships
+**Software Memory** — durable organizational knowledge that survives contributor turnover and architectural evolution.
 
-and converts them into actionable repository intelligence.
+**Repository Intelligence** — why the software exists (memory, context, ownership, graph, discovery, reviewers, change planning).
+
+**Code Intelligence** — how the software works (modules, packages, symbols, call graphs).
+
+**Repository-Code Linking** — deterministic connections between repository entities (decisions, facts, events) and code entities (files, symbols). Required for unified explain output.
+
+**Feature Understanding** — feature-level resolution: Feature → Code → Ownership → Decisions → Impact.
+
+**Development Experience** — how users consume RepoNerve (`ask`, `explain`, `plan`, `impact`, `review`, and symbol-level explain commands).
 
 ---
 
 # Core Capabilities
+
+## Code Intelligence
+
+Deterministic code structure extraction and analysis.
+
+* File, package, type, and function indexing
+* Symbol resolution
+* Call graph and dependency analysis
 
 ## Memory Engine
 
@@ -72,25 +111,18 @@ Extract:
 * Facts
 * Relationships
 
----
-
 ## Query Engine
 
-Explore repository knowledge.
+Explore repository knowledge. Part of the **Understanding Engine** — the retrieval layer spanning repository memory, code intelligence, and repository-code links.
 
 Commands:
 
 ```bash
 reponerve memory list decisions
-
 reponerve memory get decision <id>
-
 reponerve memory trace decision <id>
-
 reponerve memory explain decision <id>
 ```
-
----
 
 ## Context Engine
 
@@ -100,33 +132,31 @@ Commands:
 
 ```bash
 reponerve context generate
-
 reponerve context export
 ```
 
-Example output:
+## Development Experience
 
-```text
-Repository Context
+Development-facing workflows that orchestrate Code Intelligence and Repository Intelligence.
 
-Key Decisions
-...
+v1.0 commands (ISSUE-057):
 
-Key Intents
-...
-
-Key Facts
-...
-
-Recent Events
-...
+```bash
+reponerve ask "Who created metadata panel?"
+reponerve explain "metadata panel"
+reponerve explain-file "metadata-panel.tsx"
+reponerve explain-function "BuildMetadataPanel"
+reponerve explain-struct "MetadataPanel"
+reponerve explain-interface "Searcher"
+reponerve explain-type "HandlerFunc"
+reponerve plan "Add OAuth login"
+reponerve impact "user-service"
+reponerve review "metadata panel"
 ```
-
----
 
 ## MCP Server
 
-Expose repository intelligence directly to AI coding agents.
+Expose intelligence directly to AI coding agents.
 
 Start the server:
 
@@ -150,16 +180,56 @@ Compatible with:
 * Cline
 * Roo
 * Codex
+* GitHub Copilot Chat
 
 ---
 
 # Philosophy
 
-Memory First.
+Understanding first.
 
-Context Second.
+Evidence second.
 
-Agents Third.
+AI third.
+
+Software Understanding is the outcome. Development Experience is the product surface.
+
+---
+
+# Why RepoNerve (Token Economics)
+
+Premium LLM models are expensive and getting costlier. Most agent cost is not generation — it is **re-exploring the repository** every session (file reads, greps, summaries).
+
+RepoNerve inverts that:
+
+```text
+EXPENSIVE:  LLM reads repo → LLM understands → LLM acts
+CHEAP:      reponerve scan (0 LLM tokens) → MCP context pack → LLM acts
+```
+
+* **Scan once** — deterministic extraction, no LLM required
+* **Query cheaply** — structured MCP tools return bounded evidence
+* **Persist understanding** — session 50 does not re-pay the exploration tax
+
+See `docs/product/token-economics.md`.
+
+---
+
+# Market Position
+
+RepoNerve is **Software Understanding Infrastructure** — not another code graph, not generic chat memory, not an autonomous coding agent.
+
+Code-graph tools answer *where*. RepoNerve answers *why*, *who*, and *what breaks* — with mandatory evidence.
+
+See `docs/product/market-positioning.md`.
+
+---
+
+# Greenfield Projects
+
+RepoNerve does not build a repository from an idea. It ensures a repository built from an idea **stays understandable** — capture ADRs and scan from the first commit so agents never accumulate amnesia.
+
+See `docs/product/greenfield-guide.md`.
 
 ---
 
@@ -168,46 +238,43 @@ Agents Third.
 Release Status:
 
 ```text
-v1.0.0 release-ready
+Knowledge Preservation — Core Platform Capability
+Repository Intelligence — Complete
+Code Intelligence — In Progress (ISSUE-057)
+Repository-Code Linking — In Progress (ISSUE-057)
+Feature Understanding — In Progress (ISSUE-057)
+Development Experience — In Progress (ISSUE-057)
+v1.0.0 — Release deferred (single product release; no v1.x)
 ```
 
 Completed Milestones:
 
 ```text
-v0.1.0-alpha
-✓ Ingestion Engine
-
-v0.2.0-alpha
-✓ Memory Engine
-
-v0.3.0-alpha
-✓ Query Engine
-
-v0.4.0-alpha
-✓ Context Engine
-
-v0.5.0-alpha
-✓ MCP Server
-
-v0.7.0-alpha
-✓ Ownership Intelligence
-
-v0.8.0-alpha
-✓ Knowledge Graph Intelligence
-
-v0.9.0-alpha
-✓ Repository Intelligence
-
-v1.0.0
-✓ Agent Context, Search, Session, Workflow, and Production Readiness
+v0.1.0-alpha  ✓ Ingestion Engine
+v0.2.0-alpha  ✓ Memory Engine
+v0.3.0-alpha  ✓ Query Engine
+v0.4.0-alpha  ✓ Context Engine
+v0.5.0-alpha  ✓ MCP Server
+v0.7.0-alpha  ✓ Ownership Intelligence
+v0.8.0-alpha  ✓ Knowledge Graph Intelligence
+v0.9.0-alpha  ✓ Repository Intelligence
+v1.0.0-alpha  ✓ Agent Context, Search, Session, Workflow, Production Readiness
 ```
 
 Current Focus:
 
 ```text
-v1.x
-Backlog curation and post-release follow-up
+ISSUE-059 — Foundation fixes (v0.10.0-alpha)
+ISSUE-057 — Code Intelligence & Development Experience (v0.11–v0.12.0-alpha)
+ISSUE-060 — Token Intelligence (v0.13.0-alpha)
+ISSUE-061 — Evidence Graph & Session Memory (v0.14.0-alpha)
+ISSUE-062 — Multi-language (v0.15.0-alpha)
+ARCH-001 — Architecture Realignment (documentation approval)
 ```
+
+RepoNerve v1.0.0 is not tagged until all issues above pass acceptance criteria.
+
+**Implementation honesty:** Repository Intelligence is shipped. Code Intelligence and most Development Experience commands are not yet implemented — `explain` is currently a stub. See `docs/product/implementation-status.md`.
 
 ---
 
@@ -270,7 +337,28 @@ reponerve context generate
 reponerve mcp
 ```
 
-If output is empty after scan, add commits and/or ADR files, then run `reponerve scan` again.
+## GitHub Copilot Chat Integration
+
+RepoNerve integrates with GitHub Copilot Chat via MCP. Add the following to your `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "reponerve": {
+      "command": "reponerve",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Then open Copilot Chat, select **Agent** mode, and ask questions like:
+
+* "What decisions have been made about the authentication system?"
+* "Who are the key contributors to this repository?"
+* "Explain the event related to database migration."
+
+See `docs/copilot-chat-integration.md` for full details.
 
 ---
 
@@ -285,8 +373,13 @@ If output is empty after scan, add commits and/or ADR files, then run `reponerve
 ## By Goal
 
 * Understand product direction: `docs/vision/`
+* Market positioning and competitors: `docs/product/market-positioning.md`
+* Token economics and AI cost optimization: `docs/product/token-economics.md`
+* Greenfield / build-from-scratch workflows: `docs/product/greenfield-guide.md`
+* Honest code vs docs status: `docs/product/implementation-status.md`
 * Understand architecture: `docs/architecture/`
 * Track planned work: `docs/roadmap/`
+* v0.x → v1.0 iteration plan: `docs/roadmap/v1.0-iteration-plan.md`
 * Review quality and release readiness: `docs/audits/`
 * Follow release process: `docs/releases/v1.0.0-checklist.md` and `docs/releases/v1.0.0.md`
 
@@ -304,25 +397,27 @@ If output is empty after scan, add commits and/or ADR files, then run `reponerve
 * Ownership Intelligence
 * Knowledge Graph Intelligence
 * Repository Intelligence
-* Repository Onboarding
-* Repository Q&A
-* Impact Analysis
-* Architectural Guidance
-* Context Compression
 * Agent Context Builder
 * Repository Search
 * Agent Session Intelligence
 * Workflow Intelligence
 
-## Planned
+## In Progress — v0.x Iterations Toward v1.0.0
 
-* Workflow Templates
-* Session Export
-* Search Adapters
-* Semantic Search Experiments
-* Hybrid Search
-* User Defined Workflows
-* Agent Handoff Bundles
+| Iteration | Issue | Scope |
+| --- | --- | --- |
+| v0.10.0-alpha | ISSUE-059 | Foundation fixes |
+| v0.11–v0.12.0-alpha | ISSUE-057 | Code Intelligence + Development Experience |
+| v0.13.0-alpha | ISSUE-060 | Token Intelligence |
+| v0.14.0-alpha | ISSUE-061 | Evidence Graph + Session Memory |
+| v0.15.0-alpha | ISSUE-062 | Multi-language code intelligence |
+| **v1.0.0** | Phase 8 | Full product release |
+
+RepoNerve v1.0.0 is the only product release. All iterations must complete before the tag.
+
+See `docs/roadmap/v1.0-iteration-plan.md`.
+
+All remaining scope (ISSUE-057 through ISSUE-062) ships in v1.0.0 via v0.10–v0.15 alpha iterations: `docs/roadmap/v1.0-iteration-plan.md`.
 
 ---
 

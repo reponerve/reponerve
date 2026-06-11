@@ -14,9 +14,9 @@ Last Updated: 2026-06-05
 
 Thank you for your interest in contributing to RepoNerve.
 
-RepoNerve is an open-source memory and context engine for software repositories.
+RepoNerve is the intelligence layer for software understanding.
 
-Our mission is to preserve engineering knowledge and make it accessible to both humans and AI systems.
+Our mission is to preserve, organize, and transfer software knowledge so that understanding survives beyond individual contributors and remains accessible to both humans and AI systems.
 
 We welcome contributions from:
 
@@ -61,9 +61,17 @@ Every contribution should support the project's core values.
 
 ---
 
+## Understanding First
+
+RepoNerve exists to reduce the cost of software understanding.
+
+Contributions should help humans and AI understand, change, review, and evolve software with less repeated repository exploration.
+
+---
+
 ## Memory First
 
-RepoNerve exists to preserve repository knowledge.
+Repository memory is the technical foundation for knowledge preservation.
 
 Features that improve memory quality are generally preferred over features that increase complexity.
 

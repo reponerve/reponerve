@@ -407,6 +407,18 @@ AI systems require high-quality repository context.
 
 Understanding repositories has become one of the most expensive parts of AI-assisted development.
 
+As LLM capabilities and prices increase, teams face a paradox: premium models are more capable but **context limits and per-token cost** make repeated repository exploration unsustainable.
+
+Typical agent sessions burn tens of thousands of tokens on:
+
+* File reads and directory walks
+* `git diff`, `grep`, test output (often compressible separately via tools like RTK)
+* Re-summarizing structure the repository already encodes
+
+RepoNerve addresses the **understanding** portion of this waste: pre-index deterministically, deliver bounded context packs, persist memory across sessions.
+
+See `docs/product/token-economics.md`.
+
 ---
 
 # Problem Statement

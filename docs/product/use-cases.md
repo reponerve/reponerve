@@ -6,7 +6,7 @@ Status: Draft
 
 Authors: RepoNerve Contributors
 
-Last Updated: 2026-06-05
+Last Updated: 2026-06-11
 
 ---
 
@@ -547,6 +547,129 @@ The following use cases are post-MVP:
 * UC-010: Repository Memory Skill
 * UC-011: Explain Component Skill
 * UC-012: Context Pack Skill
+
+---
+
+# Category 4: Token-Efficient AI Development
+
+Use cases focused on reducing LLM token consumption while preserving answer quality.
+
+---
+
+## UC-013: Agent Session Within Context Limits
+
+### Actor
+
+AI Coding Agent (Cursor, Claude Code, Copilot)
+
+### Goal
+
+Complete implementation tasks without exhausting context limits on repository exploration.
+
+### RepoNerve Workflow
+
+1. `reponerve scan` (zero LLM tokens)
+2. Agent connects via MCP
+3. Agent calls bounded tools (`explain`, `analyze_impact`, `trace_graph`) instead of bulk file reads
+
+### Success Criteria
+
+* 80%+ reduction in exploration tokens per task
+* Same or better answer quality with evidence
+
+See `docs/product/token-economics.md`.
+
+---
+
+## UC-014: Premium Model Cost Control
+
+### Actor
+
+Engineering Team
+
+### Goal
+
+Use premium models for implementation while avoiding repeated archaeology costs.
+
+### Success Criteria
+
+* Understanding delivered before LLM reasoning begins
+* Measurable token savings per sprint
+
+---
+
+# Category 5: Greenfield Development
+
+Use cases for repositories built from scratch.
+
+---
+
+## UC-015: Memory From First Commit
+
+### Actor
+
+Founding Developer or Agent-Assisted Greenfield Team
+
+### Goal
+
+Preserve architectural decisions from project inception.
+
+### RepoNerve Workflow
+
+```bash
+reponerve init
+# Write ADR-0001 before or with first code
+git commit
+reponerve scan
+reponerve mcp
+```
+
+### Success Criteria
+
+* No "documentation debt" accumulation
+* Session N retains understanding from session 1
+
+See `docs/product/greenfield-guide.md`.
+
+---
+
+## UC-016: Plan New Feature on Young Codebase
+
+### Actor
+
+Developer
+
+### Goal
+
+Get implementation guidance before writing code.
+
+### RepoNerve Workflow
+
+```bash
+reponerve plan "Add OAuth Login"
+```
+
+### Success Criteria
+
+* Starting points, impacted areas, and linked decisions returned with evidence
+
+---
+
+# Category 6: Market Differentiation
+
+---
+
+## UC-017: Evidence-Backed "Why" Questions
+
+### Goal
+
+Answer why questions with ADR + commit + code links — not LLM inference alone.
+
+### Competitor gap
+
+Code-graph tools answer *where*; RepoNerve answers *why* with mandatory evidence.
+
+See `docs/product/market-positioning.md`.
 
 ---
 
