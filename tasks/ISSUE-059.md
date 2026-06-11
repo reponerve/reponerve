@@ -1,6 +1,6 @@
 # ISSUE-059 — Foundation Fixes
 
-Status: Planned
+Status: Complete
 
 Milestone: v0.10.0-alpha
 
@@ -18,14 +18,14 @@ Ship quick wins and technical debt fixes on the existing Repository Intelligence
 
 # Deliverables
 
-| Item | Location |
-| --- | --- |
-| Wire expertise detection into scan | `internal/ingestion/coordinator.go` |
-| Expose agent search via CLI | `internal/agent/search/` → CLI |
-| Expose graph impact via CLI | `internal/graph/impact/` → CLI |
-| Fix scan help text (git + adr only) | `internal/cli/scan/scan.go` |
-| Wire or remove FTS5 `memory_search` | `internal/storage/migrations.go` + readers |
-| Document unified impact authority | `docs/architecture/` — agent vs graph impact |
+| Item | Status | Location |
+| --- | --- | --- |
+| Wire expertise detection into scan | Done | `internal/ingestion/coordinator.go` |
+| Expose agent search via CLI | Done | `internal/cli/search/` |
+| Expose graph impact via CLI | Done | `internal/cli/impactcmd/` |
+| Fix scan help text (git + adr only) | Done | `internal/cli/scan/scan.go` |
+| Wire FTS5 `memory_search` into search + scan rebuild | Done | `internal/storage/sqlite/memory_search_store.go`, `internal/memory/searchindex/`, `internal/agent/search/service.go` |
+| Document unified impact authority | Done | `internal/cli/impactcmd/impact.go` long help |
 
 ---
 

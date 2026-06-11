@@ -9,6 +9,7 @@ import (
 
 	"github.com/reponerve/reponerve/internal/intelligence/discovery"
 	"github.com/reponerve/reponerve/internal/query/storage"
+	searchstorage "github.com/reponerve/reponerve/internal/storage"
 	models "github.com/reponerve/reponerve/pkg/models"
 )
 
@@ -59,6 +60,7 @@ type Service struct {
 	contributorReader  storage.ContributorReader
 	expertiseReader    storage.ExpertiseReader
 	discoveryService   *discovery.Service
+	memorySearch       searchstorage.MemorySearchReader
 }
 
 // NewService constructs a new Repository Search Service.
@@ -70,6 +72,7 @@ func NewService(
 	cr storage.ContributorReader,
 	expr storage.ExpertiseReader,
 	discoverySvc *discovery.Service,
+	memorySearch searchstorage.MemorySearchReader,
 ) *Service {
 	return &Service{
 		decisionReader:     dr,
@@ -79,6 +82,7 @@ func NewService(
 		contributorReader:  cr,
 		expertiseReader:    expr,
 		discoveryService:   discoverySvc,
+		memorySearch:       memorySearch,
 	}
 }
 
@@ -97,6 +101,12 @@ func (s *Service) Search(ctx stdcontext.Context, repositoryID string, query stri
 	}
 
 	var hits []*SearchHit
+
+	ftsHits, err := s.searchMemoryFTS(ctx, repositoryID, parsed)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search memory index: %w", err)
+	}
+	hits = append(hits, ftsHits...)
 
 	if s.shouldSearchType(parsed.typeFilter, EntityTypeDecision) {
 		decisionHits, err := s.searchDecisions(ctx, repositoryID, parsed)
@@ -603,4 +613,43 @@ func sortHits(hits []*SearchHit) {
 		}
 		return hits[i].EntityID < hits[j].EntityID
 	})
+}
+
+func (s *Service) searchMemoryFTS(ctx stdcontext.Context, repositoryID string, pq *parsedQuery) ([]*SearchHit, error) {
+	if s.memorySearch == nil || len(pq.terms) == 0 {
+		return nil, nil
+	}
+
+	ftsResults, err := s.memorySearch.Search(ctx, repositoryID, pq.terms, pq.typeFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	hits := make([]*SearchHit, 0, len(ftsResults))
+	for i, result := range ftsResults {
+		evidenceJSON, err := json.Marshal(matchEvidence{MatchType: "fts", Field: "memory_search"})
+		if err != nil {
+			return nil, err
+		}
+
+		hits = append(hits, &SearchHit{
+			EntityType:   result.EntityType,
+			EntityID:     result.MemoryID,
+			Source:       SourceMemory,
+			MatchScore:   ftsRankToScore(i, result.Rank),
+			EvidenceJSON: string(evidenceJSON),
+		})
+	}
+	return hits, nil
+}
+
+func ftsRankToScore(position int, rank float64) int {
+	switch {
+	case position == 0 && rank < -10:
+		return ScoreExact
+	case position < 3:
+		return ScorePrefix
+	default:
+		return ScorePartial
+	}
 }

@@ -7,7 +7,9 @@ import (
 
 	"github.com/reponerve/reponerve/internal/config"
 	"github.com/reponerve/reponerve/internal/ingestion"
+	"github.com/reponerve/reponerve/internal/memory/searchindex"
 	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
+	"github.com/reponerve/reponerve/internal/query/storage"
 	"github.com/reponerve/reponerve/internal/scanner/adr"
 	"github.com/reponerve/reponerve/internal/scanner/git"
 	"github.com/reponerve/reponerve/internal/scanner/repository"
@@ -19,7 +21,7 @@ func NewCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "scan",
 		Short: "Scan the repository to build memory",
-		Long:  `Scan repository artifacts (code, git history, PRs, ADRs) to build and update repository memory.`,
+		Long:  `Scan repository artifacts (git history and ADRs) to build and update repository memory.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			workspaceDir := config.GetWorkspaceDir()
 			cfg, err := config.Load(workspaceDir)
@@ -43,6 +45,8 @@ func NewCommand() *cobra.Command {
 			factStore := memorystorage.NewSQLiteFactStore(db)
 			relationshipStore := memorystorage.NewSQLiteRelationshipStore(db)
 			contributorStore := sqlite.NewSQLiteContributorStore(db)
+			expertiseStore := sqlite.NewSQLiteExpertiseStore(db)
+			memorySearchStore := sqlite.NewMemorySearchStore(db)
 
 			reg := ingestion.NewRegistry()
 			reg.Register("git", git.NewScanner(scanStateStore))
@@ -60,6 +64,7 @@ func NewCommand() *cobra.Command {
 				factStore,
 				relationshipStore,
 				contributorStore,
+				expertiseStore,
 				pipeline,
 			)
 
@@ -71,10 +76,22 @@ func NewCommand() *cobra.Command {
 				return err
 			}
 
+			if err := searchindex.RebuildFromRepository(
+				cmd.Context(),
+				result.RepositoryID,
+				storage.NewSQLiteEventReader(db),
+				storage.NewSQLiteDecisionReader(db),
+				storage.NewSQLiteFactReader(db),
+				memorySearchStore,
+			); err != nil {
+				return fmt.Errorf("failed to rebuild search index: %w", err)
+			}
+
 			// 3. Print results
 			cmd.Println("✓ Repository discovered")
 			cmd.Printf("✓ %d commits indexed\n", result.CommitsIndexed)
 			cmd.Printf("✓ %d ADRs indexed\n", result.ADRsIndexed)
+			cmd.Println("✓ Search index rebuilt")
 			cmd.Println("Scan completed.")
 
 			return nil

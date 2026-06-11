@@ -180,7 +180,8 @@ func TestCoordinator_Run(t *testing.T) {
 	factStore := memorystorage.NewSQLiteFactStore(db)
 	relationshipStore := memorystorage.NewSQLiteRelationshipStore(db)
 	contributorStore := sqlite.NewSQLiteContributorStore(db)
-	coord := NewCoordinator(discovery, repoStore, sourceStore, scanStateStore, eventStore, decisionStore, intentStore, factStore, relationshipStore, contributorStore, pipeline)
+	expertiseStore := sqlite.NewSQLiteExpertiseStore(db)
+	coord := NewCoordinator(discovery, repoStore, sourceStore, scanStateStore, eventStore, decisionStore, intentStore, factStore, relationshipStore, contributorStore, expertiseStore, pipeline)
 	ctx := context.Background()
 
 	result, err := coord.Run(ctx, tempDir)

@@ -1011,7 +1011,7 @@ Architecture is approved only when:
 
 | Reviewer | Status | Date |
 | --- | --- | --- |
-| Architecture | Pending | |
-| Product | Pending | |
+| Architecture | Approved | 2026-06-11 |
+| Product | Approved | 2026-06-11 |
 
-Implementation begins after approval.
+Implementation in progress (see `tasks/IMPLEMENTATION-PLAN.md`).

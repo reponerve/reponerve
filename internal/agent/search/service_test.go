@@ -16,6 +16,7 @@ import (
 	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
 	"github.com/reponerve/reponerve/internal/query/storage"
 	"github.com/reponerve/reponerve/internal/storage/migrations"
+	searchstorage "github.com/reponerve/reponerve/internal/storage"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
 	models "github.com/reponerve/reponerve/pkg/models"
 )
@@ -158,7 +159,7 @@ func buildSearchService(
 	impactSvc := impact.NewService(travEngine)
 	discoverySvc := discovery.NewService(dr, fr, er, cr, expr, rr, relEngine, travEngine, impactSvc)
 
-	return NewService(dr, fr, er, rr, cr, expr, discoverySvc)
+	return NewService(dr, fr, er, rr, cr, expr, discoverySvc, nil)
 }
 
 func emptyService() *Service {
@@ -739,11 +740,19 @@ func TestService_Integration(t *testing.T) {
 	expr := storage.NewSQLiteExpertiseReader(db)
 	sr := storage.NewSQLiteSourceReader(db)
 
+	memorySearchStore := sqlite.NewMemorySearchStore(db)
+	if err := memorySearchStore.Rebuild(ctx, repoID, []searchstorage.MemorySearchDocument{
+		{MemoryID: "dec_1", RepositoryID: repoID, EntityType: EntityTypeDecision, Title: "Use SQLite as primary store", Content: "Accepted"},
+		{MemoryID: "fact_1", RepositoryID: repoID, EntityType: EntityTypeFact, Title: "database", Content: "engine sqlite"},
+	}); err != nil {
+		t.Fatalf("failed to rebuild memory search index: %v", err)
+	}
+
 	relEngine := relationships.NewEngine(dr, ir, fr, er, rr, cr, expr, sr)
 	travEngine := traversal.NewEngine(relEngine)
 	impactSvc := impact.NewService(travEngine)
 	discoverySvc := discovery.NewService(dr, fr, er, cr, expr, rr, relEngine, travEngine, impactSvc)
-	svc := NewService(dr, fr, er, rr, cr, expr, discoverySvc)
+	svc := NewService(dr, fr, er, rr, cr, expr, discoverySvc, memorySearchStore)
 
 	t.Run("Search_PlainText", func(t *testing.T) {
 		result, err := svc.Search(ctx, repoID, "SQLite")

@@ -68,7 +68,9 @@ func TestRootCommandHelp(t *testing.T) {
 		"init",
 		"scan",
 		"ask",
+		"search",
 		"explain",
+		"impact",
 		"context",
 		"mcp",
 	}

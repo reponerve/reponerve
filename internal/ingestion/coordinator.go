@@ -14,6 +14,7 @@ import (
 	"github.com/reponerve/reponerve/internal/memory/linker"
 	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
 	ownerextraction "github.com/reponerve/reponerve/internal/ownership/extraction"
+	"github.com/reponerve/reponerve/internal/ownership/expertise"
 	"github.com/reponerve/reponerve/internal/scanner/repository"
 	"github.com/reponerve/reponerve/internal/storage"
 )
@@ -30,6 +31,7 @@ type Coordinator struct {
 	factStore         memorystorage.FactStore
 	relationshipStore memorystorage.RelationshipStore
 	contributorStore  storage.ContributorStore
+	expertiseStore    storage.ExpertiseStore
 	pipeline          *Pipeline
 }
 
@@ -45,6 +47,7 @@ func NewCoordinator(
 	factStore memorystorage.FactStore,
 	relationshipStore memorystorage.RelationshipStore,
 	contributorStore storage.ContributorStore,
+	expertiseStore storage.ExpertiseStore,
 	pipeline *Pipeline,
 ) *Coordinator {
 	return &Coordinator{
@@ -58,6 +61,7 @@ func NewCoordinator(
 		factStore:         factStore,
 		relationshipStore: relationshipStore,
 		contributorStore:  contributorStore,
+		expertiseStore:    expertiseStore,
 		pipeline:          pipeline,
 	}
 }
@@ -168,6 +172,18 @@ func (c *Coordinator) Run(ctx context.Context, path string) (*ScanResult, error)
 	for _, contr := range contribs {
 		if err := c.contributorStore.UpsertContributor(ctx, contr); err != nil {
 			return nil, fmt.Errorf("failed to store contributor: %w", err)
+		}
+	}
+
+	// Detect and persist domain expertise (ISSUE-038 / ISSUE-059)
+	expertiseDetector := expertise.NewDetector()
+	expertiseRecords, err := expertiseDetector.Detect(ctx, contribs, events, decisions, facts, sources)
+	if err != nil {
+		return nil, fmt.Errorf("failed to detect expertise: %w", err)
+	}
+	for _, exp := range expertiseRecords {
+		if err := c.expertiseStore.UpsertExpertise(ctx, exp); err != nil {
+			return nil, fmt.Errorf("failed to store expertise: %w", err)
 		}
 	}
 
