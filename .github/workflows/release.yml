@@ -41,13 +41,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ secrets.GPG_FINGERPRINT }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-
-  homebrew:
-    needs: release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Homebrew Workflow
-        uses: actions/github-script@v7
-        with:
-          script: |
-            console.log('Homebrew formula will be auto-updated by GoReleaser');
