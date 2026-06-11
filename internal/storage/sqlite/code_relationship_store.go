@@ -41,3 +41,12 @@ func (s *SQLiteCodeRelationshipStore) UpsertCodeRelationship(ctx context.Context
 	}
 	return nil
 }
+
+// DeleteByRepository removes all code relationships for a repository.
+func (s *SQLiteCodeRelationshipStore) DeleteByRepository(ctx context.Context, repositoryID string) error {
+	_, err := s.db.ExecContext(ctx, `DELETE FROM code_relationships WHERE repository_id = ?`, repositoryID)
+	if err != nil {
+		return fmt.Errorf("failed to delete code relationships: %w", err)
+	}
+	return nil
+}

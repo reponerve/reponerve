@@ -16,3 +16,9 @@ func RelationshipID(repositoryID, relationshipType, fromEntityID, toEntityID str
 	sum := sha256.Sum256([]byte(repositoryID + ":" + relationshipType + ":" + fromEntityID + ":" + toEntityID))
 	return hex.EncodeToString(sum[:])
 }
+
+// RepositoryCodeLinkID returns a deterministic identifier for a repository-code link.
+func RepositoryCodeLinkID(repositoryID, relationshipType, repositoryEntityID, codeEntityID string) string {
+	sum := sha256.Sum256([]byte(repositoryID + ":" + relationshipType + ":" + repositoryEntityID + ":" + codeEntityID))
+	return hex.EncodeToString(sum[:])
+}

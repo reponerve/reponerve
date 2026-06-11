@@ -51,3 +51,12 @@ func (s *SQLiteCodeEntityStore) UpsertCodeEntity(ctx context.Context, e *codemod
 	}
 	return nil
 }
+
+// DeleteByRepository removes all code entities for a repository.
+func (s *SQLiteCodeEntityStore) DeleteByRepository(ctx context.Context, repositoryID string) error {
+	_, err := s.db.ExecContext(ctx, `DELETE FROM code_entities WHERE repository_id = ?`, repositoryID)
+	if err != nil {
+		return fmt.Errorf("failed to delete code entities: %w", err)
+	}
+	return nil
+}

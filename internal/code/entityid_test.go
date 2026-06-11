@@ -13,6 +13,14 @@ func TestEntityIDDeterministic(t *testing.T) {
 	}
 }
 
+func TestRepositoryCodeLinkIDDeterministic(t *testing.T) {
+	a := RepositoryCodeLinkID("repo1", "EVENT_REFERENCES_CODE", "evt_1", "code_1")
+	b := RepositoryCodeLinkID("repo1", "EVENT_REFERENCES_CODE", "evt_1", "code_1")
+	if a != b {
+		t.Fatalf("expected deterministic repository-code link ID")
+	}
+}
+
 func TestRelationshipIDDeterministic(t *testing.T) {
 	a := RelationshipID("repo1", "CALLS", "from", "to")
 	b := RelationshipID("repo1", "CALLS", "from", "to")

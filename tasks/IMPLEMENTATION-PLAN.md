@@ -24,7 +24,7 @@ Authoritative iteration map: `docs/roadmap/v1.0-iteration-plan.md`
 
 Ready to tag `v0.10.0-alpha`.
 
-## Track B — ISSUE-057 Step 1 (`v0.11.0-alpha`) — IN PROGRESS
+## Track B — ISSUE-057 Steps 1–4 (`v0.11.0-alpha`) — COMPLETE
 
 | Task | Status |
 | --- | --- |
@@ -32,8 +32,12 @@ Ready to tag `v0.10.0-alpha`.
 | Migration v9 (code tables) | Done |
 | Code storage stores (SQLite) | Done |
 | Entity ID determinism tests | Done |
-| Go parser / indexer | **Next** |
-| Register code scanner in ingestion | Next |
+| Go parser / indexer | Done |
+| Wire indexer into scan coordinator | Done |
+| Repository-code linker | Done |
+| Code Intelligence service API | Done |
+
+Ready to tag `v0.11.0-alpha` after commit.
 
 ---
 
