@@ -129,17 +129,25 @@ type indexedText struct {
 }
 
 type codeIndex struct {
-	files       map[string]*codemodels.CodeEntity
-	packages    map[string]*codemodels.CodeEntity
-	byQualified map[string]*codemodels.CodeEntity
-	symbolNames []string
+	files          map[string]*codemodels.CodeEntity
+	packages       map[string]*codemodels.CodeEntity
+	byQualified    map[string]*codemodels.CodeEntity
+	symbolNames    []string
+	uniqueShortNames map[string][]string
 }
 
 func buildCodeIndex(entities []*codemodels.CodeEntity) *codeIndex {
 	idx := &codeIndex{
-		files:       make(map[string]*codemodels.CodeEntity),
-		packages:    make(map[string]*codemodels.CodeEntity),
-		byQualified: make(map[string]*codemodels.CodeEntity),
+		files:            make(map[string]*codemodels.CodeEntity),
+		packages:         make(map[string]*codemodels.CodeEntity),
+		byQualified:      make(map[string]*codemodels.CodeEntity),
+		uniqueShortNames: make(map[string][]string),
+	}
+	shortNameCounts := make(map[string]int)
+	for _, e := range entities {
+		if isLinkableSymbolType(e.EntityType) {
+			shortNameCounts[e.Name]++
+		}
 	}
 	for _, e := range entities {
 		idx.byQualified[e.QualifiedName] = e
@@ -157,9 +165,22 @@ func buildCodeIndex(entities []*codemodels.CodeEntity) *codeIndex {
 				idx.symbolNames = append(idx.symbolNames, e.QualifiedName)
 			}
 		}
+		if isLinkableSymbolType(e.EntityType) && shortNameCounts[e.Name] == 1 {
+			idx.uniqueShortNames[e.Name] = append(idx.uniqueShortNames[e.Name], e.QualifiedName)
+		}
 	}
 	sort.Strings(idx.symbolNames)
 	return idx
+}
+
+func isLinkableSymbolType(entityType string) bool {
+	switch entityType {
+	case codemodels.EntityTypeStruct, codemodels.EntityTypeInterface, codemodels.EntityTypeTypeAlias,
+		codemodels.EntityTypeFunction, codemodels.EntityTypeMethod, codemodels.EntityTypeEndpoint:
+		return true
+	default:
+		return false
+	}
 }
 
 func (l *Linker) loadADRContent(ctx context.Context, repositoryID string) map[string]string {
@@ -243,6 +264,15 @@ func (l *Linker) matchTexts(
 				continue
 			}
 			if link := l.buildLink(repositoryID, repoEntityType, repoEntityID, relType, entity, "symbol_reference", match, indexedAt, seen); link != nil {
+				links = append(links, link)
+			}
+		}
+		for _, match := range extractShortSymbols(text.Text, text.Field, index.uniqueShortNames) {
+			entity := index.byQualified[match.Value]
+			if entity == nil {
+				continue
+			}
+			if link := l.buildLink(repositoryID, repoEntityType, repoEntityID, relType, entity, "short_symbol_reference", match, indexedAt, seen); link != nil {
 				links = append(links, link)
 			}
 		}

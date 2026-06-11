@@ -1,27 +1,28 @@
 package explaincmd
 
 import (
+	"context"
+
 	"github.com/spf13/cobra"
+
+	"github.com/reponerve/reponerve/internal/agent/development"
+	"github.com/reponerve/reponerve/internal/cli/devwire"
 )
 
 // NewCommand creates and returns the explain subcommand.
 func NewCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:   "explain [component]",
-		Short: "Explain a repository component",
-		Long:  `Provide understanding of a component, including purpose, history, dependencies, and ownership.`,
-		Args:  cobra.MaximumNArgs(1),
+		Use:   "explain [topic]",
+		Short: "Explain a repository topic with code and repository context",
+		Long:  `Combine Code Intelligence and Repository Intelligence into a unified explanation with evidence and repository-code links.`,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			component := ""
-			if len(args) > 0 {
-				component = args[0]
-			}
-			if component != "" {
-				cmd.Printf("Explaining component %q...\n", component)
-			} else {
-				cmd.Println("Explaining component...")
-			}
-			return nil
+			return devwire.RunExplanation(cmd, args[0], func(ctx context.Context, session *devwire.Handle, topic string) (*development.DevelopmentExplanation, error) {
+				return session.Service.Explain(ctx, development.DevelopmentRequest{
+					RepositoryID: session.RepositoryID,
+					Topic:        topic,
+				})
+			})
 		},
 	}
 }

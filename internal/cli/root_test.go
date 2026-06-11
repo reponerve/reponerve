@@ -70,6 +70,11 @@ func TestRootCommandHelp(t *testing.T) {
 		"ask",
 		"search",
 		"explain",
+		"explain-file",
+		"explain-function",
+		"explain-struct",
+		"explain-interface",
+		"explain-type",
 		"impact",
 		"context",
 		"mcp",
@@ -137,35 +142,52 @@ func TestAskCommand(t *testing.T) {
 			t.Errorf("expected output to contain %q, got %q", expected, output)
 		}
 
-		expectedFallback := "No deterministic answer pattern matched this question."
-		if !strings.Contains(output, expectedFallback) {
-			t.Errorf("expected output to contain %q, got %q", expectedFallback, output)
+		if !strings.Contains(output, "Answer Type:") {
+			t.Errorf("expected structured answer output, got %q", output)
+		}
+		if !strings.Contains(output, "No deterministic answer pattern matched") &&
+			!strings.Contains(output, "Search found") &&
+			!strings.Contains(output, "No decision evidence") {
+			t.Errorf("expected fallback or search summary in output, got %q", output)
+		}
+	})
+}
+
+func TestExplainFileCommand(t *testing.T) {
+	t.Run("no arguments", func(t *testing.T) {
+		_, err := executeCommand("explain-file")
+		if err == nil {
+			t.Fatal("expected explain-file without path to fail")
+		}
+		if !strings.Contains(err.Error(), "accepts 1 arg") {
+			t.Fatalf("expected arg validation error, got %v", err)
 		}
 	})
 }
 
 func TestExplainCommand(t *testing.T) {
 	t.Run("no arguments", func(t *testing.T) {
-		output, err := executeCommand("explain")
-		if err != nil {
-			t.Fatalf("unexpected error executing explain: %v", err)
+		_, err := executeCommand("explain")
+		if err == nil {
+			t.Fatal("expected explain without topic to fail")
 		}
-
-		expected := "Explaining component..."
-		if !strings.Contains(output, expected) {
-			t.Errorf("expected output to contain %q, got %q", expected, output)
+		if !strings.Contains(err.Error(), "accepts 1 arg") {
+			t.Fatalf("expected arg validation error, got %v", err)
 		}
 	})
 
-	t.Run("with component name", func(t *testing.T) {
+	t.Run("with topic", func(t *testing.T) {
 		output, err := executeCommand("explain", "services/auth")
 		if err != nil {
 			t.Fatalf("unexpected error executing explain: %v", err)
 		}
 
-		expected := `Explaining component "services/auth"...`
+		expected := "Topic: services/auth"
 		if !strings.Contains(output, expected) {
 			t.Errorf("expected output to contain %q, got %q", expected, output)
+		}
+		if !strings.Contains(output, "REPOSITORY CONTEXT") {
+			t.Errorf("expected repository context section, got %q", output)
 		}
 	})
 }

@@ -40,30 +40,52 @@ func New(
 func (idx *Indexer) Index(ctx context.Context, repositoryID, repositoryPath string) error {
 	repositoryPath = filepath.Clean(repositoryPath)
 	if _, err := os.Stat(filepath.Join(repositoryPath, "go.mod")); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil
+		if _, workErr := os.Stat(filepath.Join(repositoryPath, "go.work")); workErr != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				return nil
+			}
+			return fmt.Errorf("stat go.mod: %w", err)
 		}
-		return fmt.Errorf("stat go.mod: %w", err)
 	}
 
-	modulePath, goModFile, err := discoverModulePath(repositoryPath)
+	skip, err := shouldSkipIndexing(ctx, idx.stateStore, repositoryID, repositoryPath)
+	if err != nil {
+		return fmt.Errorf("incremental index check: %w", err)
+	}
+	if skip {
+		return nil
+	}
+
+	moduleRoots, err := discoverModuleRoots(repositoryPath)
 	if err != nil {
 		return fmt.Errorf("module discovery failed: %w", err)
 	}
 
-	files, err := listGoFiles(repositoryPath)
-	if err != nil {
-		return fmt.Errorf("go file discovery failed: %w", err)
-	}
-	sort.Strings(files)
-
 	now := time.Now().UTC()
-	b := newBuilder(repositoryID, modulePath, repositoryPath, now)
-	moduleID := b.addModuleEntity(modulePath, goModFile)
+	b := newBuilder(repositoryID, moduleRoots[0].modulePath, repositoryPath, now)
 
-	for _, filePath := range files {
-		if err := b.parseFile(filePath, moduleID); err != nil {
-			return err
+	for _, root := range moduleRoots {
+		files, err := listGoFiles(root.path)
+		if err != nil {
+			return fmt.Errorf("go file discovery failed: %w", err)
+		}
+		sort.Strings(files)
+
+		moduleID := b.addModuleEntity(root.modulePath, root.goModFile)
+		prefix := ""
+		if root.path != repositoryPath {
+			relRoot, err := filepath.Rel(repositoryPath, root.path)
+			if err == nil && relRoot != "." {
+				prefix = filepath.ToSlash(relRoot)
+			}
+		}
+		for _, filePath := range files {
+			if prefix != "" {
+				filePath = prefix + "/" + filePath
+			}
+			if err := b.parseFile(filePath, moduleID); err != nil {
+				return err
+			}
 		}
 	}
 
