@@ -114,11 +114,11 @@ func TestScanCommand(t *testing.T) {
 func TestAskCommand(t *testing.T) {
 	t.Run("no arguments", func(t *testing.T) {
 		output, err := executeCommand("ask")
-		if err != nil {
-			t.Fatalf("unexpected error executing ask: %v", err)
+		if err == nil {
+			t.Fatalf("expected error executing ask with no arguments")
 		}
 
-		expected := "Querying repository memory..."
+		expected := "accepts 1 arg(s), received 0"
 		if !strings.Contains(output, expected) {
 			t.Errorf("expected output to contain %q, got %q", expected, output)
 		}
@@ -133,6 +133,11 @@ func TestAskCommand(t *testing.T) {
 		expected := `Querying repository memory for: "Why was Redis introduced?"...`
 		if !strings.Contains(output, expected) {
 			t.Errorf("expected output to contain %q, got %q", expected, output)
+		}
+
+		expectedFallback := "No deterministic answer pattern matched this question."
+		if !strings.Contains(output, expectedFallback) {
+			t.Errorf("expected output to contain %q, got %q", expectedFallback, output)
 		}
 	})
 }

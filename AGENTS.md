@@ -2,29 +2,78 @@
 
 ## Purpose
 
-RepoNerve is an open-source memory and context engine for software repositories.
+RepoNerve is the intelligence layer for software understanding.
 
-Its purpose is to preserve repository knowledge and generate optimized context for humans and AI systems.
+Its purpose is to preserve, organize, and transfer software knowledge so that understanding survives beyond individual contributors and remains accessible to both humans and AI systems.
+
+RepoNerve serves as a **software memory system** — preserving understanding that would otherwise be lost through contributor turnover, architectural evolution, and documentation drift.
+
+---
+
+## Product Vision
+
+RepoNerve delivers **Software Understanding** through:
+
+```text
+Knowledge Preservation          (Core Platform Capability)
+    ↓
+Software Memory
+    ↓
+Repository Intelligence         (complete)
+    +
+Code Intelligence               (ISSUE-057)
+    ↓
+Repository-Code Linking           (ISSUE-057)
+    ↓
+Feature Understanding           (ISSUE-057)
+    ↓
+Development Experience          (product surface — ISSUE-057)
+    ↓
+Software Understanding          (outcome)
+```
+
+Repository Intelligence, Code Intelligence, and Development Experience are capabilities — not the whole product mission.
+
+Development Experience (`ask`, `explain`, `explain-file`, `explain-function`, `explain-struct`, `explain-interface`, `explain-type`, `plan`, `impact`, `review`) is how users consume RepoNerve.
+
+Software Understanding is what they receive.
+
+v1.0 is blocked until ISSUE-057 completes all v1.0 scope. See `docs/roadmap/v1.0-prd.md` and `docs/vision/vision.md`.
+
+**Implementation status:** Repository Intelligence is shipped. Code Intelligence and most Development Experience commands are not yet implemented. See `docs/product/implementation-status.md`.
+
+**Product strategy docs:**
+
+- Token economics: `docs/product/token-economics.md`
+- Market positioning: `docs/product/market-positioning.md`
+- Greenfield workflows: `docs/product/greenfield-guide.md`
+- v0.x → v1.0 iteration plan: `docs/roadmap/v1.0-iteration-plan.md`
 
 ---
 
 ## Core Principles
 
-Memory First.
+Understanding First.
 
-Context Second.
+Evidence Second.
 
 AI Third.
+
+RepoNerve optimizes AI usage by moving understanding out of the LLM: scan deterministically, query via MCP, deliver token-budget context packs. Premium models spend tokens on implementation, not re-exploration.
 
 ---
 
 ## Current Development Phase
 
-Phase 7 - Release Readiness
+Phase 7 - v0.x Iterations Toward v1.0 (ISSUE-059 through ISSUE-062)
+
+Current Issues (all required for v1.0.0):
+
+ISSUE-059 → ISSUE-057 → ISSUE-060 → ISSUE-061 → ISSUE-062
 
 Current Release Target:
 
-v1.0.0
+v1.0.0 — the only product release; delivered via v0.10–v0.15 alpha iterations (see `docs/roadmap/v1.0-iteration-plan.md`)
 
 ---
 
@@ -142,7 +191,7 @@ Before implementation:
 
 ## Current Goal
 
-Approve RepoNerve for v1.0.0 release.
+Complete ISSUE-057 (Code Intelligence & Development Experience) to deliver Software Understanding and approve RepoNerve for v1.0.0 release.
 
 # RepoNerve Architecture Rules
 
