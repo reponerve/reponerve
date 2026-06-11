@@ -191,7 +191,7 @@ func buildServices(
 	ctxGenerator := appcontext.NewGenerator(ctxReader)
 
 	contextSvc := agentcontext.NewService(discoverySvc, learningSvc, reviewerSvc, changePlanSvc, ctxGenerator)
-	searchSvc := agentsearch.NewService(dr, fr, er, rr, cr, expr, discoverySvc)
+	searchSvc := agentsearch.NewService(dr, fr, er, rr, cr, expr, discoverySvc, nil)
 
 	return NewService(contextSvc, searchSvc), contextSvc, searchSvc
 }
@@ -693,7 +693,7 @@ func TestService_Integration(t *testing.T) {
 	ctxGenerator := appcontext.NewGenerator(ctxReader)
 
 	contextSvc := agentcontext.NewService(discoverySvc, learningSvc, reviewerSvc, changePlanSvc, ctxGenerator)
-	searchSvc := agentsearch.NewService(dr, fr, er, rr, cr, expr, discoverySvc)
+	searchSvc := agentsearch.NewService(dr, fr, er, rr, cr, expr, discoverySvc, nil)
 	service := NewService(contextSvc, searchSvc)
 
 	t.Run("CreateRepositorySession", func(t *testing.T) {

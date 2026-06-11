@@ -325,20 +325,67 @@ Resulting Events:
 
 ---
 
-# Future Commands
+# Search Command
 
-Not part of V1:
-
-```text
-search
-chat
-ask
-agent
-mcp
-context
+```bash
+reponerve search <query>
 ```
 
-These may be introduced in future releases.
+Deterministic repository knowledge search using FTS5 `memory_search` (rebuilt on each `scan`) plus keyword matching across decisions, facts, events, contributors, expertise, and relationships.
+
+Supported query prefixes:
+
+```text
+type:decision
+type:fact
+type:event
+type:contributor
+type:expertise
+type:relationship
+domain:<name>
+```
+
+---
+
+# Impact Command
+
+```bash
+reponerve impact <NODE_TYPE> <NODE_ID>
+```
+
+Analyze graph traversal impact for repository memory entities.
+
+Supported `NODE_TYPE` values:
+
+```text
+DECISION
+FACT
+EVENT
+CONTRIBUTOR
+```
+
+Graph impact is canonical for structural traversal. Memory-relationship impact used by `ask` is a separate analysis path.
+
+---
+
+# Ask Command
+
+```bash
+reponerve ask "<question>"
+```
+
+Deterministic repository Q&A using supported question patterns (onboarding, decision/event guidance, ownership, impact).
+
+---
+
+# Context Commands
+
+```bash
+reponerve context generate
+reponerve context export --output <path>
+```
+
+Generate or export a structured repository context briefing.
 
 ---
 

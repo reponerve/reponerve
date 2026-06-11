@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	codemodels "github.com/reponerve/reponerve/internal/code/models"
 	"github.com/reponerve/reponerve/pkg/models"
 )
 
@@ -43,4 +44,24 @@ type ContributorStore interface {
 // ExpertiseStore defines persistence operations for expertise.
 type ExpertiseStore interface {
 	UpsertExpertise(ctx context.Context, expertise *models.Expertise) error
+}
+
+// CodeEntityStore defines persistence operations for code entities.
+type CodeEntityStore interface {
+	UpsertCodeEntity(ctx context.Context, entity *codemodels.CodeEntity) error
+}
+
+// CodeRelationshipStore defines persistence operations for code relationships.
+type CodeRelationshipStore interface {
+	UpsertCodeRelationship(ctx context.Context, rel *codemodels.CodeRelationship) error
+}
+
+// RepositoryCodeRelationshipStore defines persistence for repository-code links.
+type RepositoryCodeRelationshipStore interface {
+	UpsertRepositoryCodeRelationship(ctx context.Context, rel *codemodels.RepositoryCodeRelationship) error
+}
+
+// CodeIndexStateStore defines persistence for code index state.
+type CodeIndexStateStore interface {
+	UpsertCodeIndexState(ctx context.Context, state *codemodels.CodeIndexState) error
 }

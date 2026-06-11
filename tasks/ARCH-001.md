@@ -1,6 +1,6 @@
 # ARCH-001 — Architecture Realignment For Software Understanding
 
-Status: In Progress
+Status: Approved
 
 Milestone: v1.0
 

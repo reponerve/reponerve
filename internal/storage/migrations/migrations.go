@@ -351,6 +351,105 @@ var allMigrations = []Migration{
 			DROP TABLE IF EXISTS contributors;
 		`,
 	},
+	{
+		Version: 9,
+		Name:    "create_code_intelligence_tables",
+		Up: `
+			CREATE TABLE IF NOT EXISTS code_entities (
+				id              TEXT PRIMARY KEY,
+				repository_id   TEXT NOT NULL,
+				entity_type     TEXT NOT NULL,
+				name            TEXT NOT NULL,
+				qualified_name  TEXT NOT NULL,
+				file_path       TEXT NOT NULL,
+				package_path    TEXT NOT NULL,
+				module_path     TEXT NOT NULL,
+				language        TEXT NOT NULL,
+				start_line      INTEGER NOT NULL,
+				end_line        INTEGER NOT NULL,
+				signature       TEXT,
+				endpoint_type   TEXT,
+				evidence_json   TEXT NOT NULL,
+				indexed_at      TEXT NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_code_entities_repo ON code_entities(repository_id);
+			CREATE INDEX IF NOT EXISTS idx_code_entities_type ON code_entities(repository_id, entity_type);
+			CREATE INDEX IF NOT EXISTS idx_code_entities_module ON code_entities(repository_id, module_path);
+			CREATE INDEX IF NOT EXISTS idx_code_entities_file ON code_entities(repository_id, file_path);
+			CREATE INDEX IF NOT EXISTS idx_code_entities_name ON code_entities(repository_id, name);
+			CREATE INDEX IF NOT EXISTS idx_code_entities_qualified ON code_entities(repository_id, qualified_name);
+
+			CREATE TABLE IF NOT EXISTS code_relationships (
+				id                TEXT PRIMARY KEY,
+				repository_id     TEXT NOT NULL,
+				from_entity_id    TEXT NOT NULL,
+				to_entity_id      TEXT NOT NULL,
+				relationship_type TEXT NOT NULL,
+				evidence_json     TEXT NOT NULL,
+				indexed_at        TEXT NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id),
+				FOREIGN KEY (from_entity_id) REFERENCES code_entities(id),
+				FOREIGN KEY (to_entity_id) REFERENCES code_entities(id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_code_rels_repo ON code_relationships(repository_id);
+			CREATE INDEX IF NOT EXISTS idx_code_rels_from ON code_relationships(from_entity_id);
+			CREATE INDEX IF NOT EXISTS idx_code_rels_to ON code_relationships(to_entity_id);
+			CREATE INDEX IF NOT EXISTS idx_code_rels_type ON code_relationships(repository_id, relationship_type);
+
+			CREATE TABLE IF NOT EXISTS repository_code_relationships (
+				id                     TEXT PRIMARY KEY,
+				repository_id          TEXT NOT NULL,
+				repository_entity_id   TEXT NOT NULL,
+				repository_entity_type TEXT NOT NULL,
+				code_entity_id         TEXT NOT NULL,
+				code_entity_type       TEXT NOT NULL,
+				relationship_type      TEXT NOT NULL,
+				evidence_json          TEXT NOT NULL,
+				indexed_at             TEXT NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id),
+				FOREIGN KEY (code_entity_id) REFERENCES code_entities(id)
+			);
+
+			CREATE INDEX IF NOT EXISTS idx_repo_code_rels_repo ON repository_code_relationships(repository_id);
+			CREATE INDEX IF NOT EXISTS idx_repo_code_rels_repo_entity ON repository_code_relationships(repository_id, repository_entity_id);
+			CREATE INDEX IF NOT EXISTS idx_repo_code_rels_code_entity ON repository_code_relationships(code_entity_id);
+			CREATE INDEX IF NOT EXISTS idx_repo_code_rels_type ON repository_code_relationships(repository_id, relationship_type);
+
+			CREATE TABLE IF NOT EXISTS code_index_state (
+				repository_id      TEXT PRIMARY KEY,
+				last_indexed_at    TEXT NOT NULL,
+				module_count       INTEGER NOT NULL,
+				file_count         INTEGER NOT NULL,
+				entity_count       INTEGER NOT NULL,
+				relationship_count INTEGER NOT NULL,
+				link_count         INTEGER NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id)
+			);
+		`,
+		Down: `
+			DROP TABLE IF EXISTS code_index_state;
+			DROP INDEX IF EXISTS idx_repo_code_rels_type;
+			DROP INDEX IF EXISTS idx_repo_code_rels_code_entity;
+			DROP INDEX IF EXISTS idx_repo_code_rels_repo_entity;
+			DROP INDEX IF EXISTS idx_repo_code_rels_repo;
+			DROP TABLE IF EXISTS repository_code_relationships;
+			DROP INDEX IF EXISTS idx_code_rels_type;
+			DROP INDEX IF EXISTS idx_code_rels_to;
+			DROP INDEX IF EXISTS idx_code_rels_from;
+			DROP INDEX IF EXISTS idx_code_rels_repo;
+			DROP TABLE IF EXISTS code_relationships;
+			DROP INDEX IF EXISTS idx_code_entities_qualified;
+			DROP INDEX IF EXISTS idx_code_entities_name;
+			DROP INDEX IF EXISTS idx_code_entities_file;
+			DROP INDEX IF EXISTS idx_code_entities_module;
+			DROP INDEX IF EXISTS idx_code_entities_type;
+			DROP INDEX IF EXISTS idx_code_entities_repo;
+			DROP TABLE IF EXISTS code_entities;
+		`,
+	},
 }
 
 // GetAppliedVersions returns the list of applied migration versions from the database.

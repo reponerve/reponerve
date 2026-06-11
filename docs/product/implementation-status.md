@@ -60,7 +60,7 @@ The documentation and strategic vision are ahead of the code in several areas. T
 | Code intelligence missing | Blocker | No AST parsing in codebase |
 | `explain` CLI stub | Blocker | Prints message only |
 | Expertise not in scan | High | `ask` ownership-by-expertise often empty |
-| FTS5 `memory_search` unused | Low | Created in migration v1, never queried |
+| FTS5 `memory_search` | Done | Rebuilt on scan; queried by `reponerve search` |
 | `agent/compression` naive | Medium | List truncation only; not graph-aware |
 | Dual impact implementations | Medium | `agent/impact` vs `graph/impact` |
 | `agent/compression` orphaned from prod | Low | No production imports outside tests |
@@ -75,7 +75,7 @@ All scope ships in v1.0.0 via v0.x alpha tags:
 
 | Tag | Issue | Status |
 | --- | --- | --- |
-| v0.10.0-alpha | ISSUE-059 Foundation fixes | Not started |
+| v0.10.0-alpha | ISSUE-059 Foundation fixes | Complete |
 | v0.11–v0.12.0-alpha | ISSUE-057 Code + DE | Not started |
 | v0.13.0-alpha | ISSUE-060 Token Intelligence | Not started |
 | v0.14.0-alpha | ISSUE-061 Graph + Session Memory | Not started |

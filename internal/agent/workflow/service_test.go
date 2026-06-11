@@ -192,7 +192,7 @@ func buildServices(
 	ctxGenerator := appcontext.NewGenerator(ctxReader)
 
 	contextSvc := agentcontext.NewService(discoverySvc, learningSvc, reviewerSvc, changePlanSvc, ctxGenerator)
-	searchSvc := agentsearch.NewService(dr, fr, er, rr, cr, expr, discoverySvc)
+	searchSvc := agentsearch.NewService(dr, fr, er, rr, cr, expr, discoverySvc, nil)
 	sessionSvc := agentsession.NewService(contextSvc, searchSvc)
 	workflowSvc := NewService(discoverySvc, learningSvc, reviewerSvc, changePlanSvc, contextSvc, searchSvc, sessionSvc)
 
@@ -728,7 +728,7 @@ func TestService_Integration(t *testing.T) {
 	ctxGenerator := appcontext.NewGenerator(ctxReader)
 
 	contextSvc := agentcontext.NewService(discoverySvc, learningSvc, reviewerSvc, changePlanSvc, ctxGenerator)
-	searchSvc := agentsearch.NewService(dr, fr, er, rr, cr, expr, discoverySvc)
+	searchSvc := agentsearch.NewService(dr, fr, er, rr, cr, expr, discoverySvc, nil)
 	sessionSvc := agentsession.NewService(contextSvc, searchSvc)
 	service := NewService(discoverySvc, learningSvc, reviewerSvc, changePlanSvc, contextSvc, searchSvc, sessionSvc)
 

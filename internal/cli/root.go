@@ -6,7 +6,9 @@ import (
 	askcmd "github.com/reponerve/reponerve/internal/cli/ask"
 	contextcmd "github.com/reponerve/reponerve/internal/cli/contextcmd"
 	explaincmd "github.com/reponerve/reponerve/internal/cli/explain"
+	impactcmd "github.com/reponerve/reponerve/internal/cli/impactcmd"
 	initcmd "github.com/reponerve/reponerve/internal/cli/init"
+	searchcmd "github.com/reponerve/reponerve/internal/cli/search"
 	mcpcmd "github.com/reponerve/reponerve/internal/cli/mcp"
 	memorycmd "github.com/reponerve/reponerve/internal/cli/memory"
 	scancmd "github.com/reponerve/reponerve/internal/cli/scan"
@@ -24,7 +26,9 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(initcmd.NewCommand())
 	rootCmd.AddCommand(scancmd.NewCommand())
 	rootCmd.AddCommand(askcmd.NewCommand())
+	rootCmd.AddCommand(searchcmd.NewCommand())
 	rootCmd.AddCommand(explaincmd.NewCommand())
+	rootCmd.AddCommand(impactcmd.NewCommand())
 	rootCmd.AddCommand(memorycmd.NewCommand())
 	rootCmd.AddCommand(contextcmd.NewCommand())
 	rootCmd.AddCommand(mcpcmd.NewCommand())
