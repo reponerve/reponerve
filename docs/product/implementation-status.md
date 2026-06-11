@@ -45,7 +45,7 @@ The documentation and strategic vision are ahead of the code in several areas. T
 
 | Deliverable | Code state |
 | --- | --- |
-| Code Intelligence (`go/ast`, symbols, call graph) | Not started — no `internal/code/` |
+| Code Intelligence (`go/ast`, symbols, call graph) | Done — indexer, linker, service API |
 | Repository-Code Linking | Not started |
 | Feature Understanding | Not started |
 | Development Experience CLI | `explain` is stub; `plan`, `impact`, `review`, symbol explain commands absent |

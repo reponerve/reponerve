@@ -5,6 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	codelinker "github.com/reponerve/reponerve/internal/code/linker"
+	"github.com/reponerve/reponerve/internal/code/indexer"
 	"github.com/reponerve/reponerve/internal/config"
 	"github.com/reponerve/reponerve/internal/ingestion"
 	"github.com/reponerve/reponerve/internal/memory/searchindex"
@@ -13,6 +15,7 @@ import (
 	"github.com/reponerve/reponerve/internal/scanner/adr"
 	"github.com/reponerve/reponerve/internal/scanner/git"
 	"github.com/reponerve/reponerve/internal/scanner/repository"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
@@ -21,7 +24,7 @@ func NewCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "scan",
 		Short: "Scan the repository to build memory",
-		Long:  `Scan repository artifacts (git history and ADRs) to build and update repository memory.`,
+		Long:  `Scan repository artifacts (git history, ADRs, and Go source) to build and update repository memory and code intelligence.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			workspaceDir := config.GetWorkspaceDir()
 			cfg, err := config.Load(workspaceDir)
@@ -35,6 +38,10 @@ func NewCommand() *cobra.Command {
 			}
 			defer db.Close()
 
+			if err := migrations.RunUp(db); err != nil {
+				return fmt.Errorf("failed to run database migrations: %w", err)
+			}
+
 			// 1. Initialize dependencies
 			repoStore := sqlite.NewRepositoryStore(db)
 			sourceStore := sqlite.NewSourceStore(db)
@@ -47,6 +54,20 @@ func NewCommand() *cobra.Command {
 			contributorStore := sqlite.NewSQLiteContributorStore(db)
 			expertiseStore := sqlite.NewSQLiteExpertiseStore(db)
 			memorySearchStore := sqlite.NewMemorySearchStore(db)
+			codeEntityStore := sqlite.NewSQLiteCodeEntityStore(db)
+			codeRelStore := sqlite.NewSQLiteCodeRelationshipStore(db)
+			codeIndexStateStore := sqlite.NewSQLiteCodeIndexStateStore(db)
+			repoCodeRelStore := sqlite.NewSQLiteRepositoryCodeRelationshipStore(db)
+			codeIndexer := indexer.New(codeEntityStore, codeRelStore, repoCodeRelStore, codeIndexStateStore)
+			codeLinker := codelinker.New(
+				storage.NewSQLiteEventReader(db),
+				storage.NewSQLiteDecisionReader(db),
+				storage.NewSQLiteFactReader(db),
+				storage.NewSQLiteSourceReader(db),
+				storage.NewSQLiteCodeEntityReader(db),
+				repoCodeRelStore,
+				codeIndexStateStore,
+			)
 
 			reg := ingestion.NewRegistry()
 			reg.Register("git", git.NewScanner(scanStateStore))
@@ -65,6 +86,8 @@ func NewCommand() *cobra.Command {
 				relationshipStore,
 				contributorStore,
 				expertiseStore,
+				codeIndexer,
+				codeLinker,
 				pipeline,
 			)
 
@@ -91,6 +114,8 @@ func NewCommand() *cobra.Command {
 			cmd.Println("✓ Repository discovered")
 			cmd.Printf("✓ %d commits indexed\n", result.CommitsIndexed)
 			cmd.Printf("✓ %d ADRs indexed\n", result.ADRsIndexed)
+			cmd.Println("✓ Code intelligence indexed")
+			cmd.Println("✓ Repository-code links updated")
 			cmd.Println("✓ Search index rebuilt")
 			cmd.Println("Scan completed.")
 

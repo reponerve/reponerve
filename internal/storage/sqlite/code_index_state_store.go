@@ -41,3 +41,14 @@ func (s *SQLiteCodeIndexStateStore) UpsertCodeIndexState(ctx context.Context, st
 	}
 	return nil
 }
+
+// UpdateLinkCount sets the repository-code link count without changing other index stats.
+func (s *SQLiteCodeIndexStateStore) UpdateLinkCount(ctx context.Context, repositoryID string, linkCount int) error {
+	_, err := s.db.ExecContext(ctx, `
+		UPDATE code_index_state SET link_count = ? WHERE repository_id = ?
+	`, linkCount, repositoryID)
+	if err != nil {
+		return fmt.Errorf("failed to update code index link count: %w", err)
+	}
+	return nil
+}

@@ -49,19 +49,23 @@ type ExpertiseStore interface {
 // CodeEntityStore defines persistence operations for code entities.
 type CodeEntityStore interface {
 	UpsertCodeEntity(ctx context.Context, entity *codemodels.CodeEntity) error
+	DeleteByRepository(ctx context.Context, repositoryID string) error
 }
 
 // CodeRelationshipStore defines persistence operations for code relationships.
 type CodeRelationshipStore interface {
 	UpsertCodeRelationship(ctx context.Context, rel *codemodels.CodeRelationship) error
+	DeleteByRepository(ctx context.Context, repositoryID string) error
 }
 
 // RepositoryCodeRelationshipStore defines persistence for repository-code links.
 type RepositoryCodeRelationshipStore interface {
 	UpsertRepositoryCodeRelationship(ctx context.Context, rel *codemodels.RepositoryCodeRelationship) error
+	DeleteByRepository(ctx context.Context, repositoryID string) error
 }
 
 // CodeIndexStateStore defines persistence for code index state.
 type CodeIndexStateStore interface {
 	UpsertCodeIndexState(ctx context.Context, state *codemodels.CodeIndexState) error
+	UpdateLinkCount(ctx context.Context, repositoryID string, linkCount int) error
 }

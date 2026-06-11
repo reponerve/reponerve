@@ -32,6 +32,8 @@ type Coordinator struct {
 	relationshipStore memorystorage.RelationshipStore
 	contributorStore  storage.ContributorStore
 	expertiseStore    storage.ExpertiseStore
+	codeIndexer       CodeIndexer
+	codeLinker        CodeLinker
 	pipeline          *Pipeline
 }
 
@@ -48,6 +50,8 @@ func NewCoordinator(
 	relationshipStore memorystorage.RelationshipStore,
 	contributorStore storage.ContributorStore,
 	expertiseStore storage.ExpertiseStore,
+	codeIndexer CodeIndexer,
+	codeLinker CodeLinker,
 	pipeline *Pipeline,
 ) *Coordinator {
 	return &Coordinator{
@@ -62,6 +66,8 @@ func NewCoordinator(
 		relationshipStore: relationshipStore,
 		contributorStore:  contributorStore,
 		expertiseStore:    expertiseStore,
+		codeIndexer:       codeIndexer,
+		codeLinker:        codeLinker,
 		pipeline:          pipeline,
 	}
 }
@@ -184,6 +190,18 @@ func (c *Coordinator) Run(ctx context.Context, path string) (*ScanResult, error)
 	for _, exp := range expertiseRecords {
 		if err := c.expertiseStore.UpsertExpertise(ctx, exp); err != nil {
 			return nil, fmt.Errorf("failed to store expertise: %w", err)
+		}
+	}
+
+	if c.codeIndexer != nil {
+		if err := c.codeIndexer.Index(ctx, repo.ID, repo.Path); err != nil {
+			return nil, fmt.Errorf("failed to index repository code: %w", err)
+		}
+	}
+
+	if c.codeLinker != nil {
+		if err := c.codeLinker.Link(ctx, repo.ID); err != nil {
+			return nil, fmt.Errorf("failed to link repository code: %w", err)
 		}
 	}
 
