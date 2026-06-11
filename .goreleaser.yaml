@@ -76,26 +76,6 @@ changelog:
       - Merge pull request
       - Merge branch
 
-brews:
-  - repository:
-      owner: reponerve
-      name: homebrew-reponerve
-    homepage: "https://github.com/reponerve/reponerve"
-    description: "Repository Intelligence for Humans and AI Agents"
-    license: "Apache-2.0"
-    folder: Formula
-    caveats: |
-      RepoNerve - Repository Intelligence Platform
-
-      To get started:
-        reponerve init
-        reponerve scan
-        reponerve context generate
-    install: |
-      bin.install "reponerve"
-    test: |
-      assert_match "reponerve", shell_output("#{bin}/reponerve version")
-
 announce:
   skip: false
   twitter:
