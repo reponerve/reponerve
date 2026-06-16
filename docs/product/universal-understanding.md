@@ -40,8 +40,10 @@ Human or AI (explain, plan, edit — minimal extra discovery)
 | **Day-one developer** | What does this repo do? How is it organized? | `ask`, `explain`, `list_decisions` |
 | **Assigned engineer** | Paste ticket → where to start, what breaks | `plan`, `analyze_topic_impact`, `explain_*` |
 | **Reviewer** | What to check, who knows this area | `review`, `explain` |
-| **Weak AI model** | Pre-digested facts, not open-ended repo search | MCP `structured` + `agent` metadata |
+| **Weak AI model** | Pre-digested facts, not open-ended repo search | MCP `structured` + `agent` metadata; any IDE chat |
 | **Strong AI model** | Same contract — less token waste, fewer wrong edits | Same path |
+| **Any IDE chat** | Natural language → RepoNerve tools | MCP in Copilot, Cursor, JetBrains, … — see `docs/ai-chat-integration.md` |
+| **Web LLM** | No MCP in browser | `reponerve context export` → paste evidence |
 
 Capability of the model must not determine whether understanding is available. **RepoNerve quality** determines that.
 

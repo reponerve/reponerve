@@ -66,6 +66,7 @@ func TestRootCommandHelp(t *testing.T) {
 	expectedSubstrings := []string{
 		"reponerve",
 		"init",
+		"integrate",
 		"scan",
 		"ask",
 		"search",
@@ -99,7 +100,9 @@ func TestInitCommand(t *testing.T) {
 		"✓ Workspace created",
 		"✓ Configuration created",
 		"✓ Database initialized",
+		"✓ IDE integration installed",
 		"✓ RepoNerve ready",
+		"reponerve scan",
 	}
 	for _, expected := range expectedSubstrings {
 		if !strings.Contains(output, expected) {

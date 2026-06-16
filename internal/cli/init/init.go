@@ -6,16 +6,22 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/reponerve/reponerve/internal/config"
+	"github.com/reponerve/reponerve/internal/integration"
 	"github.com/reponerve/reponerve/internal/storage/migrations"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 // NewCommand creates and returns the init subcommand.
 func NewCommand() *cobra.Command {
-	return &cobra.Command{
+	var skipIDE bool
+
+	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Initialize RepoNerve inside a repository",
-		Long:  `Initialize a new RepoNerve workspace, config file, and database in the current repository.`,
+		Long: `Initialize a new RepoNerve workspace, config file, and database in the current repository.
+
+Also installs IDE integration automatically: Cursor skill + MCP, VS Code Copilot MCP,
+and Continue MCP configuration.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			workspaceDir := config.GetWorkspaceDir()
 
@@ -36,9 +42,25 @@ func NewCommand() *cobra.Command {
 				return fmt.Errorf("failed to run database migrations: %w", err)
 			}
 			cmd.Println("✓ Database initialized")
+
+			if !skipIDE {
+				result, err := integration.Install(integration.Options{GlobalSkill: true})
+				if err != nil {
+					return fmt.Errorf("failed to install IDE integration: %w", err)
+				}
+				for _, line := range integration.FormatSummary(result) {
+					cmd.Println(line)
+				}
+			}
+
 			cmd.Println("✓ RepoNerve ready")
+			cmd.Println("  → Run: reponerve scan")
 
 			return nil
 		},
 	}
+
+	cmd.Flags().BoolVar(&skipIDE, "skip-ide", false, "Skip automatic Cursor skill and MCP installation")
+
+	return cmd
 }

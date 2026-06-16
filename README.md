@@ -337,48 +337,33 @@ reponerve context generate
 reponerve mcp
 ```
 
-## GitHub Copilot Chat Integration
+## AI Chat Integration
 
-RepoNerve integrates with GitHub Copilot Chat via MCP. Add the following to your `.vscode/mcp.json`:
+RepoNerve is built for **direct conversation in AI chat** — in Cursor, VS Code Copilot, JetBrains, Windsurf, Continue, Claude, and other MCP hosts. Type natural language; the assistant calls RepoNerve tools and answers from evidence. **Any LLM** the IDE provides works (GPT, Claude, Gemini, Llama, …) — RepoNerve does not require its own API keys.
 
-```json
-{
-  "servers": {
-    "reponerve": {
-      "command": "reponerve",
-      "args": ["mcp"]
-    }
-  }
-}
+```bash
+reponerve init && reponerve scan   # once per repository; init installs skill + MCP
 ```
 
-Then open Copilot Chat, select **Agent** mode, and ask questions like:
+**Full guide:** `docs/ai-chat-integration.md`  
+**IDE matrix:** `docs/mcp/compatibility-matrix.md`  
+**Refresh IDE files:** `reponerve integrate` (or `reponerve integrate --force`)
 
-* "What decisions have been made about the authentication system?"
-* "Who are the key contributors to this repository?"
-* "Explain the event related to database migration."
+| IDE / client | Config in this repo |
+| --- | --- |
+| Cursor | `.cursor/mcp.json` + `.cursor/skills/reponerve/` |
+| VS Code + Copilot | `.vscode/mcp.json` |
+| Continue | `.continue/mcpServers/reponerve.json` |
 
-See `docs/copilot-chat-integration.md` for full details.
+Example prompts in chat: "Onboard me", paste a ticket → "Where do I start?", "Why do we use SQLite?", "Explain internal/mcp/server/server.go".
 
-## Cursor Integration
+### GitHub Copilot Chat (VS Code)
 
-RepoNerve integrates with Cursor Agent via MCP. This repository includes `.cursor/mcp.json`:
+See `docs/copilot-chat-integration.md`. Open `.vscode/mcp.json` → Start → Copilot Chat → **Agent** mode.
 
-```json
-{
-  "mcpServers": {
-    "reponerve": {
-      "command": "reponerve",
-      "args": ["mcp"],
-      "env": {
-        "REPONERVE_WORKSPACE": "${workspaceFolder}/.reponerve"
-      }
-    }
-  }
-}
-```
+### Cursor
 
-Open **Cursor Settings → Tools & MCP** and confirm the **reponerve** server connects (37 tools). See `docs/cursor-integration.md` for setup and example prompts.
+See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 38 MCP tools.
 
 ---
 
@@ -392,6 +377,7 @@ Open **Cursor Settings → Tools & MCP** and confirm the **reponerve** server co
 
 ## By Goal
 
+* **AI chat in any IDE or LLM:** `docs/ai-chat-integration.md`
 * Understand product direction: `docs/vision/`
 * Market positioning and competitors: `docs/product/market-positioning.md`
 * Token economics and AI cost optimization: `docs/product/token-economics.md`

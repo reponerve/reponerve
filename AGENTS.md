@@ -59,7 +59,41 @@ Evidence Second.
 
 AI Third.
 
-RepoNerve optimizes AI usage by moving understanding out of the LLM: scan deterministically, query via MCP, deliver token-budget context packs. Premium models spend tokens on implementation, not re-exploration.
+RepoNerve optimizes AI usage by moving understanding out of the LLM: scan deterministically, query via MCP or CLI, deliver token-budget context packs. Premium models spend tokens on implementation, not re-exploration.
+
+---
+
+## Cursor Integration (Skill + MCP)
+
+RepoNerve is consumed in Cursor through **both** an Agent Skill and MCP — not MCP alone.
+
+| Surface | Location | When |
+| --- | --- | --- |
+| **Skill** | `.cursor/skills/reponerve/SKILL.md` | Always — context-first workflow, pasted tasks, onboarding, anti-hallucination |
+| **Rule** | `.cursor/rules/reponerve.mdc` | Reminds agents to load the skill before explaining or editing |
+| **MCP** | `.cursor/mcp.json` → `reponerve mcp` | When connected — 38 tools (`ask`, `explain`, `plan`, `onboard`, …) |
+
+**Workflow:** Read the skill → call MCP tools when available → otherwise run matching `reponerve` CLI commands (see `.cursor/skills/reponerve/reference.md`). Do not grep the repo before RepoNerve context is loaded.
+
+**Other repos:** `reponerve init` installs integration automatically.
+
+Full setup: `docs/cursor-integration.md`
+
+---
+
+## AI Chat Integration (all IDEs and LLMs)
+
+RepoNerve is designed for **direct chat** in any major IDE — not only Cursor. Users type natural language; the assistant invokes RepoNerve MCP tools. Works with **any LLM** the host provides (GPT, Claude, Gemini, Llama, …); RepoNerve does not call external model APIs.
+
+| Client | Config |
+| --- | --- |
+| VS Code + Copilot | `.vscode/mcp.json` |
+| JetBrains AI Assistant | Settings → MCP (see `docs/mcp/configuration-examples.md`) |
+| Windsurf, Continue, Cline, Roo, Claude | `docs/mcp/configuration-examples.md` |
+| Web LLMs (no MCP) | `reponerve context export` → paste into chat |
+
+**Start here:** `docs/ai-chat-integration.md`  
+**Compatibility matrix:** `docs/mcp/compatibility-matrix.md`
 
 ---
 
