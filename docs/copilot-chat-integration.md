@@ -1,6 +1,10 @@
 # GitHub Copilot Chat Integration
 
-RepoNerve can be integrated with GitHub Copilot Chat via the Model Context Protocol (MCP). This allows Copilot Chat to query repository memory, decisions, events, intents, facts, and more directly from RepoNerve.
+RepoNerve connects to **GitHub Copilot Chat** through MCP so you can **talk directly in chat** — no CLI commands required. Copilot invokes RepoNerve tools (`ask`, `explain`, `plan`, `onboard`, …) and answers from repository evidence.
+
+Works with whatever LLM Copilot uses (OpenAI models today; model choice is host-controlled). RepoNerve does not need its own API keys.
+
+**Universal guide (all IDEs):** `docs/ai-chat-integration.md`
 
 ## Prerequisites
 
@@ -12,21 +16,22 @@ RepoNerve can be integrated with GitHub Copilot Chat via the Model Context Proto
 
 ### Step 1: Ensure RepoNerve is Initialized
 
-In the repository you want to analyze, make sure RepoNerve has been initialized and scanned:
+In the repository you want to analyze:
 
 ```bash
-reponerve init
+reponerve init    # workspace + automatic IDE integration (skill + MCP)
 reponerve scan
 ```
 
 ### Step 2: Configure MCP Server
 
-The `.vscode/mcp.json` file in this repository already contains the MCP server configuration for RepoNerve:
+This repository includes `.vscode/mcp.json`:
 
 ```json
 {
   "servers": {
     "reponerve": {
+      "type": "stdio",
       "command": "reponerve",
       "args": ["mcp"],
       "env": {
@@ -48,18 +53,17 @@ The `.vscode/mcp.json` file in this repository already contains the MCP server c
 1. Open Copilot Chat by clicking the Copilot icon in the title bar.
 2. Select **Agent** from the dropdown menu.
 3. Click the tools icon in the top left corner of the chat box to see available RepoNerve tools.
-4. Ask questions like:
-   - "What decisions have been made about the authentication system?"
+4. Ask in natural language — examples:
+   - "Onboard me to this repo"
+   - Paste a ticket → "Where should I start?"
+   - "What decisions have been made about authentication?"
    - "Who are the key contributors to this repository?"
-   - "Explain the event related to database migration."
-   - "List all facts about the API gateway."
-   - "Where should I add a new CLI command?" (uses `plan`)
-   - "Explain internal/mcp/server/server.go" (uses `explain_file`)
-   - "What is the impact of changing the MCP registry?" (uses `analyze_topic_impact`)
+   - "Explain internal/mcp/server/server.go"
+   - "What is the impact of changing the MCP registry?"
 
 ## Available Tools
 
-When connected, Copilot Chat can use **37** RepoNerve MCP tools.
+When connected, Copilot Chat can use **38** RepoNerve MCP tools.
 
 ### Repository Memory
 
@@ -113,6 +117,7 @@ These tools mirror the `reponerve` CLI Development Experience commands. They com
 | `plan` | `plan` | `task` |
 | `review` | `review` | `topic` |
 | `analyze_topic_impact` | `impact` | `subject` |
+| `onboard` | `onboard` | optional `topic` |
 
 All Development Experience tools accept an optional `repository_id`. When omitted, RepoNerve resolves the active workspace repository.
 
@@ -157,6 +162,8 @@ Example MCP arguments:
 
 ## Further Reading
 
+- AI chat integration (all IDEs): `docs/ai-chat-integration.md`
+- MCP compatibility matrix: `docs/mcp/compatibility-matrix.md`
 - [GitHub Docs: Extending Copilot Chat with MCP](https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-chat-with-mcp)
 - [VS Code Docs: Use MCP servers](https://aka.ms/vscode-add-mcp)
 - [MCP Protocol Documentation](https://modelcontextprotocol.io/)

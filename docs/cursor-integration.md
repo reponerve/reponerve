@@ -1,8 +1,11 @@
 # Cursor Integration
 
-RepoNerve gives AI **proper repository context** — what symbols mean, where they live, how they connect, and which decisions constrain changes. With that context, agents understand the codebase accurately and fix things precisely instead of guessing from filenames or search hits.
+RepoNerve gives AI **proper repository context** in **direct chat** — symbols, relationships, decisions, and scoped plans. Cursor is one of several supported hosts; the same MCP server works in VS Code, JetBrains, Windsurf, Continue, Claude, and more.
 
-Cursor connects through **MCP** (tools) and a project **skill** (how to use the context). The transport does not matter; the outcome does: evidence-backed understanding before synthesis and edits.
+**Universal guide:** `docs/ai-chat-integration.md`  
+**All clients:** `docs/mcp/compatibility-matrix.md`
+
+Cursor connects through **MCP** (tools) and a project **skill** (workflow). The transport does not matter; the outcome does: evidence-backed understanding before synthesis and edits.
 
 | Layer | Role |
 | --- | --- |
@@ -10,7 +13,7 @@ Cursor connects through **MCP** (tools) and a project **skill** (how to use the 
 | MCP (`reponerve mcp`) | Delivers context into Agent chat |
 | Skill (`.cursor/skills/reponerve/`) | Tells the agent when and how to load context before answering or changing code |
 
-When connected, Cursor Agent can query repository memory, traverse the knowledge graph, and use Development Experience tools (`ask`, `explain`, `plan`, `review`, and more) without shelling out to the CLI.
+When MCP is connected, Cursor Agent calls tools directly. When MCP is off, the **same workflow** runs via `reponerve` CLI in the terminal — the skill defines both paths.
 
 ## Prerequisites
 
@@ -19,9 +22,11 @@ When connected, Cursor Agent can query repository memory, traverse the knowledge
 - RepoNerve initialized and scanned in the project:
 
 ```bash
-reponerve init
+reponerve init    # also installs Cursor skill + MCP configs
 reponerve scan
 ```
+
+`reponerve integrate` re-installs or merges IDE configs without re-initializing the database.
 
 ## Project setup (recommended)
 
@@ -71,28 +76,47 @@ To use RepoNerve in every Cursor workspace, add the same server block to `~/.cur
 
 Project-level `.cursor/mcp.json` overrides global config when both define the same server name.
 
-## Agent skill
+## Agent skill (primary integration)
 
-This repo ships `.cursor/skills/reponerve/SKILL.md`. Cursor loads it automatically when you ask about architecture, symbols, decisions, or changes in this project.
+This repo ships a **Cursor Agent Skill** at `.cursor/skills/reponerve/`:
 
-The skill encodes the **context-first workflow**: understand → locate → constrain → scope → verify — using RepoNerve output (especially `structured.entity_briefings`) before reading or editing source.
+| File | Purpose |
+| --- | --- |
+| `SKILL.md` | Context-first workflow — pasted tasks, onboarding, anti-hallucination, token discipline |
+| `reference.md` | MCP ↔ CLI command map and install instructions |
 
-Copy the skill to `~/.cursor/skills/reponerve/` if you want the same behavior in other repositories (with RepoNerve initialized there).
+Cursor discovers skills by description. The skill is **not** MCP-only: it tells the agent to use MCP tools when connected, or equivalent `reponerve` CLI commands when not.
+
+The skill encodes: understand → locate → constrain → scope → verify — using RepoNerve output (`structured.entity_briefings` for MCP; section headers for CLI) before reading or editing source.
+
+### Install skill globally (other repositories)
+
+```bash
+mkdir -p ~/.cursor/skills/reponerve
+cp -r /path/to/reponerve/.cursor/skills/reponerve/* ~/.cursor/skills/reponerve/
+```
+
+In each target repo: `reponerve init && reponerve scan`. Optionally add `.cursor/mcp.json` for MCP.
+
+### Project rule
+
+`.cursor/rules/reponerve.mdc` nudges agents to load the skill before explaining or editing this repository.
 
 ## Using RepoNerve in Agent chat
 
 1. Open Cursor Agent chat (`Cmd+L` / `Ctrl+L`).
-2. Enable MCP tools for the conversation (tools picker in the chat UI).
-3. Ask natural-language questions; the agent should load RepoNerve context first, then answer or edit.
+2. Ask naturally — the agent should follow `.cursor/skills/reponerve/SKILL.md` automatically.
+3. When MCP is enabled, prefer RepoNerve MCP tools; otherwise the agent runs CLI equivalents from `reference.md`.
 
 Example prompts:
 
-- "Use RepoNerve to understand RepositoryContext before explaining it."
-- "Why do we use SQLite? Check repository memory and ADRs."
-- "Plan where to add a new MCP tool — use RepoNerve for scope and impacted files."
-- "What breaks if we change the MCP registry? Use impact analysis, then propose a precise fix."
+- "Onboard me to this repo" → `onboard` / `reponerve onboard`
+- Paste a full ticket → `ask` or `plan` / `reponerve plan "..."`
+- "Why do we use SQLite?" → `ask` + `list_decisions`
+- "Plan where to add a new MCP tool" → `plan` with scope and impacted files
+- "What breaks if we change the MCP registry?" → `analyze_topic_impact` / `reponerve impact`
 
-## Available tools (37)
+## Available MCP tools (38)
 
 See `docs/copilot-chat-integration.md` for the full tool list. Highlights:
 
@@ -101,7 +125,7 @@ See `docs/copilot-chat-integration.md` for the full tool list. Highlights:
 | Memory | `list_decisions`, `get_decision`, `trace_decision`, `list_facts`, … |
 | Graph | `trace_graph`, `analyze_impact`, `find_dependencies`, … |
 | Intelligence | `discover_knowledge`, `recommend_reviewers`, `generate_learning_path` |
-| Development Experience | `ask`, `explain`, `explain_file`, `plan`, `review`, `analyze_topic_impact` |
+| Development Experience | `ask`, `explain`, `explain_file`, `plan`, `review`, `analyze_topic_impact`, `onboard` |
 
 **Impact tools:** `analyze_impact` takes a graph entity ID (`node_id` + `node_type`). `analyze_topic_impact` takes a natural-language `subject` (same as `reponerve impact "subject"`).
 
@@ -117,7 +141,7 @@ See `docs/copilot-chat-integration.md` for the full tool list. Highlights:
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | REPONERVE_WORKSPACE="$(pwd)/.reponerve" reponerve mcp
 ```
 
-You should receive JSON with 37 tools. Any non-JSON output on stdout breaks MCP.
+You should receive JSON with 38 tools. Any non-JSON output on stdout breaks MCP.
 
 ### Empty or stale results
 
@@ -134,7 +158,8 @@ You should receive JSON with 37 tools. Any non-JSON output on stdout breaks MCP.
 
 - Universal understanding (north star): `docs/product/universal-understanding.md`
 - Agent context contract: `docs/architecture/agent-context-contract.md`
-- Agent skill: `.cursor/skills/reponerve/SKILL.md`
+- Agent skill: `.cursor/skills/reponerve/SKILL.md` (CLI map: `reference.md`)
+- Project rule: `.cursor/rules/reponerve.mdc`
 - [Cursor MCP documentation](https://cursor.com/docs/mcp)
 - MCP troubleshooting: `docs/mcp/troubleshooting.md`
 - Configuration examples: `docs/mcp/configuration-examples.md`

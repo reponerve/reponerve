@@ -1,27 +1,54 @@
 # RepoNerve MCP Configuration Examples & Workflows
 
-This document lists setup configuration templates and sample workflows for running RepoNerve MCP.
+Templates for connecting RepoNerve to **AI chat** in any MCP-capable IDE. After setup, talk to your assistant in natural language — it calls RepoNerve tools directly.
+
+**Start here:** `docs/ai-chat-integration.md`  
+**Compatibility:** `docs/mcp/compatibility-matrix.md`
 
 ---
 
-## Configuration Examples
+## Standard server block
 
-### 1. Claude Desktop Config
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ```json
 {
-  "mcpServers": {
+  "command": "reponerve",
+  "args": ["mcp"],
+  "env": {
+    "REPONERVE_WORKSPACE": "${workspaceFolder}/.reponerve"
+  }
+}
+```
+
+Prerequisites per repo: `reponerve init && reponerve scan` (`init` installs these configs automatically).
+
+---
+
+## Configuration by client
+
+### 1. VS Code + GitHub Copilot
+
+**File:** `.vscode/mcp.json` (included in this repository)
+
+```json
+{
+  "servers": {
     "reponerve": {
+      "type": "stdio",
       "command": "reponerve",
-      "args": ["mcp"]
+      "args": ["mcp"],
+      "env": {
+        "REPONERVE_WORKSPACE": "${workspaceFolder}/.reponerve"
+      }
     }
   }
 }
 ```
 
+Open the file → **Start** → Copilot Chat → **Agent** mode. See `docs/copilot-chat-integration.md`.
+
 ### 2. Cursor
 
-**Project-scoped** (recommended): create `.cursor/mcp.json` in the repository root:
+**Project:** `.cursor/mcp.json` (included)
 
 ```json
 {
@@ -37,102 +64,204 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-**Global**: add the same block to `~/.cursor/mcp.json`.
+**Global:** same block in `~/.cursor/mcp.json`.  
+**Skill:** `.cursor/skills/reponerve/` — see `docs/cursor-integration.md`.
 
-Enable via **Cursor Settings → Tools & MCP**. See `docs/cursor-integration.md` for full setup and troubleshooting.
+### 3. JetBrains AI Assistant
 
-### 3. Windsurf
-Add to `~/.codeium/windsurf/mcp.json`:
+Settings → Tools → AI Assistant → Model Context Protocol (MCP) → **Add** → As JSON:
+
 ```json
 {
   "mcpServers": {
     "reponerve": {
       "command": "reponerve",
       "args": ["mcp"],
-      "enabled": true
+      "env": {
+        "REPONERVE_WORKSPACE": "/absolute/path/to/project/.reponerve"
+      }
     }
   }
 }
 ```
 
-### 4. Cline
-Add to `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`:
+Set **Working directory** to the project root. JetBrains may not resolve `${workspaceFolder}` in all versions — use an absolute path for `REPONERVE_WORKSPACE` when needed. You can **Import from Claude** config as a shortcut.
+
+### 4. Continue
+
+**File:** `.continue/mcpServers/reponerve.json` (included)
+
 ```json
 {
   "mcpServers": {
     "reponerve": {
       "command": "reponerve",
       "args": ["mcp"],
-      "disabled": false
+      "env": {
+        "REPONERVE_WORKSPACE": "${workspaceFolder}/.reponerve"
+      }
     }
   }
 }
 ```
 
-### 5. Roo Code
-Add to `~/Library/Application Support/Code/User/globalStorage/roocode.roo-cline/settings/roo_mcp_settings.json`:
+Enable **Agent** mode in Continue. JSON configs in `.continue/mcpServers/` are auto-discovered.
+
+### 5. Windsurf
+
+**File:** `~/.codeium/windsurf/mcp.json`
+
 ```json
 {
   "mcpServers": {
     "reponerve": {
       "command": "reponerve",
       "args": ["mcp"],
-      "disabled": false
+      "enabled": true,
+      "env": {
+        "REPONERVE_WORKSPACE": "${workspaceFolder}/.reponerve"
+      }
     }
   }
 }
+```
+
+### 6. Cline
+
+**File:** `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json` (macOS; paths vary on Linux/Windows)
+
+```json
+{
+  "mcpServers": {
+    "reponerve": {
+      "command": "reponerve",
+      "args": ["mcp"],
+      "disabled": false,
+      "env": {
+        "REPONERVE_WORKSPACE": "/absolute/path/to/project/.reponerve"
+      }
+    }
+  }
+}
+```
+
+### 7. Roo Code
+
+**File:** `~/Library/Application Support/Code/User/globalStorage/roocode.roo-cline/settings/roo_mcp_settings.json`
+
+```json
+{
+  "mcpServers": {
+    "reponerve": {
+      "command": "reponerve",
+      "args": ["mcp"],
+      "disabled": false,
+      "env": {
+        "REPONERVE_WORKSPACE": "/absolute/path/to/project/.reponerve"
+      }
+    }
+  }
+}
+```
+
+### 8. Claude Desktop
+
+**File:** `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+
+```json
+{
+  "mcpServers": {
+    "reponerve": {
+      "command": "reponerve",
+      "args": ["mcp"],
+      "env": {
+        "REPONERVE_WORKSPACE": "/absolute/path/to/project/.reponerve"
+      }
+    }
+  }
+}
+```
+
+Claude Desktop has no `${workspaceFolder}` — use absolute paths or one config per project.
+
+### 9. Claude Code
+
+Add the same `mcpServers.reponerve` block to your Claude Code MCP settings (project or user scope).
+
+---
+
+## Direct chat workflows
+
+After MCP is connected, use natural language in the IDE chat panel.
+
+### Onboarding
+
+- **Chat:** "Onboard me to this repository"
+- **MCP:** `onboard`
+- **CLI:** `reponerve onboard`
+
+### Pasted task
+
+- **Chat:** paste ticket → "Where should I start?"
+- **MCP:** `ask` or `plan`
+- **CLI:** `reponerve plan "<task>"`
+
+### Architecture question
+
+- **Chat:** "Why do we use SQLite?"
+- **MCP:** `ask` with `question`
+- **CLI:** `reponerve ask "Why do we use SQLite?"`
+
+### File / symbol explain
+
+- **MCP:** `explain_file`, `explain_function`, …
+- **CLI:** `reponerve explain-file`, `explain-function`, …
+
+### Impact before refactor
+
+- **MCP:** `analyze_topic_impact` with `subject`
+- **CLI:** `reponerve impact "subject"`
+
+### Export for web LLM (no MCP)
+
+```bash
+reponerve context export -o repo-context.md
+```
+
+Or MCP `export_context` — paste markdown into ChatGPT, Gemini, or Claude.ai.
+
+---
+
+## JSON-RPC examples (advanced)
+
+### List decisions
+
+```json
+{ "name": "list_decisions", "arguments": {} }
+```
+
+### Trace decision
+
+```json
+{ "name": "trace_decision", "arguments": { "decision_id": "dec_1" } }
+```
+
+### Ask
+
+```json
+{ "name": "ask", "arguments": { "question": "Why do we use SQLite?" } }
+```
+
+### Plan
+
+```json
+{ "name": "plan", "arguments": { "task": "Add OAuth login" } }
 ```
 
 ---
 
-## Example Workflow Interactions
+## Further reading
 
-AI agents can execute standard repository intelligence workflows via these JSON-RPC calls:
-
-### 1. List Decisions
-Returns a list of all decisions:
-* **Tool Name**: `list_decisions`
-* **Arguments**:
-  ```json
-  {}
-  ```
-
-### 2. Trace a Decision
-Traverse relationships to discover intents, supporting facts, and resulting events for a specific decision:
-* **Tool Name**: `trace_decision`
-* **Arguments**:
-  ```json
-  {
-    "decision_id": "dec_1"
-  }
-  ```
-
-### 3. Explain an Event
-Obtain cause, intent, and decision trace for a specific event:
-* **Tool Name**: `explain_event`
-* **Arguments**:
-  ```json
-  {
-    "event_id": "evt_1"
-  }
-  ```
-
-### 4. Generate Repository Context
-Retrieve structured repository briefing context:
-* **Tool Name**: `generate_context`
-* **Arguments**:
-  ```json
-  {
-    "repository_id": "repo_xxx"
-  }
-  ```
-
-### 5. Export Repository Context
-Retrieve context formatted as rendered markdown string:
-* **Tool Name**: `export_context`
-* **Arguments**:
-  ```json
-  {
-    "repository_id": "repo_xxx"
-  }
-  ```
+- AI chat integration: `docs/ai-chat-integration.md`
+- Compatibility matrix: `docs/mcp/compatibility-matrix.md`
+- Troubleshooting: `docs/mcp/troubleshooting.md`

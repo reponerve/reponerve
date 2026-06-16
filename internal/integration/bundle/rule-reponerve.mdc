@@ -1,0 +1,20 @@
+---
+description: >-
+  Use RepoNerve before explaining or editing this repository. Load
+  .cursor/skills/reponerve/SKILL.md for context-first workflow via MCP tools
+  or reponerve CLI. Applies to onboarding, pasted tasks, architecture questions,
+  symbols, planning, impact, and review.
+alwaysApply: false
+---
+
+# RepoNerve context-first
+
+Before explaining code or making edits in this project:
+
+1. Read and follow `.cursor/skills/reponerve/SKILL.md`
+2. Prefer **MCP tools** when the reponerve server is connected in Cursor
+3. If MCP is unavailable, run **`reponerve` CLI** commands in the terminal (same evidence contract)
+
+Do not grep or read files broadly until RepoNerve context is loaded (`ask`, `explain`, `plan`, `onboard`, or equivalent MCP tools).
+
+Prerequisites: `reponerve init && reponerve scan` in the project root.
