@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "reponerve": {
+      "command": "reponerve",
+      "args": ["mcp"],
+      "env": {
+        "REPONERVE_WORKSPACE": "${workspaceFolder}/.reponerve"
+      }
+    }
+  }
+}

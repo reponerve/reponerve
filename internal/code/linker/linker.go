@@ -258,22 +258,24 @@ func (l *Linker) matchTexts(
 				links = append(links, link)
 			}
 		}
-		for _, match := range extractQualifiedSymbols(text.Text, text.Field, index.symbolNames) {
-			entity := index.byQualified[match.Value]
-			if entity == nil {
-				continue
+		if repoEntityType != repoEntityEvent {
+			for _, match := range extractQualifiedSymbols(text.Text, text.Field, index.symbolNames) {
+				entity := index.byQualified[match.Value]
+				if entity == nil {
+					continue
+				}
+				if link := l.buildLink(repositoryID, repoEntityType, repoEntityID, relType, entity, "symbol_reference", match, indexedAt, seen); link != nil {
+					links = append(links, link)
+				}
 			}
-			if link := l.buildLink(repositoryID, repoEntityType, repoEntityID, relType, entity, "symbol_reference", match, indexedAt, seen); link != nil {
-				links = append(links, link)
-			}
-		}
-		for _, match := range extractShortSymbols(text.Text, text.Field, index.uniqueShortNames) {
-			entity := index.byQualified[match.Value]
-			if entity == nil {
-				continue
-			}
-			if link := l.buildLink(repositoryID, repoEntityType, repoEntityID, relType, entity, "short_symbol_reference", match, indexedAt, seen); link != nil {
-				links = append(links, link)
+			for _, match := range extractShortSymbols(text.Text, text.Field, index.uniqueShortNames) {
+				entity := index.byQualified[match.Value]
+				if entity == nil {
+					continue
+				}
+				if link := l.buildLink(repositoryID, repoEntityType, repoEntityID, relType, entity, "short_symbol_reference", match, indexedAt, seen); link != nil {
+					links = append(links, link)
+				}
 			}
 		}
 	}

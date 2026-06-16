@@ -13,6 +13,7 @@ import (
 	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
 	"github.com/reponerve/reponerve/internal/scanner/repository"
 	"github.com/reponerve/reponerve/internal/storage/migrations"
+	querystorage "github.com/reponerve/reponerve/internal/query/storage"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
 	"github.com/reponerve/reponerve/pkg/models"
 )
@@ -181,7 +182,14 @@ func TestCoordinator_Run(t *testing.T) {
 	relationshipStore := memorystorage.NewSQLiteRelationshipStore(db)
 	contributorStore := sqlite.NewSQLiteContributorStore(db)
 	expertiseStore := sqlite.NewSQLiteExpertiseStore(db)
-	coord := NewCoordinator(discovery, repoStore, sourceStore, scanStateStore, eventStore, decisionStore, intentStore, factStore, relationshipStore, contributorStore, expertiseStore, nil, nil, pipeline)
+	coord := NewCoordinator(discovery, repoStore, sourceStore, scanStateStore, eventStore, decisionStore, intentStore, factStore, relationshipStore, contributorStore, expertiseStore, nil, nil, pipeline,
+		WithOwnershipReaders(OwnershipReaders{
+			Sources:   querystorage.NewSQLiteSourceReader(db),
+			Events:    querystorage.NewSQLiteEventReader(db),
+			Decisions: querystorage.NewSQLiteDecisionReader(db),
+			Facts:     querystorage.NewSQLiteFactReader(db),
+		}),
+	)
 	ctx := context.Background()
 
 	result, err := coord.Run(ctx, tempDir)

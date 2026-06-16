@@ -75,6 +75,8 @@ func TestRootCommandHelp(t *testing.T) {
 		"explain-struct",
 		"explain-interface",
 		"explain-type",
+		"plan",
+		"review",
 		"impact",
 		"context",
 		"mcp",
@@ -149,6 +151,69 @@ func TestAskCommand(t *testing.T) {
 			!strings.Contains(output, "Search found") &&
 			!strings.Contains(output, "No decision evidence") {
 			t.Errorf("expected fallback or search summary in output, got %q", output)
+		}
+	})
+}
+
+func TestPlanCommand(t *testing.T) {
+	t.Run("no arguments", func(t *testing.T) {
+		_, err := executeCommand("plan")
+		if err == nil {
+			t.Fatal("expected plan without task to fail")
+		}
+	})
+
+	t.Run("with task", func(t *testing.T) {
+		output, err := executeCommand("plan", "Add OAuth login")
+		if err != nil {
+			t.Fatalf("unexpected error executing plan: %v", err)
+		}
+		if !strings.Contains(output, "Task: Add OAuth login") {
+			t.Errorf("expected task in output, got %q", output)
+		}
+		if !strings.Contains(output, "Suggested Workflow: change_preparation") {
+			t.Errorf("expected workflow in output, got %q", output)
+		}
+	})
+}
+
+func TestReviewCommand(t *testing.T) {
+	t.Run("no arguments", func(t *testing.T) {
+		_, err := executeCommand("review")
+		if err == nil {
+			t.Fatal("expected review without topic to fail")
+		}
+	})
+
+	t.Run("with topic", func(t *testing.T) {
+		output, err := executeCommand("review", "metadata panel")
+		if err != nil {
+			t.Fatalf("unexpected error executing review: %v", err)
+		}
+		if !strings.Contains(output, "Topic: metadata panel") {
+			t.Errorf("expected topic in output, got %q", output)
+		}
+		if !strings.Contains(output, "Suggested Workflow: review_preparation") {
+			t.Errorf("expected workflow in output, got %q", output)
+		}
+	})
+}
+
+func TestImpactCommand(t *testing.T) {
+	t.Run("no arguments", func(t *testing.T) {
+		_, err := executeCommand("impact")
+		if err == nil {
+			t.Fatal("expected impact without subject to fail")
+		}
+	})
+
+	t.Run("with subject", func(t *testing.T) {
+		output, err := executeCommand("impact", "user-service")
+		if err != nil {
+			t.Fatalf("unexpected error executing impact: %v", err)
+		}
+		if !strings.Contains(output, "Subject: user-service") {
+			t.Errorf("expected subject in output, got %q", output)
 		}
 	})
 }

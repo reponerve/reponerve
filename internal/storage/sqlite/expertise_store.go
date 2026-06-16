@@ -17,6 +17,15 @@ func NewSQLiteExpertiseStore(db *Database) *SQLiteExpertiseStore {
 	return &SQLiteExpertiseStore{db: db}
 }
 
+// DeleteByRepository removes all expertise records for a repository.
+func (s *SQLiteExpertiseStore) DeleteByRepository(ctx context.Context, repositoryID string) error {
+	_, err := s.db.ExecContext(ctx, `DELETE FROM expertise WHERE repository_id = ?`, repositoryID)
+	if err != nil {
+		return fmt.Errorf("failed to delete expertise records: %w", err)
+	}
+	return nil
+}
+
 // UpsertExpertise inserts or updates an expertise record.
 func (s *SQLiteExpertiseStore) UpsertExpertise(ctx context.Context, e *models.Expertise) error {
 	query := `

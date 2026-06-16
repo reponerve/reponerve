@@ -9,7 +9,24 @@ Related Milestone:
 Related:
 
 * `docs/architecture/issue-057-architecture.md`
+* `docs/architecture/agent-context-contract.md`
 * `docs/examples/development-experience.md`
+
+---
+
+# Agent Context Contract
+
+Development Experience must package **agent-ready context** for every output — not retrieval dumps.
+
+See `docs/architecture/agent-context-contract.md` for:
+
+* Required context dimensions (identity, location, shape, relationships, constraints, change scope)
+* MCP envelope (`formatted`, `structured`, `agent` metadata)
+* Completeness levels (`full`, `partial`, `retrieval_only`)
+* Mandatory agent workflow before edits
+* `EntityBriefing` minimum fields
+
+MCP tools must return `agent.must_use_before_edit` and `agent.guidance_for_agent` via `NewMCPResult`.
 
 ---
 
@@ -91,9 +108,14 @@ Response:
 
 * AnswerType
 * Summary (structured from upstream — not free-form)
+* EntityBriefings (when code entities match — required for concept questions)
 * Related entities
 * Evidence
 * Source services
+
+Concept routing triggers: *what is*, *what does*, *how does … work*, *tell me about*.
+
+`search_summary` is a fallback only — `agent.completeness` must be `retrieval_only`.
 
 ---
 
@@ -306,6 +328,19 @@ RepoNerve's primary differentiator is combining both views through deterministic
 
 ---
 
+# Entity Briefing Contract
+
+When code entities resolve for a topic or symbol, responses must include `entity_briefings` with:
+
+* `qualified_name`, `entity_type`, `layer`, `role`, `defined_in`
+* `fields` or `signature` for types
+* `producers`, `consumers` when relationships exist
+* `related_decisions` when repository-code links exist
+
+Homonyms return multiple briefings — never a bare ambiguity error without compare context.
+
+---
+
 # Acceptance Criteria
 
 Development Experience is complete only when:
@@ -319,6 +354,8 @@ Development Experience is complete only when:
 * review works
 * explain output contains no Purpose or History fields
 * repository-code links connect RepositoryContext and CodeContext when evidence exists
+* MCP responses include `agent` metadata per agent context contract
+* definition questions return `concept_explanation` with briefings when indexed
 
 All commands must consume existing intelligence services.
 

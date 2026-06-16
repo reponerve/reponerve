@@ -41,8 +41,8 @@ func (s *EventStore) UpsertEvent(ctx context.Context, event *models.Event) error
 		event.Title,
 		desc,
 		event.SourceID,
-		event.Timestamp,
-		time.Now(),
+		FormatDateTime(event.Timestamp),
+		FormatDateTime(time.Now()),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to upsert event: %w", err)

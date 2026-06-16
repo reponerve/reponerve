@@ -14,6 +14,28 @@ func FormatExplanation(out *DevelopmentExplanation) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "Topic: %s\n\n", out.Topic)
 
+	if len(out.EntityBriefings) > 0 {
+		b.WriteString("ENTITY BRIEFINGS\n")
+		for _, brief := range out.EntityBriefings {
+			fmt.Fprintf(&b, "  %s [%s]\n", brief.QualifiedName, brief.EntityType)
+			fmt.Fprintf(&b, "    Layer: %s\n", brief.Layer)
+			fmt.Fprintf(&b, "    Role: %s\n", brief.Role)
+			if brief.DefinedIn != "" {
+				fmt.Fprintf(&b, "    Defined in: %s\n", brief.DefinedIn)
+			}
+			if len(brief.Fields) > 0 {
+				fmt.Fprintf(&b, "    Fields: %s\n", strings.Join(brief.Fields, "; "))
+			} else if brief.Signature != "" {
+				fmt.Fprintf(&b, "    Signature: %s\n", brief.Signature)
+			}
+			writeEntitySectionIndented(&b, "    ", "Members", brief.Members)
+			writeEntitySectionIndented(&b, "    ", "Called by", brief.Producers)
+			writeEntitySectionIndented(&b, "    ", "Calls/uses", brief.Consumers)
+			writeEntitySectionIndented(&b, "    ", "Related decisions", brief.RelatedDecisions)
+		}
+		b.WriteString("\n")
+	}
+
 	if out.CodeContext != nil && hasCodeContent(out.CodeContext) {
 		b.WriteString("CODE CONTEXT\n")
 		writeEntitySection(&b, "Modules", out.CodeContext.Modules)
@@ -34,7 +56,11 @@ func FormatExplanation(out *DevelopmentExplanation) string {
 		if len(out.CodeContext.Dependencies) > 0 {
 			b.WriteString("Dependencies:\n")
 			for _, dep := range out.CodeContext.Dependencies {
-				fmt.Fprintf(&b, "  - %s %s -> %s\n", dep.RelationshipType, dep.FromEntityID, dep.ToEntityID)
+				label := dep.Label
+				if label == "" {
+					label = fmt.Sprintf("%s -> %s", dep.FromEntityID, dep.ToEntityID)
+				}
+				fmt.Fprintf(&b, "  - %s\n", label)
 			}
 		}
 		b.WriteString("\n")
@@ -98,10 +124,30 @@ func FormatAnswer(out *DevelopmentAnswer) string {
 		b.WriteString("\n")
 	}
 
+	if out.Plan != nil && len(out.Plan.SuggestedSteps) > 0 {
+		b.WriteString("Suggested Steps:\n")
+		for _, step := range out.Plan.SuggestedSteps {
+			fmt.Fprintf(&b, "  %s\n", step)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(out.EntityBriefings) > 0 {
+		b.WriteString("Entity Briefings:\n")
+		for _, brief := range out.EntityBriefings {
+			fmt.Fprintf(&b, "  %s [%s]\n", brief.QualifiedName, brief.EntityType)
+			fmt.Fprintf(&b, "    Role: %s\n", brief.Role)
+			if brief.DefinedIn != "" {
+				fmt.Fprintf(&b, "    Defined in: %s\n", brief.DefinedIn)
+			}
+		}
+		b.WriteString("\n")
+	}
+
 	if len(out.Related) > 0 {
 		b.WriteString("Related Entities:\n")
 		for _, ref := range out.Related {
-			fmt.Fprintf(&b, "  - %s / %s / %s\n", ref.EntityType, ref.EntityID, ref.Label)
+			fmt.Fprintf(&b, "  - %s\n", formatEntityRefLine(ref))
 		}
 		b.WriteString("\n")
 	}
@@ -133,12 +179,241 @@ func FormatAnswer(out *DevelopmentAnswer) string {
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }
 
+// FormatPlan renders a DevelopmentPlan for CLI output.
+func FormatPlan(out *DevelopmentPlan) string {
+	if out == nil {
+		return ""
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "Task: %s\n\n", out.Task)
+
+	if len(out.SuggestedSteps) > 0 {
+		b.WriteString("Suggested Steps:\n")
+		for _, step := range out.SuggestedSteps {
+			fmt.Fprintf(&b, "  %s\n", step)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(out.EntityBriefings) > 0 {
+		b.WriteString("ENTITY BRIEFINGS\n")
+		for _, brief := range out.EntityBriefings {
+			fmt.Fprintf(&b, "  %s [%s]\n", brief.QualifiedName, brief.EntityType)
+			fmt.Fprintf(&b, "    Layer: %s\n", brief.Layer)
+			fmt.Fprintf(&b, "    Role: %s\n", brief.Role)
+			if brief.DefinedIn != "" {
+				fmt.Fprintf(&b, "    Defined in: %s\n", brief.DefinedIn)
+			}
+			if len(brief.Fields) > 0 {
+				fmt.Fprintf(&b, "    Fields: %s\n", strings.Join(brief.Fields, "; "))
+			}
+		}
+		b.WriteString("\n")
+	}
+
+	writeEntitySection(&b, "Impacted Areas", out.ImpactedAreas)
+	writeEntitySection(&b, "Relevant Decisions", out.RelevantDecisions)
+	writeEntitySection(&b, "Relevant Facts", out.RelevantFacts)
+	writeEntitySection(&b, "Owners", out.Owners)
+	writeEntitySection(&b, "Reviewers", out.Reviewers)
+
+	if out.SuggestedWorkflow != "" {
+		fmt.Fprintf(&b, "Suggested Workflow: %s\n\n", out.SuggestedWorkflow)
+	}
+
+	writeEntitySection(&b, "Starting Points", out.StartingPoints)
+
+	if len(out.RepositoryCodeLinks) > 0 {
+		b.WriteString("Repository-Code Links:\n")
+		for _, link := range out.RepositoryCodeLinks {
+			fmt.Fprintf(&b, "  - %s: %s -> %s\n",
+				link.RelationshipType, link.RepositoryEntityRef.Label, link.CodeEntityRef.Label)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(out.Evidence) > 0 {
+		b.WriteString("Evidence:\n")
+		for _, ev := range out.Evidence {
+			fmt.Fprintf(&b, "  - source: %s type: %s\n", ev.Source, ev.Type)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(out.SourceServices) > 0 {
+		b.WriteString("Source Services:\n")
+		for _, svc := range out.SourceServices {
+			fmt.Fprintf(&b, "  - %s\n", svc)
+		}
+	}
+
+	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+// FormatOnboarding renders a DevelopmentOnboardingGuide for CLI output.
+func FormatOnboarding(out *DevelopmentOnboardingGuide) string {
+	if out == nil {
+		return ""
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "Repository: %s\n\n", out.RepositoryID)
+
+	if len(out.SuggestedSteps) > 0 {
+		b.WriteString("Suggested Steps:\n")
+		for _, step := range out.SuggestedSteps {
+			fmt.Fprintf(&b, "  %s\n", step)
+		}
+		b.WriteString("\n")
+	}
+
+	writeEntitySection(&b, "Key Decisions", out.KeyDecisions)
+
+	if out.Orientation != nil && out.Orientation.Summary != "" {
+		b.WriteString("Orientation:\n")
+		for _, line := range strings.Split(strings.TrimSpace(out.Orientation.Summary), "\n") {
+			fmt.Fprintf(&b, "  %s\n", line)
+		}
+		b.WriteString("\n")
+	}
+
+	if out.AssignmentPlan != nil {
+		b.WriteString("Assignment Plan:\n")
+		b.WriteString(FormatPlan(out.AssignmentPlan))
+	} else if len(out.EntityBriefings) > 0 {
+		b.WriteString("Entity Briefings:\n")
+		for _, brief := range out.EntityBriefings {
+			fmt.Fprintf(&b, "  %s [%s] — %s\n", brief.QualifiedName, brief.EntityType, brief.DefinedIn)
+		}
+	}
+
+	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+// FormatImpactReport renders a DevelopmentImpactReport for CLI output.
+func FormatImpactReport(out *DevelopmentImpactReport) string {
+	if out == nil {
+		return ""
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "Subject: %s\n\n", out.Subject)
+
+	writeEntitySection(&b, "Impacted Decisions", out.ImpactedDecisions)
+	writeEntitySection(&b, "Impacted Facts", out.ImpactedFacts)
+	writeEntitySection(&b, "Impacted Events", out.ImpactedEvents)
+
+	if len(out.CodeDependencies) > 0 {
+		b.WriteString("Code Dependencies:\n")
+		for _, dep := range out.CodeDependencies {
+			fmt.Fprintf(&b, "  - %s\n", dep.Label)
+		}
+		b.WriteString("\n")
+	}
+
+	writeEntitySection(&b, "Dependent Areas", out.DependentAreas)
+	writeEntitySection(&b, "Owners", out.Owners)
+
+	if len(out.RepositoryCodeLinks) > 0 {
+		b.WriteString("Repository-Code Links:\n")
+		for _, link := range out.RepositoryCodeLinks {
+			fmt.Fprintf(&b, "  - %s: %s -> %s\n",
+				link.RelationshipType, link.RepositoryEntityRef.Label, link.CodeEntityRef.Label)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(out.Evidence) > 0 {
+		b.WriteString("Evidence:\n")
+		for _, ev := range out.Evidence {
+			fmt.Fprintf(&b, "  - source: %s type: %s\n", ev.Source, ev.Type)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(out.SourceServices) > 0 {
+		b.WriteString("Source Services:\n")
+		for _, svc := range out.SourceServices {
+			fmt.Fprintf(&b, "  - %s\n", svc)
+		}
+	}
+
+	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+// FormatReviewGuide renders a DevelopmentReviewGuide for CLI output.
+func FormatReviewGuide(out *DevelopmentReviewGuide) string {
+	if out == nil {
+		return ""
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "Topic: %s\n\n", out.Topic)
+
+	writeEntitySection(&b, "Recommended Reviewers", out.RecommendedReviewers)
+	writeEntitySection(&b, "Required Expertise", out.RequiredExpertise)
+	writeEntitySection(&b, "Affected Areas", out.AffectedAreas)
+	writeEntitySection(&b, "Related Knowledge", out.RelatedKnowledge)
+
+	if out.SuggestedWorkflow != "" {
+		fmt.Fprintf(&b, "Suggested Workflow: %s\n\n", out.SuggestedWorkflow)
+	}
+
+	if len(out.RepositoryCodeLinks) > 0 {
+		b.WriteString("Repository-Code Links:\n")
+		for _, link := range out.RepositoryCodeLinks {
+			fmt.Fprintf(&b, "  - %s: %s -> %s\n",
+				link.RelationshipType, link.RepositoryEntityRef.Label, link.CodeEntityRef.Label)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(out.Evidence) > 0 {
+		b.WriteString("Evidence:\n")
+		for _, ev := range out.Evidence {
+			fmt.Fprintf(&b, "  - source: %s type: %s\n", ev.Source, ev.Type)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(out.SourceServices) > 0 {
+		b.WriteString("Source Services:\n")
+		for _, svc := range out.SourceServices {
+			fmt.Fprintf(&b, "  - %s\n", svc)
+		}
+	}
+
+	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
 func writeEntitySection(b *strings.Builder, title string, refs []EntityRef) {
 	if len(refs) == 0 {
 		return
 	}
 	fmt.Fprintf(b, "%s:\n", title)
 	for _, ref := range refs {
-		fmt.Fprintf(b, "  - %s / %s / %s\n", ref.EntityType, ref.EntityID, ref.Label)
+		fmt.Fprintf(b, "  - %s\n", formatEntityRefLine(ref))
 	}
+}
+
+func writeEntitySectionIndented(b *strings.Builder, prefix, title string, refs []EntityRef) {
+	if len(refs) == 0 {
+		return
+	}
+	fmt.Fprintf(b, "%s%s:\n", prefix, title)
+	for _, ref := range refs {
+		fmt.Fprintf(b, "%s  - %s\n", prefix, formatEntityRefLine(ref))
+	}
+}
+
+func formatEntityRefLine(ref EntityRef) string {
+	label := strings.TrimSpace(ref.Label)
+	if label == "" {
+		label = ref.EntityID
+	}
+	if ref.EntityType == "" {
+		return label
+	}
+	return fmt.Sprintf("%s [%s]", label, ref.EntityType)
 }

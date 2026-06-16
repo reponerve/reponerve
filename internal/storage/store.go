@@ -44,6 +44,7 @@ type ContributorStore interface {
 // ExpertiseStore defines persistence operations for expertise.
 type ExpertiseStore interface {
 	UpsertExpertise(ctx context.Context, expertise *models.Expertise) error
+	DeleteByRepository(ctx context.Context, repositoryID string) error
 }
 
 // CodeEntityStore defines persistence operations for code entities.

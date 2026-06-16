@@ -49,7 +49,7 @@ func TestLinker_LinksEventToCodeFile(t *testing.T) {
 	codeEntityStore := sqlite.NewSQLiteCodeEntityStore(db)
 	codeRelStore := sqlite.NewSQLiteCodeRelationshipStore(db)
 	stateStore := sqlite.NewSQLiteCodeIndexStateStore(db)
-	idx := indexer.New(codeEntityStore, codeRelStore, sqlite.NewSQLiteRepositoryCodeRelationshipStore(db), stateStore)
+	idx := indexer.New(db, codeEntityStore, codeRelStore, sqlite.NewSQLiteRepositoryCodeRelationshipStore(db), stateStore)
 	if err := idx.Index(context.Background(), repoID, absRepo); err != nil {
 		t.Fatalf("index failed: %v", err)
 	}

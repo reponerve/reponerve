@@ -38,7 +38,7 @@ func (b *builder) extractCalls(
 func (b *builder) resolveCallee(call *ast.CallExpr, packagePath string, importMap map[string]string) string {
 	switch fn := call.Fun.(type) {
 	case *ast.Ident:
-		return b.lookupFunctionInPackage(packagePath, fn.Name)
+		return b.lookupFunction(packagePath, fn.Name)
 	case *ast.SelectorExpr:
 		return b.resolveSelectorCallee(fn, packagePath, importMap)
 	default:
@@ -50,33 +50,72 @@ func (b *builder) resolveSelectorCallee(sel *ast.SelectorExpr, packagePath strin
 	switch x := sel.X.(type) {
 	case *ast.Ident:
 		if pkgPath, ok := importMap[x.Name]; ok {
-			return b.lookupFunctionInPackage(pkgPath, sel.Sel.Name)
+			return b.lookupFunction(pkgPath, sel.Sel.Name)
 		}
-		if x.Name == "" {
-			return ""
+		if callee := b.lookupMethodByReceiverVar(packagePath, x.Name, sel.Sel.Name); callee != "" {
+			return callee
 		}
-		// Same-package selector on local identifier (e.g. store.New).
-		return b.lookupFunctionInPackage(packagePath, sel.Sel.Name)
+		return b.lookupUniqueMethod(packagePath, sel.Sel.Name)
 	case *ast.SelectorExpr:
-		// Chained selector — resolve only the final call name in the import package when possible.
 		if id, ok := x.X.(*ast.Ident); ok {
 			if pkgPath, ok := importMap[id.Name]; ok {
-				return b.lookupFunctionInPackage(pkgPath, sel.Sel.Name)
+				return b.lookupFunction(pkgPath, sel.Sel.Name)
 			}
 		}
 	}
 	return ""
 }
 
-func (b *builder) lookupFunctionInPackage(packagePath, name string) string {
-	if id, ok := b.funcIndex[funcIndexKey(packagePath, name)]; ok {
+func (b *builder) lookupFunction(packagePath, name string) string {
+	if id, ok := b.funcIndex[symbolQualifiedName(packagePath, name)]; ok {
 		return id
 	}
 	return ""
 }
 
-func funcIndexKey(packagePath, name string) string {
-	return packagePath + "\x00" + name
+func (b *builder) lookupMethod(packagePath, recvType, methodName string) string {
+	if id, ok := b.methodIndex[methodIndexKey(packagePath, recvType, methodName)]; ok {
+		return id
+	}
+	return ""
+}
+
+func (b *builder) lookupMethodByReceiverVar(packagePath, varName, methodName string) string {
+	if recvType := guessReceiverType(varName); recvType != "" {
+		if id := b.lookupMethod(packagePath, recvType, methodName); id != "" {
+			return id
+		}
+	}
+	return ""
+}
+
+func (b *builder) lookupUniqueMethod(packagePath, methodName string) string {
+	suffix := "\x00" + methodName
+	var match string
+	prefix := packagePath + "\x00"
+	for key, id := range b.methodIndex {
+		if !strings.HasPrefix(key, prefix) || !strings.HasSuffix(key, suffix) {
+			continue
+		}
+		if match != "" {
+			return ""
+		}
+		match = id
+	}
+	return match
+}
+
+func methodIndexKey(packagePath, recvType, methodName string) string {
+	return packagePath + "\x00" + recvType + "\x00" + methodName
+}
+
+func guessReceiverType(varName string) string {
+	if varName == "" {
+		return ""
+	}
+	runes := []rune(varName)
+	runes[0] = []rune(strings.ToUpper(string(runes[0])))[0]
+	return string(runes)
 }
 
 func buildImportMap(file *ast.File, modulePath string) map[string]string {

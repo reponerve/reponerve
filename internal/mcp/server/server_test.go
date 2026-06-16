@@ -168,12 +168,23 @@ func TestServer_JSONRPC(t *testing.T) {
 			t.Fatalf("failed to unmarshal tools list: %v", err)
 		}
 
-		if len(result.Tools) != 27 {
-			t.Errorf("expected 27 tools, got %d", len(result.Tools))
+		if len(result.Tools) != 38 {
+			t.Errorf("expected 38 tools, got %d", len(result.Tools))
 		}
 
 		expectedTools := map[string]bool{
+			"analyze_topic_impact":   true,
+			"ask":                    true,
+			"explain":                true,
 			"explain_decision":       true,
+			"explain_file":           true,
+			"explain_function":       true,
+			"explain_interface":      true,
+			"explain_struct":         true,
+			"explain_type":           true,
+			"onboard":                true,
+			"plan":                   true,
+			"review":                 true,
 			"explain_event":          true,
 			"export_context":         true,
 			"generate_context":       true,
@@ -343,7 +354,7 @@ func TestServer_ToolsExecution(t *testing.T) {
 	renderer := render.NewRenderer()
 	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
-	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil)
+	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil, nil)
 	registry := mcp.NewRegistry()
 
 	// 1. Test list_decisions (all)
@@ -858,7 +869,7 @@ func TestServer_OwnershipToolsExecution(t *testing.T) {
 	renderer := render.NewRenderer()
 	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
-	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil)
+	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil, nil)
 	registry := mcp.NewRegistry()
 
 	// 1. Test list_contributors
@@ -1091,7 +1102,7 @@ func TestServer_GraphToolsExecution(t *testing.T) {
 	graphService := buildGraphService(dr, ir, fr, er, rr, cr, expr, sr)
 
 	service := mcp.NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader,
-		graphService.travEngine, graphService.impactSvc, nil, nil, nil, nil)
+		graphService.travEngine, graphService.impactSvc, nil, nil, nil, nil, nil)
 	registry := mcp.NewRegistry()
 
 	// --- Tool discovery: verify graph schemas ---

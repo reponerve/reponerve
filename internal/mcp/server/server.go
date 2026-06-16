@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 
@@ -1130,6 +1131,9 @@ func (s *Server) handleCallTool(ctx context.Context, id *json.RawMessage, params
 		s.sendToolSuccess(id, impactReport)
 
 	default:
+		if s.handleDevelopmentTool(ctx, id, params.Name, getArg, resolveRepoID) {
+			return
+		}
 		s.sendToolError(id, fmt.Sprintf("unknown tool name: %q", params.Name))
 	}
 }
@@ -1324,6 +1328,86 @@ func getInputSchema(toolName string) InputSchema {
 			"type":        "string",
 			"description": "Optional repository filter",
 		}
+
+	case "ask":
+		schema.Properties["question"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The repository or development question to answer",
+		}
+		schema.Required = []string{"question"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "explain", "review":
+		schema.Properties["topic"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The topic to explain or prepare a review guide for",
+		}
+		schema.Required = []string{"topic"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "explain_file":
+		schema.Properties["file_path"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Repository-relative file path to explain",
+		}
+		schema.Required = []string{"file_path"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "explain_function", "explain_struct", "explain_interface", "explain_type":
+		schema.Properties["symbol"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The code symbol name to explain",
+		}
+		schema.Required = []string{"symbol"}
+		schema.Properties["package_path"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional Go package path to disambiguate short symbol names",
+		}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "plan":
+		schema.Properties["task"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The development task to plan",
+		}
+		schema.Required = []string{"task"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "analyze_topic_impact":
+		schema.Properties["subject"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The topic, symbol, or area to analyze impact for",
+		}
+		schema.Required = []string{"subject"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "onboard":
+		schema.Properties["assignment"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional first assignment or pasted task to plan",
+		}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
 	}
 
 	return schema
@@ -1354,7 +1438,10 @@ func (s *Server) sendError(id *json.RawMessage, code int, msg string, data inter
 func (s *Server) writeResponse(resp interface{}) {
 	data, err := json.Marshal(resp)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "reponerve mcp: marshal response: %v\n", err)
 		return
 	}
-	_, _ = s.stdout.Write(append(data, '\n'))
+	if _, err := s.stdout.Write(append(data, '\n')); err != nil {
+		fmt.Fprintf(os.Stderr, "reponerve mcp: write response: %v\n", err)
+	}
 }

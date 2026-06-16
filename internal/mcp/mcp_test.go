@@ -109,16 +109,24 @@ func TestRegistry_Unit(t *testing.T) {
 		r := NewRegistry()
 		list := r.List()
 
-		// Expect exactly 27 tools registered initially
-		if len(list) != 27 {
-			t.Errorf("expected 27 initial tools, got %d", len(list))
+		// Expect exactly 38 tools registered initially
+		if len(list) != 38 {
+			t.Errorf("expected 38 initial tools, got %d", len(list))
 		}
 
 		expectedNames := []string{
 			"analyze_impact",
+			"analyze_topic_impact",
+			"ask",
 			"discover_knowledge",
+			"explain",
 			"explain_decision",
 			"explain_event",
+			"explain_file",
+			"explain_function",
+			"explain_interface",
+			"explain_struct",
+			"explain_type",
 			"export_context",
 			"find_dependencies",
 			"find_dependents",
@@ -136,7 +144,10 @@ func TestRegistry_Unit(t *testing.T) {
 			"list_expertise",
 			"list_facts",
 			"list_intents",
+			"onboard",
+			"plan",
 			"recommend_reviewers",
+			"review",
 			"trace_contributor",
 			"trace_decision",
 			"trace_event",
@@ -170,10 +181,10 @@ func TestRegistry_Unit(t *testing.T) {
 			t.Errorf("expected description %q, got %q", tool.Description, got.Description)
 		}
 
-		// Verify listing has 28 tools (27 defaults + 1 custom) sorted alphabetically
+		// Verify listing has 39 tools (38 defaults + 1 custom) sorted alphabetically
 		list := r.List()
-		if len(list) != 28 {
-			t.Errorf("expected 28 tools after registration, got %d", len(list))
+		if len(list) != 39 {
+			t.Errorf("expected 39 tools after registration, got %d", len(list))
 		}
 	})
 
@@ -220,7 +231,7 @@ func TestService_Unit(t *testing.T) {
 		renderer := render.NewRenderer()
 		ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
-		svc := NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil)
+		svc := NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil, nil)
 		if svc.DecisionReader != dr {
 			t.Error("Service DecisionReader dependency not set correctly")
 		}
@@ -284,7 +295,7 @@ func TestService_Integration(t *testing.T) {
 	ownershipReader := ownershipquery.NewReader(cr, expr, sr, dr, fr, er)
 
 	// Instantiate Service
-	svc := NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil)
+	svc := NewService(dr, ir, fr, er, rr, generator, renderer, ownershipReader, nil, nil, nil, nil, nil, nil, nil)
 
 	// Verify dependencies are set and correctly typed
 	if svc.DecisionReader == nil || svc.IntentReader == nil || svc.FactReader == nil ||
@@ -297,7 +308,18 @@ func TestService_Integration(t *testing.T) {
 	tools := r.List()
 
 	expectedTools := map[string]bool{
+		"analyze_topic_impact":   true,
+		"ask":                    true,
+		"explain":                true,
 		"explain_decision":       true,
+		"explain_file":           true,
+		"explain_function":       true,
+		"explain_interface":      true,
+		"explain_struct":         true,
+		"explain_type":           true,
+		"onboard":                true,
+		"plan":                   true,
+		"review":                 true,
 		"explain_event":          true,
 		"export_context":         true,
 		"generate_context":       true,

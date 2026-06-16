@@ -25,7 +25,7 @@ func (e *Extractor) Extract(ctx context.Context, sources []*models.Source) ([]*m
 	var decisions []*memorymodels.Decision
 
 	for _, src := range sources {
-		if src.SourceType != "adr" {
+		if src.SourceType != "adr" && src.SourceType != "architecture_doc" {
 			continue
 		}
 

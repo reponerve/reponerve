@@ -22,6 +22,8 @@ RepoNerve is the intelligence layer for software understanding — not merely a 
 
 Users do not buy intelligence. They buy understanding, development speed, confidence, and reduced exploration.
 
+**Universal understanding:** A developer on day one, someone assigned a new task (paste the description), or an AI agent — including weaker models — should work on the repository without context worry. RepoNerve supplies evidence-backed context; AI must not hallucinate or explore blindly. See `docs/product/universal-understanding.md`.
+
 ---
 
 ## Product Mission

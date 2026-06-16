@@ -11,15 +11,17 @@ import (
 
 // NewCommand creates the explain-type subcommand.
 func NewCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "explain-type [symbol]",
 		Short: "Explain a type alias symbol",
 		Long:  `Resolve a type alias through Code Intelligence and attach related repository context.`,
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return devwire.RunExplanation(cmd, args[0], func(ctx context.Context, session *devwire.Handle, symbol string) (*development.DevelopmentExplanation, error) {
-				return session.Service.ExplainType(ctx, session.RepositoryID, symbol)
-			})
-		},
 	}
+	pkgFlag := devwire.BindPackageFlag(cmd)
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		return devwire.RunSymbolExplanation(cmd, args[0], pkgFlag, func(ctx context.Context, session *devwire.Handle, symbol, packagePath string) (*development.DevelopmentExplanation, error) {
+			return session.Service.ExplainType(ctx, session.RepositoryID, symbol, packagePath)
+		})
+	}
+	return cmd
 }

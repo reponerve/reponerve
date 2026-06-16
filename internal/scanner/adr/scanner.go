@@ -62,87 +62,99 @@ func ParseADR(content string) (title string, status string) {
 	return title, status
 }
 
-// Scan discovers ADR markdown files under the supported directories and parses them.
+type scanTarget struct {
+	dir        string
+	sourceType string
+	idPrefix   string
+}
+
+// Scan discovers ADR and architecture markdown files under supported directories.
 func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.Source, error) {
 	var sources []*models.Source
 
-	dirs := []string{
-		filepath.Join(repo.Path, "docs", "adr"),
-		filepath.Join(repo.Path, "docs", "adrs"),
-		filepath.Join(repo.Path, "adr"),
-		filepath.Join(repo.Path, "adrs"),
+	targets := []scanTarget{
+		{dir: filepath.Join(repo.Path, "docs", "adr"), sourceType: "adr", idPrefix: "adr_"},
+		{dir: filepath.Join(repo.Path, "docs", "adrs"), sourceType: "adr", idPrefix: "adr_"},
+		{dir: filepath.Join(repo.Path, "adr"), sourceType: "adr", idPrefix: "adr_"},
+		{dir: filepath.Join(repo.Path, "adrs"), sourceType: "adr", idPrefix: "adr_"},
+		{dir: filepath.Join(repo.Path, "docs", "architecture"), sourceType: "architecture_doc", idPrefix: "archdoc_"},
 	}
 
-	for _, dir := range dirs {
-		if _, err := os.Stat(dir); err != nil {
-			continue
-		}
-		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
-				return nil
-			}
-			if !strings.HasSuffix(strings.ToLower(info.Name()), ".md") {
-				return nil
-			}
-
-			// Read file content
-			contentBytes, err := os.ReadFile(path)
-			if err != nil {
-				return fmt.Errorf("failed to read file %s: %w", path, err)
-			}
-			content := string(contentBytes)
-
-			// Get relative path
-			relPath, err := filepath.Rel(repo.Path, path)
-			if err != nil {
-				return fmt.Errorf("failed to get relative path for %s: %w", path, err)
-			}
-
-			// Parse content
-			title, status := ParseADR(content)
-			if title == "" {
-				// Fallback to filename without extension
-				base := filepath.Base(path)
-				title = strings.TrimSuffix(base, filepath.Ext(base))
-			}
-
-			// Unique stable ID for the source
-			hashInput := repo.ID + ":" + relPath
-			h := sha256.Sum256([]byte(hashInput))
-			id := fmt.Sprintf("adr_%s", hex.EncodeToString(h[:]))
-
-			// Build ADR metadata
-			metadata := map[string]interface{}{
-				"content": content,
-				"status":  status,
-				"path":    relPath,
-			}
-			metadataBytes, err := json.Marshal(metadata)
-			if err != nil {
-				return fmt.Errorf("failed to marshal metadata for %s: %w", path, err)
-			}
-
-			src := &models.Source{
-				ID:           id,
-				RepositoryID: repo.ID,
-				SourceType:   "adr",
-				Reference:    relPath,
-				Title:        title,
-				Author:       "",
-				Timestamp:    info.ModTime(),
-				MetadataJSON: string(metadataBytes),
-			}
-
-			sources = append(sources, src)
-			return nil
-		})
+	for _, target := range targets {
+		batch, err := s.scanDirectory(ctx, repo, target)
 		if err != nil {
 			return nil, err
 		}
+		sources = append(sources, batch...)
 	}
 
+	return sources, nil
+}
+
+func (s *Scanner) scanDirectory(ctx context.Context, repo *models.Repository, target scanTarget) ([]*models.Source, error) {
+	if _, err := os.Stat(target.dir); err != nil {
+		return nil, nil
+	}
+
+	var sources []*models.Source
+	err := filepath.Walk(target.dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		if !strings.HasSuffix(strings.ToLower(info.Name()), ".md") {
+			return nil
+		}
+
+		contentBytes, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read file %s: %w", path, err)
+		}
+		content := string(contentBytes)
+
+		relPath, err := filepath.Rel(repo.Path, path)
+		if err != nil {
+			return fmt.Errorf("failed to get relative path for %s: %w", path, err)
+		}
+		relPath = filepath.ToSlash(relPath)
+
+		title, status := ParseADR(content)
+		if title == "" {
+			base := filepath.Base(path)
+			title = strings.TrimSuffix(base, filepath.Ext(base))
+		}
+
+		hashInput := repo.ID + ":" + relPath
+		h := sha256.Sum256([]byte(hashInput))
+		id := fmt.Sprintf("%s%s", target.idPrefix, hex.EncodeToString(h[:]))
+
+		metadata := map[string]interface{}{
+			"content": content,
+			"status":  status,
+			"path":    relPath,
+			"kind":    target.sourceType,
+		}
+		metadataBytes, err := json.Marshal(metadata)
+		if err != nil {
+			return fmt.Errorf("failed to marshal metadata for %s: %w", path, err)
+		}
+
+		sources = append(sources, &models.Source{
+			ID:           id,
+			RepositoryID: repo.ID,
+			SourceType:   target.sourceType,
+			Reference:    relPath,
+			Title:        title,
+			Author:       "",
+			Timestamp:    info.ModTime(),
+			MetadataJSON: string(metadataBytes),
+		})
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
 	return sources, nil
 }

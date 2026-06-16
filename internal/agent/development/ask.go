@@ -21,6 +21,8 @@ const (
 	answerTypeDecisionRationale = "decision_rationale"
 	answerTypeDependency        = "dependency"
 	answerTypeOverview          = "overview"
+	answerTypeConceptExplanation = "concept_explanation"
+	answerTypeTaskPlan          = "task_plan"
 	answerTypeSearchSummary     = "search_summary"
 
 	sourceRepositoryQA        = "repository_qa"
@@ -35,6 +37,10 @@ var (
 	rxWhoOwns     = regexp.MustCompile(`(?i)^who owns\s+(.+?)\??$`)
 	rxWhyUsing    = regexp.MustCompile(`(?i)^why (?:are we |do we )?using\s+(.+?)\??$`)
 	rxWhatDepends = regexp.MustCompile(`(?i)^what depends on\s+(.+?)\??$`)
+	rxWhatIs      = regexp.MustCompile(`(?i)^what is (?:the )?(?:struct |type |function )?(.+?)\??$`)
+	rxWhatDoes    = regexp.MustCompile(`(?i)^what does (?:the )?(.+?) do\??$`)
+	rxHowDoesWork = regexp.MustCompile(`(?i)^how does (?:the )?(.+?) work\??$`)
+	rxTellMeAbout = regexp.MustCompile(`(?i)^tell me about (?:the )?(.+?)\??$`)
 )
 
 var askStopwords = map[string]struct{}{
@@ -57,10 +63,21 @@ func (s *Service) Ask(ctx context.Context, req DevelopmentRequest) (*Development
 		return nil, fmt.Errorf("question cannot be empty")
 	}
 
-	if s.qaService != nil {
-		if answer, err := s.qaService.Answer(ctx, req.RepositoryID, qa.Question{Text: question}); err == nil {
-			return s.fromQAAnswer(ctx, req.RepositoryID, answer)
-		}
+	if LooksLikeTaskDescription(question) {
+		return s.answerTaskPlan(ctx, req.RepositoryID, question)
+	}
+
+	if matches := rxWhatIs.FindStringSubmatch(question); len(matches) > 1 {
+		return s.answerConcept(ctx, req.RepositoryID, question, strings.TrimSpace(matches[1]))
+	}
+	if matches := rxWhatDoes.FindStringSubmatch(question); len(matches) > 1 {
+		return s.answerConcept(ctx, req.RepositoryID, question, strings.TrimSpace(matches[1]))
+	}
+	if matches := rxHowDoesWork.FindStringSubmatch(question); len(matches) > 1 {
+		return s.answerConcept(ctx, req.RepositoryID, question, strings.TrimSpace(matches[1]))
+	}
+	if matches := rxTellMeAbout.FindStringSubmatch(question); len(matches) > 1 {
+		return s.answerConcept(ctx, req.RepositoryID, question, strings.TrimSpace(matches[1]))
 	}
 
 	if matches := rxWhoOwns.FindStringSubmatch(question); len(matches) > 1 {
@@ -82,7 +99,94 @@ func (s *Service) Ask(ctx context.Context, req DevelopmentRequest) (*Development
 		return s.answerDependency(ctx, req.RepositoryID, question, matches[1])
 	}
 
+	if s.qaService != nil {
+		if answer, err := s.qaService.Answer(ctx, req.RepositoryID, qa.Question{Text: question}); err == nil {
+			return s.fromQAAnswer(ctx, req.RepositoryID, answer)
+		}
+	}
+
 	return s.answerSearchSummary(ctx, req.RepositoryID, question)
+}
+
+func (s *Service) answerConcept(ctx context.Context, repositoryID, question, subject string) (*DevelopmentAnswer, error) {
+	subject = strings.TrimSpace(subject)
+	if subject == "" {
+		return s.answerSearchSummary(ctx, repositoryID, question)
+	}
+
+	expl, err := s.Explain(ctx, DevelopmentRequest{
+		RepositoryID: repositoryID,
+		Topic:        subject,
+	})
+	if err != nil {
+		return s.answerSearchSummary(ctx, repositoryID, question)
+	}
+
+	out := conceptAnswerFromExplanation(question, expl)
+	sortEntityRefs(out.Related)
+	sortEvidence(out.Evidence)
+	return out, nil
+}
+
+func conceptAnswerFromExplanation(question string, expl *DevelopmentExplanation) *DevelopmentAnswer {
+	out := &DevelopmentAnswer{
+		Question:        question,
+		AnswerType:      answerTypeConceptExplanation,
+		EntityBriefings: expl.EntityBriefings,
+		Evidence:        expl.Evidence,
+		SourceServices:  expl.SourceServices,
+		Related:         relatedFromExplanation(expl),
+	}
+
+	var summaryParts []string
+	if briefSummary := summarizeBriefings(expl.EntityBriefings); briefSummary != "" {
+		summaryParts = append(summaryParts, briefSummary)
+	}
+	if expl.RepositoryContext != nil {
+		if len(expl.RepositoryContext.Decisions) > 0 {
+			labels := make([]string, 0, len(expl.RepositoryContext.Decisions))
+			for _, d := range expl.RepositoryContext.Decisions {
+				labels = append(labels, d.Label)
+			}
+			summaryParts = append(summaryParts, fmt.Sprintf("Related decisions:\n  - %s", strings.Join(labels, "\n  - ")))
+		}
+	}
+	if len(summaryParts) == 0 {
+		summaryParts = append(summaryParts, fmt.Sprintf("Concept briefing for %q assembled from code and repository intelligence.", expl.Topic))
+	}
+	out.Summary = strings.Join(summaryParts, "\n\n")
+	return out
+}
+
+func relatedFromExplanation(expl *DevelopmentExplanation) []EntityRef {
+	if expl == nil {
+		return nil
+	}
+	seen := make(map[string]struct{})
+	var refs []EntityRef
+	appendUnique := func(list []EntityRef) {
+		for _, ref := range list {
+			key := ref.EntityType + ":" + ref.EntityID
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			refs = append(refs, ref)
+		}
+	}
+	if expl.CodeContext != nil {
+		appendUnique(expl.CodeContext.Structs)
+		appendUnique(expl.CodeContext.Interfaces)
+		appendUnique(expl.CodeContext.TypeAliases)
+		appendUnique(expl.CodeContext.Functions)
+		appendUnique(expl.CodeContext.Files)
+	}
+	if expl.RepositoryContext != nil {
+		appendUnique(expl.RepositoryContext.Decisions)
+		appendUnique(expl.RepositoryContext.Facts)
+		appendUnique(expl.RepositoryContext.Events)
+	}
+	return refs
 }
 
 func (s *Service) fromQAAnswer(ctx context.Context, repositoryID string, answer *qa.Answer) (*DevelopmentAnswer, error) {
@@ -294,14 +398,54 @@ func (s *Service) answerDecisionRationale(ctx context.Context, repositoryID, que
 	out.Related = refs
 	out.Evidence = append(out.Evidence, ev...)
 
-	var decisionLabels []string
-	for _, ref := range refs {
-		if ref.EntityType == agentsearch.EntityTypeDecision {
-			decisionLabels = append(decisionLabels, ref.Label)
-		}
+	decisions, err := s.decisionReader.ListByRepository(ctx, repositoryID)
+	if err != nil {
+		return nil, err
 	}
-	if len(decisionLabels) > 0 {
-		out.Summary = fmt.Sprintf("Relevant decisions for %q:\n  - %s", subject, strings.Join(decisionLabels, "\n  - "))
+	decisionByID := make(map[string]struct {
+		title    string
+		sourceID string
+	}, len(decisions))
+	for _, d := range decisions {
+		decisionByID[d.ID] = struct {
+			title    string
+			sourceID string
+		}{title: d.Title, sourceID: d.SourceID}
+	}
+
+	sources, err := s.sourceReader.ListByRepository(ctx, repositoryID)
+	if err != nil {
+		return nil, err
+	}
+	sourceByID := make(map[string]string, len(sources))
+	for _, src := range sources {
+		sourceByID[src.ID] = src.MetadataJSON
+	}
+
+	var rationaleLines []string
+	for _, ref := range refs {
+		if ref.EntityType != agentsearch.EntityTypeDecision {
+			continue
+		}
+		meta, ok := decisionByID[ref.EntityID]
+		if !ok {
+			rationaleLines = append(rationaleLines, ref.Label)
+			continue
+		}
+		snippet := adrRationaleSnippet(sourceByID[meta.sourceID])
+		if snippet == "" {
+			rationaleLines = append(rationaleLines, meta.title)
+			continue
+		}
+		rationaleLines = append(rationaleLines, fmt.Sprintf("%s — %s", meta.title, snippet))
+		appendEvidence(&out.Evidence, sourceArchitecturalGuidance, "decision_rationale", map[string]string{
+			"decision_id": ref.EntityID,
+			"title":       meta.title,
+			"snippet":     snippet,
+		})
+	}
+	if len(rationaleLines) > 0 {
+		out.Summary = fmt.Sprintf("Relevant decisions for %q:\n  - %s", subject, strings.Join(rationaleLines, "\n  - "))
 	} else {
 		out.Summary = fmt.Sprintf("No decision evidence found for %q. Run `reponerve scan` to refresh repository memory.", subject)
 	}
@@ -353,11 +497,13 @@ func (s *Service) answerSearchSummary(ctx context.Context, repositoryID, questio
 		return nil, err
 	}
 	refs, ev, _ := s.relatedFromTopic(ctx, repositoryID, topic)
-	out.Related = refs
+	out.Related = prioritizeAndCapRelated(refs, 20)
 	out.Evidence = append(out.Evidence, ev...)
 
 	if len(refs) == 0 {
 		out.Summary = "No deterministic answer pattern matched this question."
+	} else if len(out.Related) < len(refs) {
+		out.Summary = fmt.Sprintf("Search found %d related entities for %q (showing top %d).", len(refs), question, len(out.Related))
 	} else {
 		out.Summary = fmt.Sprintf("Search found %d related entities for %q.", len(refs), question)
 	}

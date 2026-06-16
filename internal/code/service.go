@@ -76,8 +76,26 @@ func (s *Service) ResolveFile(ctx context.Context, repositoryID, filePath string
 	return ctxOut, nil
 }
 
+// ListSymbolMatches returns all indexed symbols matching a qualified or short name.
+// packagePath optionally filters homonyms (e.g. internal/context).
+func (s *Service) ListSymbolMatches(ctx context.Context, repositoryID, symbol, packagePath string) ([]*codemodels.CodeEntity, error) {
+	if repositoryID == "" {
+		return nil, fmt.Errorf("repository ID cannot be empty")
+	}
+	symbol = strings.TrimSpace(symbol)
+	if symbol == "" {
+		return nil, fmt.Errorf("symbol cannot be empty")
+	}
+	matches, err := s.resolveSymbolEntities(ctx, repositoryID, symbol)
+	if err != nil {
+		return nil, err
+	}
+	return filterEntitiesByPackage(matches, packagePath), nil
+}
+
 // ResolveSymbol resolves a qualified or short symbol name to code explanation context.
-func (s *Service) ResolveSymbol(ctx context.Context, repositoryID, symbol string) (*codemodels.CodeExplanationContext, error) {
+// packagePath optionally disambiguates short symbol names.
+func (s *Service) ResolveSymbol(ctx context.Context, repositoryID, symbol, packagePath string) (*codemodels.CodeExplanationContext, error) {
 	if repositoryID == "" {
 		return nil, fmt.Errorf("repository ID cannot be empty")
 	}
@@ -90,8 +108,15 @@ func (s *Service) ResolveSymbol(ctx context.Context, repositoryID, symbol string
 	if err != nil {
 		return nil, err
 	}
+	matches = filterEntitiesByPackage(matches, packagePath)
 	if len(matches) == 0 {
+		if strings.TrimSpace(packagePath) != "" {
+			return nil, fmt.Errorf("symbol not found: %s in package %s", symbol, strings.TrimSpace(packagePath))
+		}
 		return nil, fmt.Errorf("symbol not found: %s", symbol)
+	}
+	if err := checkAmbiguousSymbol(symbol, packagePath, matches); err != nil {
+		return nil, err
 	}
 
 	root := matches[0]
@@ -274,6 +299,95 @@ func isSymbolEntityType(entityType string) bool {
 	default:
 		return false
 	}
+}
+
+func filterEntitiesByPackage(entities []*codemodels.CodeEntity, packagePath string) []*codemodels.CodeEntity {
+	packagePath = normalizePackageFilter(packagePath)
+	if packagePath == "" || len(entities) == 0 {
+		return entities
+	}
+	var out []*codemodels.CodeEntity
+	for _, e := range entities {
+		if packageMatches(e.PackagePath, packagePath) {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+func normalizePackageFilter(packagePath string) string {
+	packagePath = strings.TrimSpace(packagePath)
+	packagePath = strings.Trim(packagePath, "/")
+	return packagePath
+}
+
+func packageMatches(entityPackage, filter string) bool {
+	entityPackage = normalizePackageFilter(entityPackage)
+	filter = normalizePackageFilter(filter)
+	if filter == "" {
+		return true
+	}
+	return entityPackage == filter ||
+		strings.HasSuffix(entityPackage, "/"+filter) ||
+		strings.HasSuffix(entityPackage, filter)
+}
+
+func checkAmbiguousSymbol(symbol, packagePath string, matches []*codemodels.CodeEntity) error {
+	if len(matches) <= 1 {
+		return nil
+	}
+	if strings.Contains(symbol, ".") || strings.Contains(symbol, "/") {
+		return nil
+	}
+	if normalizePackageFilter(packagePath) != "" {
+		return nil
+	}
+	shortName := false
+	for _, m := range matches {
+		if strings.EqualFold(m.Name, symbol) {
+			shortName = true
+			break
+		}
+	}
+	if !shortName {
+		return nil
+	}
+	names := make([]string, 0, len(matches))
+	packages := make([]string, 0, len(matches))
+	seen := make(map[string]struct{}, len(matches))
+	for _, m := range matches {
+		if _, ok := seen[m.QualifiedName]; ok {
+			continue
+		}
+		seen[m.QualifiedName] = struct{}{}
+		names = append(names, m.QualifiedName)
+		if m.PackagePath != "" {
+			packages = append(packages, m.PackagePath)
+		}
+		if len(names) >= 5 {
+			break
+		}
+	}
+	extra := ""
+	if len(matches) > len(names) {
+		extra = fmt.Sprintf(" (and %d more)", len(matches)-len(names))
+	}
+	pkgHint := ""
+	if len(packages) > 0 {
+		pkgHint = fmt.Sprintf("; try --package %s", packages[0])
+		if len(packages) > 1 {
+			pkgHint += fmt.Sprintf(" (also: %s)", strings.Join(packages[1:minInt(3, len(packages))], ", "))
+		}
+	}
+	return fmt.Errorf("ambiguous symbol %q matches %d entities%s; try qualified names: %s%s",
+		symbol, len(matches), extra, strings.Join(names, ", "), pkgHint)
+}
+
+func minInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func normalizeFilePath(path string) string {

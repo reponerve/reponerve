@@ -10,6 +10,8 @@ import (
 type DevelopmentRequest struct {
 	RepositoryID string
 	Topic        string
+	// PackagePath disambiguates short symbol names (e.g. internal/context).
+	PackagePath string
 }
 
 // EntityRef references one repository or code entity in DE output.
@@ -70,19 +72,81 @@ type RepositoryContext struct {
 	ChangePlans []EntityRef `json:"change_plans"`
 }
 
+// DevelopmentImpactReport is the structured impact analysis output contract.
+type DevelopmentImpactReport struct {
+	Subject             string                  `json:"subject"`
+	ImpactedDecisions   []EntityRef             `json:"impacted_decisions"`
+	ImpactedFacts       []EntityRef             `json:"impacted_facts"`
+	ImpactedEvents      []EntityRef             `json:"impacted_events"`
+	CodeDependencies    []RelationshipRef       `json:"code_dependencies"`
+	DependentAreas      []EntityRef             `json:"dependent_areas"`
+	Owners              []EntityRef             `json:"owners"`
+	RepositoryCodeLinks []RepositoryCodeLinkRef `json:"repository_code_links"`
+	Evidence            []EvidenceItem          `json:"evidence"`
+	SourceServices      []string                `json:"source_services"`
+}
+
+// DevelopmentReviewGuide is the structured review preparation output contract.
+type DevelopmentReviewGuide struct {
+	Topic                string                  `json:"topic"`
+	RecommendedReviewers []EntityRef             `json:"recommended_reviewers"`
+	RequiredExpertise    []EntityRef             `json:"required_expertise"`
+	AffectedAreas        []EntityRef             `json:"affected_areas"`
+	RelatedKnowledge     []EntityRef             `json:"related_knowledge"`
+	SuggestedWorkflow    string                  `json:"suggested_workflow"`
+	RepositoryCodeLinks  []RepositoryCodeLinkRef `json:"repository_code_links"`
+	Evidence             []EvidenceItem          `json:"evidence"`
+	SourceServices       []string                `json:"source_services"`
+}
+
+// DevelopmentPlan is the structured plan output contract.
+type DevelopmentPlan struct {
+	Task                string                  `json:"task"`
+	EntityBriefings     []EntityBriefing        `json:"entity_briefings,omitempty"`
+	SuggestedSteps      []string                `json:"suggested_steps,omitempty"`
+	ImpactedAreas       []EntityRef             `json:"impacted_areas"`
+	RelevantDecisions   []EntityRef             `json:"relevant_decisions"`
+	RelevantFacts       []EntityRef             `json:"relevant_facts"`
+	Owners              []EntityRef             `json:"owners"`
+	Reviewers           []EntityRef             `json:"reviewers"`
+	SuggestedWorkflow   string                  `json:"suggested_workflow"`
+	StartingPoints      []EntityRef             `json:"starting_points"`
+	RepositoryCodeLinks []RepositoryCodeLinkRef `json:"repository_code_links"`
+	Evidence            []EvidenceItem          `json:"evidence"`
+	SourceServices      []string                `json:"source_services"`
+}
+
+// EntityBriefing is a structured agent-ready summary of one code entity.
+type EntityBriefing struct {
+	QualifiedName    string      `json:"qualified_name"`
+	EntityType       string      `json:"entity_type"`
+	Layer            string      `json:"layer"`
+	Role             string      `json:"role"`
+	DefinedIn        string      `json:"defined_in"`
+	Signature        string      `json:"signature,omitempty"`
+	Fields           []string    `json:"fields,omitempty"`
+	Members          []EntityRef `json:"members,omitempty"`
+	Producers        []EntityRef `json:"producers"`
+	Consumers        []EntityRef `json:"consumers"`
+	RelatedDecisions []EntityRef `json:"related_decisions"`
+}
+
 // DevelopmentAnswer is the structured ask output contract.
 type DevelopmentAnswer struct {
-	Question       string         `json:"question"`
-	AnswerType     string         `json:"answer_type"`
-	Summary        string         `json:"summary"`
-	Related        []EntityRef    `json:"related"`
-	Evidence       []EvidenceItem `json:"evidence"`
-	SourceServices []string       `json:"source_services"`
+	Question        string           `json:"question"`
+	AnswerType      string           `json:"answer_type"`
+	Summary         string           `json:"summary"`
+	Plan            *DevelopmentPlan `json:"plan,omitempty"`
+	EntityBriefings []EntityBriefing `json:"entity_briefings,omitempty"`
+	Related         []EntityRef      `json:"related"`
+	Evidence        []EvidenceItem   `json:"evidence"`
+	SourceServices  []string         `json:"source_services"`
 }
 
 // DevelopmentExplanation is the unified explain output contract.
 type DevelopmentExplanation struct {
 	Topic               string                  `json:"topic"`
+	EntityBriefings     []EntityBriefing        `json:"entity_briefings,omitempty"`
 	CodeContext         *CodeContext            `json:"code_context"`
 	RepositoryContext   *RepositoryContext      `json:"repository_context"`
 	RepositoryCodeLinks []RepositoryCodeLinkRef `json:"repository_code_links"`

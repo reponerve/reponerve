@@ -84,6 +84,15 @@ func Load(workspaceDir string) (*Config, error) {
 	return &cfg, nil
 }
 
+// FormatLoadError returns a user-facing message for workspace configuration problems.
+func FormatLoadError(workspaceDir string, err error) string {
+	configPath := filepath.Join(workspaceDir, "config.yaml")
+	if _, statErr := os.Stat(configPath); os.IsNotExist(statErr) {
+		return "workspace not initialized; run 'reponerve init' first"
+	}
+	return fmt.Sprintf("failed to load workspace config at %s: %v", configPath, err)
+}
+
 // GetWorkspaceDir returns the workspace directory, defaulting to ".reponerve"
 // unless overridden by the REPONERVE_WORKSPACE environment variable.
 func GetWorkspaceDir() string {

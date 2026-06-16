@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/reponerve/reponerve/internal/cli/devwire"
 	"github.com/reponerve/reponerve/internal/config"
 	"github.com/reponerve/reponerve/internal/context"
 	"github.com/reponerve/reponerve/internal/context/render"
@@ -84,11 +85,17 @@ func NewCommand() *cobra.Command {
 			)
 			changePlanSvc := changeplan.NewService(impactSvc)
 
+			_, developmentSvc, err := devwire.WireDevelopmentService(cmd.Context(), db, cfg.Repository.Path)
+			if err != nil {
+				return fmt.Errorf("failed to wire development experience service: %w", err)
+			}
+
 			// 7. Create MCP Service & Registry & Server
 			svc := mcp.NewService(
 				decisionReader, intentReader, factReader, eventReader,
 				relationshipReader, generator, renderer, ownershipReader,
 				travEngine, impactSvc, discoverySvc, learningSvc, reviewerSvc, changePlanSvc,
+				developmentSvc,
 			)
 			registry := mcp.NewRegistry()
 			srv := server.NewServer(registry, svc, cmd.InOrStdin(), cmd.OutOrStdout())

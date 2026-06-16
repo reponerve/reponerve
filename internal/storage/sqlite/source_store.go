@@ -36,7 +36,7 @@ func (s *SourceStore) UpsertSource(ctx context.Context, src *models.Source) erro
 		val = src.MetadataJSON
 	}
 
-	_, err := s.db.ExecContext(ctx, query, src.ID, src.RepositoryID, src.SourceType, src.Reference, src.Title, src.Author, src.Timestamp, val, now)
+	_, err := s.db.ExecContext(ctx, query, src.ID, src.RepositoryID, src.SourceType, src.Reference, src.Title, src.Author, FormatDateTime(src.Timestamp), val, FormatDateTime(now))
 	if err != nil {
 		return fmt.Errorf("failed to store source record: %w", err)
 	}

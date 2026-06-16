@@ -12,6 +12,9 @@ import (
 	explainstructcmd "github.com/reponerve/reponerve/internal/cli/explainstruct"
 	explaintypecmd "github.com/reponerve/reponerve/internal/cli/explaintype"
 	impactcmd "github.com/reponerve/reponerve/internal/cli/impactcmd"
+	onboardcmd "github.com/reponerve/reponerve/internal/cli/onboardcmd"
+	plancmd "github.com/reponerve/reponerve/internal/cli/plancmd"
+	reviewcmd "github.com/reponerve/reponerve/internal/cli/reviewcmd"
 	initcmd "github.com/reponerve/reponerve/internal/cli/init"
 	searchcmd "github.com/reponerve/reponerve/internal/cli/search"
 	mcpcmd "github.com/reponerve/reponerve/internal/cli/mcp"
@@ -38,6 +41,9 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(explainstructcmd.NewCommand())
 	rootCmd.AddCommand(explaininterfacecmd.NewCommand())
 	rootCmd.AddCommand(explaintypecmd.NewCommand())
+	rootCmd.AddCommand(plancmd.NewCommand())
+	rootCmd.AddCommand(onboardcmd.NewCommand())
+	rootCmd.AddCommand(reviewcmd.NewCommand())
 	rootCmd.AddCommand(impactcmd.NewCommand())
 	rootCmd.AddCommand(memorycmd.NewCommand())
 	rootCmd.AddCommand(contextcmd.NewCommand())

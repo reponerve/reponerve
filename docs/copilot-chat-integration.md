@@ -30,7 +30,7 @@ The `.vscode/mcp.json` file in this repository already contains the MCP server c
       "command": "reponerve",
       "args": ["mcp"],
       "env": {
-        "REPOERVE_WORKSPACE": "${workspaceFolder}"
+        "REPONERVE_WORKSPACE": "${workspaceFolder}/.reponerve"
       }
     }
   }
@@ -53,38 +53,88 @@ The `.vscode/mcp.json` file in this repository already contains the MCP server c
    - "Who are the key contributors to this repository?"
    - "Explain the event related to database migration."
    - "List all facts about the API gateway."
+   - "Where should I add a new CLI command?" (uses `plan`)
+   - "Explain internal/mcp/server/server.go" (uses `explain_file`)
+   - "What is the impact of changing the MCP registry?" (uses `analyze_topic_impact`)
 
 ## Available Tools
 
-When connected, Copilot Chat can use the following RepoNerve tools:
+When connected, Copilot Chat can use **37** RepoNerve MCP tools.
 
-- `list_decisions` - List all architectural decisions
-- `get_decision` - Retrieve a specific decision
-- `list_events` - List all repository events
-- `get_event` - Retrieve a specific event
-- `list_intents` - List all intents
-- `get_intent` - Retrieve a specific intent
-- `list_facts` - List all facts
-- `get_fact` - Retrieve a specific fact
-- `trace_decision` - Trace relationships for a decision
-- `trace_event` - Trace relationships for an event
-- `explain_decision` - Explain a decision
-- `explain_event` - Explain an event
-- `generate_context` - Generate repository context
-- `export_context` - Export context as markdown
-- `list_contributors` - List contributors
-- `get_contributor` - Get contributor details
-- `list_expertise` - List expertise records
-- `trace_contributor` - Trace contributor activity
-- `recommend_reviewers` - Recommend reviewers
-- `discover_knowledge` - Discover repository knowledge
-- `generate_learning_path` - Generate learning paths
-- `generate_change_plan` - Generate change plans
-- `trace_graph` - Traverse knowledge graph
-- `trace_path` - Find paths between nodes
-- `find_dependencies` - Find dependencies
-- `find_dependents` - Find dependents
-- `analyze_impact` - Analyze impact of changes
+### Repository Memory
+
+- `list_decisions` — List all architectural decisions
+- `get_decision` — Retrieve a specific decision
+- `list_events` — List all repository events
+- `get_event` — Retrieve a specific event
+- `list_intents` — List all intents
+- `get_intent` — Retrieve a specific intent
+- `list_facts` — List all facts
+- `get_fact` — Retrieve a specific fact
+- `trace_decision` — Trace relationships for a decision
+- `trace_event` — Trace relationships for an event
+- `explain_decision` — Explain a decision memory record
+- `explain_event` — Explain an event memory record
+- `generate_context` — Generate repository context
+- `export_context` — Export context as markdown
+
+### Ownership and Intelligence
+
+- `list_contributors` — List contributors
+- `get_contributor` — Get contributor details
+- `list_expertise` — List expertise records
+- `trace_contributor` — Trace contributor activity
+- `recommend_reviewers` — Recommend reviewers
+- `discover_knowledge` — Discover repository knowledge
+- `generate_learning_path` — Generate learning paths
+- `generate_change_plan` — Generate change plans
+
+### Knowledge Graph
+
+- `trace_graph` — Traverse knowledge graph
+- `trace_path` — Find paths between nodes
+- `find_dependencies` — Find outbound dependencies
+- `find_dependents` — Find inbound dependents
+- `analyze_impact` — Analyze impact of a decision, fact, event, or contributor through the graph (`node_id` + `node_type`)
+
+### Development Experience
+
+These tools mirror the `reponerve` CLI Development Experience commands. They combine Code Intelligence and Repository Intelligence with evidence-backed output.
+
+| MCP tool | CLI equivalent | Primary argument |
+| --- | --- | --- |
+| `ask` | `ask` | `question` |
+| `explain` | `explain` | `topic` |
+| `explain_file` | `explain-file` | `file_path` |
+| `explain_function` | `explain-function` | `symbol` |
+| `explain_struct` | `explain-struct` | `symbol` |
+| `explain_interface` | `explain-interface` | `symbol` |
+| `explain_type` | `explain-type` | `symbol` |
+| `plan` | `plan` | `task` |
+| `review` | `review` | `topic` |
+| `analyze_topic_impact` | `impact` | `subject` |
+
+All Development Experience tools accept an optional `repository_id`. When omitted, RepoNerve resolves the active workspace repository.
+
+**Graph vs topic impact:** Use `analyze_impact` when you have a specific memory entity ID (decision, fact, event, contributor). Use `analyze_topic_impact` when you want impact analysis for a natural-language subject, symbol, or area (same behavior as `reponerve impact "subject"`).
+
+Example MCP arguments:
+
+```json
+{ "question": "Why do we use SQLite?" }
+```
+
+```json
+{ "file_path": "internal/mcp/registry.go" }
+```
+
+```json
+{ "task": "Add a new MCP tool for listing code packages" }
+```
+
+```json
+{ "subject": "MCP server" }
+```
 
 ## Troubleshooting
 

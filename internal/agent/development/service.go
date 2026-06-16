@@ -7,10 +7,15 @@ import (
 	"sort"
 	"strings"
 
+	agentimpact "github.com/reponerve/reponerve/internal/agent/impact"
 	agentsearch "github.com/reponerve/reponerve/internal/agent/search"
 	"github.com/reponerve/reponerve/internal/agent/qa"
 	"github.com/reponerve/reponerve/internal/code"
+	graphimpact "github.com/reponerve/reponerve/internal/graph/impact"
 	codemodels "github.com/reponerve/reponerve/internal/code/models"
+	"github.com/reponerve/reponerve/internal/intelligence/changeplan"
+	"github.com/reponerve/reponerve/internal/intelligence/learning"
+	"github.com/reponerve/reponerve/internal/intelligence/reviewers"
 	"github.com/reponerve/reponerve/internal/query/storage"
 )
 
@@ -37,6 +42,11 @@ type Service struct {
 	contributorReader storage.ContributorReader
 	sourceReader      storage.SourceReader
 	repositoryPath    string
+	learningService     *learning.Service
+	reviewerService     *reviewers.Service
+	changePlanService   *changeplan.Service
+	graphImpactService  *graphimpact.Service
+	agentImpactService  *agentimpact.Service
 }
 
 // NewService creates a Development Experience service.
@@ -54,6 +64,11 @@ func NewService(
 	contributorReader storage.ContributorReader,
 	sourceReader storage.SourceReader,
 	repositoryPath string,
+	learningService *learning.Service,
+	reviewerService *reviewers.Service,
+	changePlanService *changeplan.Service,
+	graphImpactService *graphimpact.Service,
+	agentImpactService *agentimpact.Service,
 ) *Service {
 	return &Service{
 		codeService:       codeService,
@@ -70,6 +85,11 @@ func NewService(
 		contributorReader: contributorReader,
 		sourceReader:      sourceReader,
 		repositoryPath:    repositoryPath,
+		learningService:    learningService,
+		reviewerService:    reviewerService,
+		changePlanService:  changePlanService,
+		graphImpactService: graphImpactService,
+		agentImpactService: agentImpactService,
 	}
 }
 
@@ -107,33 +127,56 @@ func (s *Service) ExplainFile(ctx context.Context, repositoryID, filePath string
 }
 
 // ExplainFunction explains a function or method symbol.
-func (s *Service) ExplainFunction(ctx context.Context, repositoryID, symbol string) (*DevelopmentExplanation, error) {
-	return s.explainSymbol(ctx, repositoryID, symbol, codemodels.EntityTypeFunction, codemodels.EntityTypeMethod)
+func (s *Service) ExplainFunction(ctx context.Context, repositoryID, symbol, packagePath string) (*DevelopmentExplanation, error) {
+	return s.explainSymbol(ctx, repositoryID, symbol, packagePath, codemodels.EntityTypeFunction, codemodels.EntityTypeMethod)
 }
 
 // ExplainStruct explains a struct symbol.
-func (s *Service) ExplainStruct(ctx context.Context, repositoryID, symbol string) (*DevelopmentExplanation, error) {
-	return s.explainSymbol(ctx, repositoryID, symbol, codemodels.EntityTypeStruct)
+func (s *Service) ExplainStruct(ctx context.Context, repositoryID, symbol, packagePath string) (*DevelopmentExplanation, error) {
+	return s.explainSymbol(ctx, repositoryID, symbol, packagePath, codemodels.EntityTypeStruct)
 }
 
 // ExplainInterface explains an interface symbol.
-func (s *Service) ExplainInterface(ctx context.Context, repositoryID, symbol string) (*DevelopmentExplanation, error) {
-	return s.explainSymbol(ctx, repositoryID, symbol, codemodels.EntityTypeInterface)
+func (s *Service) ExplainInterface(ctx context.Context, repositoryID, symbol, packagePath string) (*DevelopmentExplanation, error) {
+	return s.explainSymbol(ctx, repositoryID, symbol, packagePath, codemodels.EntityTypeInterface)
 }
 
 // ExplainType explains a type alias symbol.
-func (s *Service) ExplainType(ctx context.Context, repositoryID, symbol string) (*DevelopmentExplanation, error) {
-	return s.explainSymbol(ctx, repositoryID, symbol, codemodels.EntityTypeTypeAlias)
+func (s *Service) ExplainType(ctx context.Context, repositoryID, symbol, packagePath string) (*DevelopmentExplanation, error) {
+	return s.explainSymbol(ctx, repositoryID, symbol, packagePath, codemodels.EntityTypeTypeAlias)
 }
 
-func (s *Service) explainSymbol(ctx context.Context, repositoryID, symbol string, allowedTypes ...string) (*DevelopmentExplanation, error) {
-	codeCtx, err := s.codeService.ResolveSymbol(ctx, repositoryID, symbol)
+func (s *Service) explainSymbol(ctx context.Context, repositoryID, symbol, packagePath string, allowedTypes ...string) (*DevelopmentExplanation, error) {
+	matches, err := s.codeService.ListSymbolMatches(ctx, repositoryID, symbol, packagePath)
+	if err != nil {
+		return nil, err
+	}
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("symbol not found: %s", symbol)
+	}
+	matches = filterMatchesByTypes(matches, allowedTypes...)
+	if len(matches) == 0 {
+		hint := symbolTypeHint(symbol, allowedTypes)
+		if hint != "" {
+			return nil, fmt.Errorf("symbol %q is not one of requested types (%s); %s", symbol, strings.Join(allowedTypes, ", "), hint)
+		}
+		return nil, fmt.Errorf("symbol %q is not one of requested types (%s)", symbol, strings.Join(allowedTypes, ", "))
+	}
+	if isShortNameAmbiguous(symbol, matches) {
+		return s.assembleAmbiguousSymbolExplanation(ctx, repositoryID, symbol, matches)
+	}
+
+	codeCtx, err := s.codeService.ResolveSymbol(ctx, repositoryID, symbol, packagePath)
 	if err != nil {
 		return nil, err
 	}
 	if len(allowedTypes) > 0 {
 		if !symbolMatchesTypes(codeCtx, allowedTypes) {
-			return nil, fmt.Errorf("symbol %q is not one of requested types", symbol)
+			hint := symbolTypeHint(symbol, allowedTypes)
+			if hint != "" {
+				return nil, fmt.Errorf("symbol %q is not one of requested types (%s); %s", symbol, strings.Join(allowedTypes, ", "), hint)
+			}
+			return nil, fmt.Errorf("symbol %q is not one of requested types (%s)", symbol, strings.Join(allowedTypes, ", "))
 		}
 	}
 	topic := &ResolvedTopic{
@@ -158,6 +201,9 @@ func (s *Service) assembleExplanation(ctx context.Context, repositoryID, topic s
 	entities, err := s.loadCodeEntities(ctx, repositoryID, resolved.CodeEntityIDs)
 	if err != nil {
 		return nil, err
+	}
+	if homonyms := homonymEntitiesForTopic(topic, entities); len(homonyms) > 1 {
+		return s.assembleAmbiguousSymbolExplanation(ctx, repositoryID, topic, homonyms)
 	}
 	groupIntoCodeExplanation(&merged, entities)
 
@@ -235,7 +281,45 @@ func (s *Service) assembleFromCodeContext(
 	sortEvidence(out.Evidence)
 	sortRepositoryCodeLinks(out.RepositoryCodeLinks)
 	sortEntityRefsAll(out)
+
+	entities, err := s.loadCodeEntities(ctx, repositoryID, resolved.CodeEntityIDs)
+	if err != nil {
+		return nil, err
+	}
+	if len(entities) == 0 && codeCtx != nil {
+		entities = allCodeEntities(codeCtx)
+	}
+	briefings, err := s.buildEntityBriefings(ctx, repositoryID, topic, entities, out.RepositoryCodeLinks)
+	if err != nil {
+		return nil, err
+	}
+	out.EntityBriefings = briefings
+
 	return out, nil
+}
+
+func (s *Service) assembleAmbiguousSymbolExplanation(
+	ctx context.Context,
+	repositoryID, symbol string,
+	matches []*codemodels.CodeEntity,
+) (*DevelopmentExplanation, error) {
+	topic := &ResolvedTopic{
+		Input:             symbol,
+		RepositoryHitIDs:  make(map[string]struct{}),
+		CodeEntityIDs:     make(map[string]struct{}),
+		PrimaryEntityType: "code",
+		MatchEvidence:     "ambiguous_symbol",
+	}
+	for _, m := range matches {
+		topic.CodeEntityIDs[m.ID] = struct{}{}
+	}
+	if err := s.router.expandRepositoryCodeLinks(ctx, repositoryID, topic); err != nil {
+		return nil, err
+	}
+
+	merged := &codemodels.CodeExplanationContext{Subject: symbol}
+	groupIntoCodeExplanation(merged, matches)
+	return s.assembleFromCodeContext(ctx, repositoryID, symbol, merged, topic)
 }
 
 func (s *Service) buildRepositoryContext(
@@ -520,6 +604,18 @@ func pickCallGraphRoot(entities []*codemodels.CodeEntity) *codemodels.CodeEntity
 	return best
 }
 
+func symbolTypeHint(symbol string, allowedTypes []string) string {
+	for _, t := range allowedTypes {
+		if t == codemodels.EntityTypeTypeAlias {
+			return fmt.Sprintf("try: reponerve explain-struct %q", symbol)
+		}
+		if t == codemodels.EntityTypeStruct {
+			return fmt.Sprintf("try: reponerve explain-type %q if it is a type alias", symbol)
+		}
+	}
+	return ""
+}
+
 func symbolMatchesTypes(ctx *codemodels.CodeExplanationContext, types []string) bool {
 	allowed := map[string]bool{}
 	for _, t := range types {
@@ -625,6 +721,15 @@ func hasCodeContent(ctx *CodeContext) bool {
 	return len(ctx.Modules) > 0 || len(ctx.Files) > 0 || len(ctx.Packages) > 0 ||
 		len(ctx.Structs) > 0 || len(ctx.Interfaces) > 0 || len(ctx.TypeAliases) > 0 ||
 		len(ctx.Functions) > 0 || len(ctx.Methods) > 0 || len(ctx.Endpoints) > 0
+}
+
+func hasRepositoryContent(ctx *RepositoryContext) bool {
+	if ctx == nil {
+		return false
+	}
+	return len(ctx.Decisions) > 0 || len(ctx.Facts) > 0 || len(ctx.Events) > 0 ||
+		len(ctx.Owners) > 0 || len(ctx.Expertise) > 0 || len(ctx.Reviewers) > 0 ||
+		len(ctx.Impact) > 0 || len(ctx.ChangePlans) > 0
 }
 
 func appendEvidence(items *[]EvidenceItem, source, typ string, payload any) {

@@ -259,17 +259,23 @@ func TestValidateResult_ValidEmptyHits(t *testing.T) {
 
 func TestSearch_UnknownPrefix(t *testing.T) {
 	svc := emptyService()
-	_, err := svc.Search(context.Background(), "repo_1", "owner:alice")
-	if err == nil {
-		t.Error("expected error for unknown prefix owner")
+	result, err := svc.Search(context.Background(), "repo_1", "owner:alice")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result == nil || result.Query != "owner:alice" {
+		t.Fatalf("unexpected result: %+v", result)
 	}
 }
 
 func TestSearch_UnknownPrefixSeverity(t *testing.T) {
 	svc := emptyService()
-	_, err := svc.Search(context.Background(), "repo_1", "severity:high")
-	if err == nil {
-		t.Error("expected error for unknown prefix severity")
+	result, err := svc.Search(context.Background(), "repo_1", "severity:high")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result == nil {
+		t.Fatal("expected result")
 	}
 }
 
@@ -809,9 +815,12 @@ func TestService_Integration(t *testing.T) {
 	})
 
 	t.Run("Search_UnknownPrefix", func(t *testing.T) {
-		_, err := svc.Search(ctx, repoID, "owner:alice")
-		if err == nil {
-			t.Error("expected error for unknown prefix")
+		result, err := svc.Search(ctx, repoID, "owner:alice")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if result == nil {
+			t.Fatal("expected result")
 		}
 	})
 

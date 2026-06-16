@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/reponerve/reponerve/internal/code"
@@ -50,7 +51,7 @@ func setupIndexedSampleRepo(t *testing.T) (*sqlite.Database, string, *code.Servi
 	repoCodeStore := sqlite.NewSQLiteRepositoryCodeRelationshipStore(db)
 	stateStore := sqlite.NewSQLiteCodeIndexStateStore(db)
 
-	if err := indexer.New(entityStore, relStore, repoCodeStore, stateStore).Index(context.Background(), repoID, absRepo); err != nil {
+	if err := indexer.New(db, entityStore, relStore, repoCodeStore, stateStore).Index(context.Background(), repoID, absRepo); err != nil {
 		t.Fatalf("index failed: %v", err)
 	}
 
@@ -83,7 +84,7 @@ func TestService_ResolveFile(t *testing.T) {
 func TestService_ResolveSymbol(t *testing.T) {
 	_, repoID, svc := setupIndexedSampleRepo(t)
 
-	ctx, err := svc.ResolveSymbol(context.Background(), repoID, "internal/auth.Service.Login")
+	ctx, err := svc.ResolveSymbol(context.Background(), repoID, "internal/auth.Service.Login", "")
 	if err != nil {
 		t.Fatalf("ResolveSymbol failed: %v", err)
 	}
@@ -116,10 +117,42 @@ func TestService_AnalyzeSymbolDependencies(t *testing.T) {
 	_ = codemodels.EntityTypeMethod
 }
 
+func TestService_ResolveSymbol_AmbiguousShortName(t *testing.T) {
+	_, repoID, svc := setupIndexedSampleRepo(t)
+
+	_, err := svc.ResolveSymbol(context.Background(), repoID, "Service", "")
+	if err == nil {
+		t.Fatal("expected ambiguous symbol error for Service")
+	}
+	if !strings.Contains(err.Error(), "ambiguous symbol") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(err.Error(), "--package") {
+		t.Fatalf("expected --package hint in error: %v", err)
+	}
+}
+
+func TestService_ResolveSymbol_WithPackageFilter(t *testing.T) {
+	_, repoID, svc := setupIndexedSampleRepo(t)
+
+	matches, err := svc.ListSymbolMatches(context.Background(), repoID, "Service", "internal/auth")
+	if err != nil {
+		t.Fatalf("ListSymbolMatches failed: %v", err)
+	}
+	if len(matches) == 0 {
+		t.Fatal("expected matches in internal/auth")
+	}
+	for _, m := range matches {
+		if m.PackagePath != "internal/auth" {
+			t.Fatalf("unexpected package %q", m.PackagePath)
+		}
+	}
+}
+
 func TestService_BuildCallGraph(t *testing.T) {
 	_, repoID, svc := setupIndexedSampleRepo(t)
 
-	ctx, err := svc.ResolveSymbol(context.Background(), repoID, "NewService")
+	ctx, err := svc.ResolveSymbol(context.Background(), repoID, "NewService", "")
 	if err != nil {
 		t.Fatalf("ResolveSymbol failed: %v", err)
 	}

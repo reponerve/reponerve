@@ -29,7 +29,7 @@ func NewCommand() *cobra.Command {
 			workspaceDir := config.GetWorkspaceDir()
 			cfg, err := config.Load(workspaceDir)
 			if err != nil {
-				return fmt.Errorf("workspace not initialized; run 'reponerve init' first")
+				return fmt.Errorf("%s", config.FormatLoadError(workspaceDir, err))
 			}
 
 			db, err := sqlite.Open(cfg.Storage.SQLitePath)
@@ -58,7 +58,7 @@ func NewCommand() *cobra.Command {
 			codeRelStore := sqlite.NewSQLiteCodeRelationshipStore(db)
 			codeIndexStateStore := sqlite.NewSQLiteCodeIndexStateStore(db)
 			repoCodeRelStore := sqlite.NewSQLiteRepositoryCodeRelationshipStore(db)
-			codeIndexer := indexer.New(codeEntityStore, codeRelStore, repoCodeRelStore, codeIndexStateStore)
+			codeIndexer := indexer.New(db, codeEntityStore, codeRelStore, repoCodeRelStore, codeIndexStateStore)
 			codeLinker := codelinker.New(
 				storage.NewSQLiteEventReader(db),
 				storage.NewSQLiteDecisionReader(db),
@@ -89,6 +89,12 @@ func NewCommand() *cobra.Command {
 				codeIndexer,
 				codeLinker,
 				pipeline,
+				ingestion.WithOwnershipReaders(ingestion.OwnershipReaders{
+					Sources:   storage.NewSQLiteSourceReader(db),
+					Events:    storage.NewSQLiteEventReader(db),
+					Decisions: storage.NewSQLiteDecisionReader(db),
+					Facts:     storage.NewSQLiteFactReader(db),
+				}),
 			)
 
 			cmd.Println("Scanning repository...")
@@ -105,6 +111,7 @@ func NewCommand() *cobra.Command {
 				storage.NewSQLiteEventReader(db),
 				storage.NewSQLiteDecisionReader(db),
 				storage.NewSQLiteFactReader(db),
+				storage.NewSQLiteSourceReader(db),
 				memorySearchStore,
 			); err != nil {
 				return fmt.Errorf("failed to rebuild search index: %w", err)
