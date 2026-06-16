@@ -199,7 +199,8 @@ func parseQuery(query string) (*parsedQuery, error) {
 		value := token[colonIdx+1:]
 
 		if !supportedPrefixes[prefix] {
-			return nil, fmt.Errorf("unknown prefix: %s", prefix)
+			pq.terms = append(pq.terms, token)
+			continue
 		}
 
 		switch prefix {

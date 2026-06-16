@@ -360,6 +360,26 @@ Then open Copilot Chat, select **Agent** mode, and ask questions like:
 
 See `docs/copilot-chat-integration.md` for full details.
 
+## Cursor Integration
+
+RepoNerve integrates with Cursor Agent via MCP. This repository includes `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "reponerve": {
+      "command": "reponerve",
+      "args": ["mcp"],
+      "env": {
+        "REPONERVE_WORKSPACE": "${workspaceFolder}/.reponerve"
+      }
+    }
+  }
+}
+```
+
+Open **Cursor Settings → Tools & MCP** and confirm the **reponerve** server connects (37 tools). See `docs/cursor-integration.md` for setup and example prompts.
+
 ---
 
 # Documentation

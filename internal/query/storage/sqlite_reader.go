@@ -20,6 +20,7 @@ func NewSQLiteEventReader(db *sqlite.Database) *SQLiteEventReader {
 
 func (r *SQLiteEventReader) GetByID(ctx context.Context, id string) (*models.Event, error) {
 	var event models.Event
+	var ts sqlite.FlexibleTime
 	query := `
 		SELECT id, repository_id, event_type, title, COALESCE(description, ''), source_id, timestamp
 		FROM memory_events
@@ -32,11 +33,12 @@ func (r *SQLiteEventReader) GetByID(ctx context.Context, id string) (*models.Eve
 		&event.Title,
 		&event.Description,
 		&event.SourceID,
-		&event.Timestamp,
+		&ts,
 	)
 	if err != nil {
 		return nil, err
 	}
+	event.Timestamp = ts.Time
 	return &event, nil
 }
 
@@ -55,6 +57,7 @@ func (r *SQLiteEventReader) ListByRepository(ctx context.Context, repositoryID s
 	var events []*models.Event
 	for rows.Next() {
 		var event models.Event
+		var ts sqlite.FlexibleTime
 		err := rows.Scan(
 			&event.ID,
 			&event.RepositoryID,
@@ -62,11 +65,12 @@ func (r *SQLiteEventReader) ListByRepository(ctx context.Context, repositoryID s
 			&event.Title,
 			&event.Description,
 			&event.SourceID,
-			&event.Timestamp,
+			&ts,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan event: %w", err)
 		}
+		event.Timestamp = ts.Time
 		events = append(events, &event)
 	}
 	if err := rows.Err(); err != nil {
@@ -89,6 +93,7 @@ func (r *SQLiteEventReader) ListAll(ctx context.Context) ([]*models.Event, error
 	var events []*models.Event
 	for rows.Next() {
 		var event models.Event
+		var ts sqlite.FlexibleTime
 		err := rows.Scan(
 			&event.ID,
 			&event.RepositoryID,
@@ -96,11 +101,12 @@ func (r *SQLiteEventReader) ListAll(ctx context.Context) ([]*models.Event, error
 			&event.Title,
 			&event.Description,
 			&event.SourceID,
-			&event.Timestamp,
+			&ts,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan event: %w", err)
 		}
+		event.Timestamp = ts.Time
 		events = append(events, &event)
 	}
 	if err := rows.Err(); err != nil {
@@ -120,6 +126,7 @@ func NewSQLiteDecisionReader(db *sqlite.Database) *SQLiteDecisionReader {
 
 func (r *SQLiteDecisionReader) GetByID(ctx context.Context, id string) (*memorymodels.Decision, error) {
 	var dec memorymodels.Decision
+	var createdAt sqlite.FlexibleTime
 	query := `
 		SELECT id, repository_id, title, status, source_id, created_at
 		FROM memory_decisions
@@ -131,11 +138,12 @@ func (r *SQLiteDecisionReader) GetByID(ctx context.Context, id string) (*memorym
 		&dec.Title,
 		&dec.Status,
 		&dec.SourceID,
-		&dec.CreatedAt,
+		&createdAt,
 	)
 	if err != nil {
 		return nil, err
 	}
+	dec.CreatedAt = flexibleTime(createdAt)
 	return &dec, nil
 }
 
@@ -154,17 +162,19 @@ func (r *SQLiteDecisionReader) ListByRepository(ctx context.Context, repositoryI
 	var decisions []*memorymodels.Decision
 	for rows.Next() {
 		var dec memorymodels.Decision
+		var createdAt sqlite.FlexibleTime
 		err := rows.Scan(
 			&dec.ID,
 			&dec.RepositoryID,
 			&dec.Title,
 			&dec.Status,
 			&dec.SourceID,
-			&dec.CreatedAt,
+			&createdAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan decision: %w", err)
 		}
+		dec.CreatedAt = flexibleTime(createdAt)
 		decisions = append(decisions, &dec)
 	}
 	if err := rows.Err(); err != nil {
@@ -187,17 +197,19 @@ func (r *SQLiteDecisionReader) ListAll(ctx context.Context) ([]*memorymodels.Dec
 	var decisions []*memorymodels.Decision
 	for rows.Next() {
 		var dec memorymodels.Decision
+		var createdAt sqlite.FlexibleTime
 		err := rows.Scan(
 			&dec.ID,
 			&dec.RepositoryID,
 			&dec.Title,
 			&dec.Status,
 			&dec.SourceID,
-			&dec.CreatedAt,
+			&createdAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan decision: %w", err)
 		}
+		dec.CreatedAt = flexibleTime(createdAt)
 		decisions = append(decisions, &dec)
 	}
 	if err := rows.Err(); err != nil {
@@ -217,6 +229,7 @@ func NewSQLiteIntentReader(db *sqlite.Database) *SQLiteIntentReader {
 
 func (r *SQLiteIntentReader) GetByID(ctx context.Context, id string) (*memorymodels.Intent, error) {
 	var intent memorymodels.Intent
+	var createdAt sqlite.FlexibleTime
 	query := `
 		SELECT id, repository_id, description, source_id, created_at
 		FROM memory_intents
@@ -227,11 +240,12 @@ func (r *SQLiteIntentReader) GetByID(ctx context.Context, id string) (*memorymod
 		&intent.RepositoryID,
 		&intent.Description,
 		&intent.SourceID,
-		&intent.CreatedAt,
+		&createdAt,
 	)
 	if err != nil {
 		return nil, err
 	}
+	intent.CreatedAt = flexibleTime(createdAt)
 	return &intent, nil
 }
 
@@ -250,16 +264,18 @@ func (r *SQLiteIntentReader) ListByRepository(ctx context.Context, repositoryID 
 	var intents []*memorymodels.Intent
 	for rows.Next() {
 		var intent memorymodels.Intent
+		var createdAt sqlite.FlexibleTime
 		err := rows.Scan(
 			&intent.ID,
 			&intent.RepositoryID,
 			&intent.Description,
 			&intent.SourceID,
-			&intent.CreatedAt,
+			&createdAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan intent: %w", err)
 		}
+		intent.CreatedAt = flexibleTime(createdAt)
 		intents = append(intents, &intent)
 	}
 	if err := rows.Err(); err != nil {
@@ -282,16 +298,18 @@ func (r *SQLiteIntentReader) ListAll(ctx context.Context) ([]*memorymodels.Inten
 	var intents []*memorymodels.Intent
 	for rows.Next() {
 		var intent memorymodels.Intent
+		var createdAt sqlite.FlexibleTime
 		err := rows.Scan(
 			&intent.ID,
 			&intent.RepositoryID,
 			&intent.Description,
 			&intent.SourceID,
-			&intent.CreatedAt,
+			&createdAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan intent: %w", err)
 		}
+		intent.CreatedAt = flexibleTime(createdAt)
 		intents = append(intents, &intent)
 	}
 	if err := rows.Err(); err != nil {
@@ -311,6 +329,7 @@ func NewSQLiteFactReader(db *sqlite.Database) *SQLiteFactReader {
 
 func (r *SQLiteFactReader) GetByID(ctx context.Context, id string) (*memorymodels.Fact, error) {
 	var fact memorymodels.Fact
+	var createdAt sqlite.FlexibleTime
 	query := `
 		SELECT id, repository_id, subject, predicate, object, source_id, created_at
 		FROM memory_facts
@@ -323,11 +342,12 @@ func (r *SQLiteFactReader) GetByID(ctx context.Context, id string) (*memorymodel
 		&fact.Predicate,
 		&fact.Object,
 		&fact.SourceID,
-		&fact.CreatedAt,
+		&createdAt,
 	)
 	if err != nil {
 		return nil, err
 	}
+	fact.CreatedAt = flexibleTime(createdAt)
 	return &fact, nil
 }
 
@@ -346,6 +366,7 @@ func (r *SQLiteFactReader) ListByRepository(ctx context.Context, repositoryID st
 	var facts []*memorymodels.Fact
 	for rows.Next() {
 		var fact memorymodels.Fact
+		var createdAt sqlite.FlexibleTime
 		err := rows.Scan(
 			&fact.ID,
 			&fact.RepositoryID,
@@ -353,11 +374,12 @@ func (r *SQLiteFactReader) ListByRepository(ctx context.Context, repositoryID st
 			&fact.Predicate,
 			&fact.Object,
 			&fact.SourceID,
-			&fact.CreatedAt,
+			&createdAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan fact: %w", err)
 		}
+		fact.CreatedAt = flexibleTime(createdAt)
 		facts = append(facts, &fact)
 	}
 	if err := rows.Err(); err != nil {
@@ -380,6 +402,7 @@ func (r *SQLiteFactReader) ListAll(ctx context.Context) ([]*memorymodels.Fact, e
 	var facts []*memorymodels.Fact
 	for rows.Next() {
 		var fact memorymodels.Fact
+		var createdAt sqlite.FlexibleTime
 		err := rows.Scan(
 			&fact.ID,
 			&fact.RepositoryID,
@@ -387,11 +410,12 @@ func (r *SQLiteFactReader) ListAll(ctx context.Context) ([]*memorymodels.Fact, e
 			&fact.Predicate,
 			&fact.Object,
 			&fact.SourceID,
-			&fact.CreatedAt,
+			&createdAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan fact: %w", err)
 		}
+		fact.CreatedAt = flexibleTime(createdAt)
 		facts = append(facts, &fact)
 	}
 	if err := rows.Err(); err != nil {
@@ -411,6 +435,7 @@ func NewSQLiteRelationshipReader(db *sqlite.Database) *SQLiteRelationshipReader 
 
 func (r *SQLiteRelationshipReader) GetByID(ctx context.Context, id string) (*memorymodels.Relationship, error) {
 	var rel memorymodels.Relationship
+	var createdAt sqlite.FlexibleTime
 	query := `
 		SELECT id, repository_id, from_id, to_id, relationship_type, created_at
 		FROM memory_relationships
@@ -422,11 +447,12 @@ func (r *SQLiteRelationshipReader) GetByID(ctx context.Context, id string) (*mem
 		&rel.FromID,
 		&rel.ToID,
 		&rel.Type,
-		&rel.CreatedAt,
+		&createdAt,
 	)
 	if err != nil {
 		return nil, err
 	}
+	rel.CreatedAt = flexibleTime(createdAt)
 	return &rel, nil
 }
 
@@ -445,17 +471,19 @@ func (r *SQLiteRelationshipReader) ListByRepository(ctx context.Context, reposit
 	var relationships []*memorymodels.Relationship
 	for rows.Next() {
 		var rel memorymodels.Relationship
+		var createdAt sqlite.FlexibleTime
 		err := rows.Scan(
 			&rel.ID,
 			&rel.RepositoryID,
 			&rel.FromID,
 			&rel.ToID,
 			&rel.Type,
-			&rel.CreatedAt,
+			&createdAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan relationship: %w", err)
 		}
+		rel.CreatedAt = flexibleTime(createdAt)
 		relationships = append(relationships, &rel)
 	}
 	if err := rows.Err(); err != nil {
@@ -478,17 +506,19 @@ func (r *SQLiteRelationshipReader) ListAll(ctx context.Context) ([]*memorymodels
 	var relationships []*memorymodels.Relationship
 	for rows.Next() {
 		var rel memorymodels.Relationship
+		var createdAt sqlite.FlexibleTime
 		err := rows.Scan(
 			&rel.ID,
 			&rel.RepositoryID,
 			&rel.FromID,
 			&rel.ToID,
 			&rel.Type,
-			&rel.CreatedAt,
+			&createdAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan relationship: %w", err)
 		}
+		rel.CreatedAt = flexibleTime(createdAt)
 		relationships = append(relationships, &rel)
 	}
 	if err := rows.Err(); err != nil {
@@ -508,6 +538,7 @@ func NewSQLiteContributorReader(db *sqlite.Database) *SQLiteContributorReader {
 
 func (r *SQLiteContributorReader) GetByID(ctx context.Context, repositoryID string, id string) (*models.Contributor, error) {
 	var c models.Contributor
+	var firstSeen, lastSeen sqlite.FlexibleTime
 	query := `
 		SELECT id, repository_id, name, email, first_seen, last_seen, commit_count
 		FROM contributors
@@ -518,13 +549,15 @@ func (r *SQLiteContributorReader) GetByID(ctx context.Context, repositoryID stri
 		&c.RepositoryID,
 		&c.Name,
 		&c.Email,
-		&c.FirstSeen,
-		&c.LastSeen,
+		&firstSeen,
+		&lastSeen,
 		&c.CommitCount,
 	)
 	if err != nil {
 		return nil, err
 	}
+	c.FirstSeen = flexibleTime(firstSeen)
+	c.LastSeen = flexibleTime(lastSeen)
 	return &c, nil
 }
 
@@ -543,18 +576,21 @@ func (r *SQLiteContributorReader) ListByRepository(ctx context.Context, reposito
 	var list []*models.Contributor
 	for rows.Next() {
 		var c models.Contributor
+		var firstSeen, lastSeen sqlite.FlexibleTime
 		err := rows.Scan(
 			&c.ID,
 			&c.RepositoryID,
 			&c.Name,
 			&c.Email,
-			&c.FirstSeen,
-			&c.LastSeen,
+			&firstSeen,
+			&lastSeen,
 			&c.CommitCount,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan contributor: %w", err)
 		}
+		c.FirstSeen = flexibleTime(firstSeen)
+		c.LastSeen = flexibleTime(lastSeen)
 		list = append(list, &c)
 	}
 	if err := rows.Err(); err != nil {
@@ -664,6 +700,7 @@ func (r *SQLiteSourceReader) ListByRepository(ctx context.Context, repositoryID 
 	var list []*models.Source
 	for rows.Next() {
 		var src models.Source
+		var ts sqlite.FlexibleTime
 		err := rows.Scan(
 			&src.ID,
 			&src.RepositoryID,
@@ -671,12 +708,13 @@ func (r *SQLiteSourceReader) ListByRepository(ctx context.Context, repositoryID 
 			&src.Reference,
 			&src.Title,
 			&src.Author,
-			&src.Timestamp,
+			&ts,
 			&src.MetadataJSON,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan source: %w", err)
 		}
+		src.Timestamp = ts.Time
 		list = append(list, &src)
 	}
 	if err := rows.Err(); err != nil {

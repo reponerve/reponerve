@@ -15,6 +15,7 @@ func RebuildFromRepository(
 	eventReader storage.EventReader,
 	decisionReader storage.DecisionReader,
 	factReader storage.FactReader,
+	sourceReader storage.SourceReader,
 	memorySearchStore searchstorage.MemorySearchStore,
 ) error {
 	events, err := eventReader.ListByRepository(ctx, repositoryID)
@@ -32,11 +33,17 @@ func RebuildFromRepository(
 		return fmt.Errorf("failed to list facts for search index: %w", err)
 	}
 
+	sources, err := sourceReader.ListByRepository(ctx, repositoryID)
+	if err != nil {
+		return fmt.Errorf("failed to list sources for search index: %w", err)
+	}
+
 	docs := BuildDocuments(Input{
 		RepositoryID: repositoryID,
 		Events:       events,
 		Decisions:    decisions,
 		Facts:        facts,
+		Sources:      sources,
 	})
 
 	if err := memorySearchStore.Rebuild(ctx, repositoryID, docs); err != nil {

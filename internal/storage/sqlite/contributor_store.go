@@ -35,8 +35,8 @@ func (s *SQLiteContributorStore) UpsertContributor(ctx context.Context, c *model
 		c.RepositoryID,
 		c.Name,
 		c.Email,
-		c.FirstSeen,
-		c.LastSeen,
+		FormatDateTime(c.FirstSeen),
+		FormatDateTime(c.LastSeen),
 		c.CommitCount,
 	)
 	if err != nil {

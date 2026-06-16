@@ -11,10 +11,12 @@ import (
 
 	codemodels "github.com/reponerve/reponerve/internal/code/models"
 	"github.com/reponerve/reponerve/internal/storage"
+	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
 // Indexer performs deterministic Go code indexing for a repository.
 type Indexer struct {
+	db            *sqlite.Database
 	entityStore   storage.CodeEntityStore
 	relStore      storage.CodeRelationshipStore
 	repoCodeStore storage.RepositoryCodeRelationshipStore
@@ -23,12 +25,14 @@ type Indexer struct {
 
 // New creates a code indexer backed by storage stores.
 func New(
+	db *sqlite.Database,
 	entityStore storage.CodeEntityStore,
 	relStore storage.CodeRelationshipStore,
 	repoCodeStore storage.RepositoryCodeRelationshipStore,
 	stateStore storage.CodeIndexStateStore,
 ) *Indexer {
 	return &Indexer{
+		db:            db,
 		entityStore:   entityStore,
 		relStore:      relStore,
 		repoCodeStore: repoCodeStore,
@@ -51,6 +55,16 @@ func (idx *Indexer) Index(ctx context.Context, repositoryID, repositoryPath stri
 	skip, err := shouldSkipIndexing(ctx, idx.stateStore, repositoryID, repositoryPath)
 	if err != nil {
 		return fmt.Errorf("incremental index check: %w", err)
+	}
+	if skip {
+		currentFiles, ferr := listGoFiles(repositoryPath)
+		if ferr != nil {
+			return fmt.Errorf("go file discovery failed: %w", ferr)
+		}
+		state, _ := idx.stateStore.GetByRepository(ctx, repositoryID)
+		if state != nil && state.FileCount != len(currentFiles) {
+			skip = false
+		}
 	}
 	if skip {
 		return nil
@@ -92,26 +106,31 @@ func (idx *Indexer) Index(ctx context.Context, repositoryID, repositoryPath stri
 	sortEntities(b.entities)
 	sortRelationships(b.rels)
 
-	if idx.repoCodeStore != nil {
-		if err := idx.repoCodeStore.DeleteByRepository(ctx, repositoryID); err != nil {
+	if idx.db != nil {
+		if err := idx.db.ReplaceCodeIndex(ctx, repositoryID, b.entities, b.rels); err != nil {
+			return fmt.Errorf("replace code index: %w", err)
+		}
+	} else {
+		if idx.repoCodeStore != nil {
+			if err := idx.repoCodeStore.DeleteByRepository(ctx, repositoryID); err != nil {
+				return err
+			}
+		}
+		if err := idx.relStore.DeleteByRepository(ctx, repositoryID); err != nil {
 			return err
 		}
-	}
-	if err := idx.relStore.DeleteByRepository(ctx, repositoryID); err != nil {
-		return err
-	}
-	if err := idx.entityStore.DeleteByRepository(ctx, repositoryID); err != nil {
-		return err
-	}
-
-	for _, entity := range b.entities {
-		if err := idx.entityStore.UpsertCodeEntity(ctx, entity); err != nil {
-			return fmt.Errorf("upsert code entity %s: %w", entity.QualifiedName, err)
+		if err := idx.entityStore.DeleteByRepository(ctx, repositoryID); err != nil {
+			return err
 		}
-	}
-	for _, rel := range b.rels {
-		if err := idx.relStore.UpsertCodeRelationship(ctx, rel); err != nil {
-			return fmt.Errorf("upsert code relationship %s: %w", rel.RelationshipType, err)
+		for _, entity := range b.entities {
+			if err := idx.entityStore.UpsertCodeEntity(ctx, entity); err != nil {
+				return fmt.Errorf("upsert code entity %s: %w", entity.QualifiedName, err)
+			}
+		}
+		for _, rel := range b.rels {
+			if err := idx.relStore.UpsertCodeRelationship(ctx, rel); err != nil {
+				return fmt.Errorf("upsert code relationship %s: %w", rel.RelationshipType, err)
+			}
 		}
 	}
 

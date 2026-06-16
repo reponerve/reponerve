@@ -26,8 +26,13 @@ func (s *MemorySearchStore) Rebuild(ctx context.Context, repositoryID string, do
 	}
 	defer tx.Rollback()
 
-	if _, err := tx.ExecContext(ctx, "DELETE FROM memory_search"); err != nil {
-		return fmt.Errorf("failed to clear memory_search index: %w", err)
+	for _, doc := range docs {
+		if doc.RepositoryID != "" && doc.RepositoryID != repositoryID {
+			continue
+		}
+		if _, err := tx.ExecContext(ctx, `DELETE FROM memory_search WHERE memory_id = ?`, doc.MemoryID); err != nil {
+			return fmt.Errorf("failed to delete memory_search row %s: %w", doc.MemoryID, err)
+		}
 	}
 
 	stmt, err := tx.PrepareContext(ctx, `
@@ -43,7 +48,8 @@ func (s *MemorySearchStore) Rebuild(ctx context.Context, repositoryID string, do
 		if doc.RepositoryID != "" && doc.RepositoryID != repositoryID {
 			continue
 		}
-		if _, err := stmt.ExecContext(ctx, doc.MemoryID, doc.Title, doc.EntityType, doc.Content); err != nil {
+		content := scopedSearchContent(doc.RepositoryID, doc.Content)
+		if _, err := stmt.ExecContext(ctx, doc.MemoryID, doc.Title, doc.EntityType, content); err != nil {
 			return fmt.Errorf("failed to index memory %s: %w", doc.MemoryID, err)
 		}
 	}
@@ -56,7 +62,7 @@ func (s *MemorySearchStore) Rebuild(ctx context.Context, repositoryID string, do
 
 // Search queries FTS5 for repository memory matches.
 func (s *MemorySearchStore) Search(ctx context.Context, repositoryID string, terms []string, entityType string) ([]storage.MemorySearchHit, error) {
-	matchQuery := buildFTSMatchQuery(terms, entityType)
+	matchQuery := buildFTSMatchQuery(terms, entityType, repositoryID)
 	if matchQuery == "" {
 		return nil, nil
 	}
@@ -85,22 +91,40 @@ func (s *MemorySearchStore) Search(ctx context.Context, repositoryID string, ter
 		return nil, fmt.Errorf("memory_search rows error: %w", err)
 	}
 
-	_ = repositoryID
 	return hits, nil
 }
 
-func buildFTSMatchQuery(terms []string, entityType string) string {
+func scopedSearchContent(repositoryID, content string) string {
+	token := repoScopeToken(repositoryID)
+	if token == "" {
+		return content
+	}
+	return token + " " + content
+}
+
+func repoScopeToken(repositoryID string) string {
+	token := sanitizeFTSTerm(repositoryID)
+	if token == "" {
+		return ""
+	}
+	return "repo" + token
+}
+
+func buildFTSMatchQuery(terms []string, entityType, repositoryID string) string {
 	var parts []string
+	if token := repoScopeToken(repositoryID); token != "" {
+		parts = append(parts, token)
+	}
 	if entityType != "" {
-		parts = append(parts, fmt.Sprintf("summary:%s", sanitizeFTSTerm(entityType)))
+		if token := sanitizeFTSTerm(entityType); token != "" {
+			parts = append(parts, fmt.Sprintf("summary:%s", token))
+		}
 	}
 
 	for _, term := range terms {
-		clean := sanitizeFTSTerm(term)
-		if clean == "" {
-			continue
+		for _, token := range tokenizeFTSTerms(term) {
+			parts = append(parts, fmt.Sprintf("(title:%s* OR content:%s*)", token, token))
 		}
-		parts = append(parts, fmt.Sprintf("(title:%s* OR content:%s*)", clean, clean))
 	}
 
 	if len(parts) == 0 {
@@ -122,9 +146,36 @@ func sanitizeFTSTerm(term string) string {
 			b.WriteRune(r)
 		case r >= '0' && r <= '9':
 			b.WriteRune(r)
-		case r == '_' || r == '-':
+		case r == '_':
 			b.WriteRune(r)
 		}
 	}
 	return b.String()
 }
+
+// tokenizeFTSTerms splits compound terms so FTS5 does not treat '-' as NOT.
+func tokenizeFTSTerms(term string) []string {
+	normalized := strings.ReplaceAll(strings.TrimSpace(term), "-", " ")
+	fields := strings.Fields(normalized)
+	if len(fields) == 0 {
+		if token := sanitizeFTSTerm(term); token != "" {
+			return []string{token}
+		}
+		return nil
+	}
+	seen := make(map[string]struct{}, len(fields))
+	out := make([]string, 0, len(fields))
+	for _, f := range fields {
+		token := sanitizeFTSTerm(f)
+		if token == "" {
+			continue
+		}
+		if _, ok := seen[token]; ok {
+			continue
+		}
+		seen[token] = struct{}{}
+		out = append(out, token)
+	}
+	return out
+}
+

@@ -26,8 +26,9 @@ func Open(dbPath string) (*Database, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
+	db.SetMaxOpenConns(1)
 
-	_, err = db.Exec("PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;")
+	_, err = db.Exec("PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 5000;")
 	if err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to configure database pragmas: %w", err)

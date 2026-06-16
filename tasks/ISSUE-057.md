@@ -1,6 +1,6 @@
 # ISSUE-057 — Code Intelligence & Development Experience
 
-Status: Planned
+Status: In Progress — core scope implemented; ISSUE-059–062 remain
 
 Milestone: v1.0
 
@@ -37,12 +37,12 @@ RepoNerve v1.0 is not complete until this issue is done.
 | --- | --- |
 | Knowledge Preservation | Core Platform Capability |
 | Repository Intelligence | ✅ Complete |
-| Code Intelligence | ❌ This issue |
-| Repository-Code Linking | ❌ This issue |
-| Feature Understanding | ❌ This issue |
-| Development Experience | ❌ This issue |
-| Software Understanding | 🚀 Blocked |
-| RepoNerve v1.0 | 🚀 Blocked |
+| Code Intelligence | ✅ Implemented (Go) |
+| Repository-Code Linking | ✅ Implemented |
+| Feature Understanding | ✅ Implemented (topic router) |
+| Development Experience | ✅ Implemented (CLI + MCP) |
+| Software Understanding | 🟡 Hardening |
+| RepoNerve v1.0 | 🟡 Blocked on ISSUE-059–062 |
 
 ---
 

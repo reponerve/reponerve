@@ -255,13 +255,43 @@ func TestSQLiteReaders(t *testing.T) {
 			t.Errorf("expected Description 'Fixed bug', got %q", evtWithDesc.Description)
 		}
 
+		_, err = db.Exec(`
+			INSERT INTO memory_events (id, repository_id, event_type, title, description, source_id, timestamp, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, datetime('2024-03-01 09:00:00'), datetime())
+		`, "evt_sqlite_dt", repoID1, "FEATURE_INTRODUCED", "SQL datetime row", nil, "src_1")
+		if err != nil {
+			t.Fatalf("failed to insert event with datetime(): %v", err)
+		}
+		evtSQL, err := eventReader.GetByID(ctx, "evt_sqlite_dt")
+		if err != nil {
+			t.Fatalf("GetByID datetime event failed: %v", err)
+		}
+		if evtSQL.Timestamp.IsZero() {
+			t.Fatal("expected parsed timestamp from SQLite datetime() string")
+		}
+
+		_, err = db.Exec(`
+			INSERT INTO memory_events (id, repository_id, event_type, title, description, source_id, timestamp, created_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, datetime())
+		`, "evt_dup_tz", repoID1, "FEATURE_INTRODUCED", "Duplicate TZ row", nil, "src_1", "2026-05-07 12:40:59 -0400 -0400")
+		if err != nil {
+			t.Fatalf("failed to insert duplicate TZ event: %v", err)
+		}
+		evtDup, err := eventReader.GetByID(ctx, "evt_dup_tz")
+		if err != nil {
+			t.Fatalf("GetByID duplicate TZ event failed: %v", err)
+		}
+		if evtDup.Timestamp.IsZero() {
+			t.Fatal("expected parsed timestamp from duplicate TZ string")
+		}
+
 		// ListAll
 		all, err := eventReader.ListAll(ctx)
 		if err != nil {
 			t.Fatalf("ListAll failed: %v", err)
 		}
-		if len(all) != 2 {
-			t.Errorf("expected 2 events, got %d", len(all))
+		if len(all) != 4 {
+			t.Errorf("expected 4 events, got %d", len(all))
 		}
 
 		// ListByRepository
@@ -269,8 +299,8 @@ func TestSQLiteReaders(t *testing.T) {
 		if err != nil {
 			t.Fatalf("ListByRepository failed: %v", err)
 		}
-		if len(repo1Events) != 1 {
-			t.Errorf("expected 1 event for repo 1, got %d", len(repo1Events))
+		if len(repo1Events) != 3 {
+			t.Errorf("expected 3 events for repo 1, got %d", len(repo1Events))
 		}
 		if repo1Events[0].ID != "evt_1" {
 			t.Errorf("expected event evt_1, got %s", repo1Events[0].ID)
@@ -414,6 +444,36 @@ func TestSQLiteReaders(t *testing.T) {
 		}
 		if list[0].ID != "src_1" {
 			t.Errorf("expected source src_1, got %s", list[0].ID)
+		}
+	})
+
+	t.Run("FlexibleTime legacy timestamps", func(t *testing.T) {
+		legacyTS := "2026-05-07 12:40:59 -0400 -0400"
+		_, err := db.Exec(`INSERT INTO memory_decisions (id, repository_id, title, status, source_id, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+			"dec_legacy", repoID1, "Legacy Decision", "Accepted", "src_1", legacyTS)
+		if err != nil {
+			t.Fatalf("insert legacy decision: %v", err)
+		}
+
+		dec, err := decisionReader.GetByID(ctx, "dec_legacy")
+		if err != nil {
+			t.Fatalf("read legacy decision: %v", err)
+		}
+		if dec.CreatedAt.IsZero() {
+			t.Fatal("expected parsed legacy created_at")
+		}
+
+		_, err = db.Exec(`UPDATE contributors SET first_seen = ?, last_seen = ? WHERE id = ?`,
+			legacyTS, legacyTS, "c_1")
+		if err != nil {
+			t.Fatalf("update contributor legacy timestamps: %v", err)
+		}
+		contrib, err := contribReader.GetByID(ctx, repoID1, "c_1")
+		if err != nil {
+			t.Fatalf("read contributor legacy timestamps: %v", err)
+		}
+		if contrib.FirstSeen.IsZero() || contrib.LastSeen.IsZero() {
+			t.Fatal("expected parsed contributor timestamps")
 		}
 	})
 }

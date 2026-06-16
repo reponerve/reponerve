@@ -127,6 +127,50 @@ func NewRegistry() *Registry {
 		Name:        "analyze_impact",
 		Description: "Analyze the impact of a decision, fact, event, or contributor through the knowledge graph",
 	})
+	_ = r.Register(ToolDefinition{
+		Name:        "ask",
+		Description: "Answer a repository or development question using Code Intelligence and Repository Intelligence",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "explain",
+		Description: "Explain a repository topic using evidence-backed code and memory context",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "explain_file",
+		Description: "Explain a source file using Code Intelligence",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "explain_function",
+		Description: "Explain a function symbol using Code Intelligence",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "explain_struct",
+		Description: "Explain a struct symbol using Code Intelligence",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "explain_interface",
+		Description: "Explain an interface symbol using Code Intelligence",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "explain_type",
+		Description: "Explain a type alias symbol using Code Intelligence",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "plan",
+		Description: "Generate a development plan for a task using repository and code intelligence",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "review",
+		Description: "Prepare a review guide for a topic using repository and code intelligence",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "analyze_topic_impact",
+		Description: "Analyze the impact of a topic, symbol, or area across code and repository memory",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "onboard",
+		Description: "First-day repository context with key decisions and optional assignment plan",
+	})
 
 	return r
 }

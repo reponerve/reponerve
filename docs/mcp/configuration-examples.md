@@ -19,12 +19,27 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 
-### 2. Cursor Settings
-Configure via **Settings** -> **Features** -> **MCP**:
-1. Click **+ Add New MCP Server**.
-2. Name: `reponerve`.
-3. Type: `command`.
-4. Command: `/path/to/reponerve mcp`.
+### 2. Cursor
+
+**Project-scoped** (recommended): create `.cursor/mcp.json` in the repository root:
+
+```json
+{
+  "mcpServers": {
+    "reponerve": {
+      "command": "reponerve",
+      "args": ["mcp"],
+      "env": {
+        "REPONERVE_WORKSPACE": "${workspaceFolder}/.reponerve"
+      }
+    }
+  }
+}
+```
+
+**Global**: add the same block to `~/.cursor/mcp.json`.
+
+Enable via **Cursor Settings → Tools & MCP**. See `docs/cursor-integration.md` for full setup and troubleshooting.
 
 ### 3. Windsurf
 Add to `~/.codeium/windsurf/mcp.json`:

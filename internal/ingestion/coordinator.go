@@ -13,11 +13,19 @@ import (
 	"github.com/reponerve/reponerve/internal/extraction/intent"
 	"github.com/reponerve/reponerve/internal/memory/linker"
 	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
-	ownerextraction "github.com/reponerve/reponerve/internal/ownership/extraction"
-	"github.com/reponerve/reponerve/internal/ownership/expertise"
 	"github.com/reponerve/reponerve/internal/scanner/repository"
 	"github.com/reponerve/reponerve/internal/storage"
 )
+
+// CoordinatorOption configures optional Coordinator dependencies.
+type CoordinatorOption func(*Coordinator)
+
+// WithOwnershipReaders enables full-repository ownership recomputation after each scan.
+func WithOwnershipReaders(readers OwnershipReaders) CoordinatorOption {
+	return func(c *Coordinator) {
+		c.ownershipReaders = &readers
+	}
+}
 
 // Coordinator coordinates repository discovery and pipeline execution.
 type Coordinator struct {
@@ -35,6 +43,7 @@ type Coordinator struct {
 	codeIndexer       CodeIndexer
 	codeLinker        CodeLinker
 	pipeline          *Pipeline
+	ownershipReaders  *OwnershipReaders
 }
 
 // NewCoordinator creates a new Coordinator instance.
@@ -53,8 +62,9 @@ func NewCoordinator(
 	codeIndexer CodeIndexer,
 	codeLinker CodeLinker,
 	pipeline *Pipeline,
+	opts ...CoordinatorOption,
 ) *Coordinator {
-	return &Coordinator{
+	c := &Coordinator{
 		discovery:         discovery,
 		repoStore:         repoStore,
 		sourceStore:       sourceStore,
@@ -70,6 +80,10 @@ func NewCoordinator(
 		codeLinker:        codeLinker,
 		pipeline:          pipeline,
 	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 // Run discovers the repository metadata, stores it, runs all scanners, stores the discovered sources, updates scan state, and returns stats.
@@ -169,28 +183,9 @@ func (c *Coordinator) Run(ctx context.Context, path string) (*ScanResult, error)
 		}
 	}
 
-	// Extract and persist Contributors (ISSUE-038)
-	contribExtractor := ownerextraction.NewExtractor()
-	contribs, err := contribExtractor.Extract(ctx, sources)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract contributors: %w", err)
-	}
-	for _, contr := range contribs {
-		if err := c.contributorStore.UpsertContributor(ctx, contr); err != nil {
-			return nil, fmt.Errorf("failed to store contributor: %w", err)
-		}
-	}
-
-	// Detect and persist domain expertise (ISSUE-038 / ISSUE-059)
-	expertiseDetector := expertise.NewDetector()
-	expertiseRecords, err := expertiseDetector.Detect(ctx, contribs, events, decisions, facts, sources)
-	if err != nil {
-		return nil, fmt.Errorf("failed to detect expertise: %w", err)
-	}
-	for _, exp := range expertiseRecords {
-		if err := c.expertiseStore.UpsertExpertise(ctx, exp); err != nil {
-			return nil, fmt.Errorf("failed to store expertise: %w", err)
-		}
+	// Recompute contributors and expertise from full persisted repository memory.
+	if err := c.recomputeOwnership(ctx, repo.ID); err != nil {
+		return nil, fmt.Errorf("failed to recompute ownership: %w", err)
 	}
 
 	if c.codeIndexer != nil {

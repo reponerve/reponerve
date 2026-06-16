@@ -1,6 +1,7 @@
 package mcp
 
 import (
+	"github.com/reponerve/reponerve/internal/agent/development"
 	"github.com/reponerve/reponerve/internal/context"
 	"github.com/reponerve/reponerve/internal/context/render"
 	"github.com/reponerve/reponerve/internal/graph/impact"
@@ -29,6 +30,7 @@ type Service struct {
 	LearningService      *learning.Service
 	ReviewerService      *reviewers.Service
 	ChangePlanService    *changeplan.Service
+	DevelopmentService   *development.Service
 }
 
 // NewService creates a new Service instance aggregating the given dependencies.
@@ -47,6 +49,7 @@ func NewService(
 	learningSvc *learning.Service,
 	reviewerSvc *reviewers.Service,
 	changePlanSvc *changeplan.Service,
+	developmentSvc *development.Service,
 ) *Service {
 	return &Service{
 		DecisionReader:       dr,
@@ -63,5 +66,6 @@ func NewService(
 		LearningService:      learningSvc,
 		ReviewerService:      reviewerSvc,
 		ChangePlanService:    changePlanSvc,
+		DevelopmentService:   developmentSvc,
 	}
 }

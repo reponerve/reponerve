@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/reponerve/reponerve/internal/code/indexer"
@@ -36,6 +37,7 @@ func TestIndexer_SampleModule(t *testing.T) {
 	}
 
 	idx := indexer.New(
+		db,
 		sqlite.NewSQLiteCodeEntityStore(db),
 		sqlite.NewSQLiteCodeRelationshipStore(db),
 		sqlite.NewSQLiteRepositoryCodeRelationshipStore(db),
@@ -78,12 +80,15 @@ func TestIndexer_SampleModule(t *testing.T) {
 		t.Fatalf("expected Login method entity: %v", err)
 	}
 
-	var serviceStruct string
+	var serviceSignature string
 	err = db.QueryRow(`
-		SELECT id FROM code_entities
+		SELECT signature FROM code_entities
 		WHERE repository_id = ? AND entity_type = ? AND qualified_name = ?
-	`, repoID, codemodels.EntityTypeStruct, "internal/auth.Service").Scan(&serviceStruct)
+	`, repoID, codemodels.EntityTypeStruct, "internal/auth.Service").Scan(&serviceSignature)
 	if err != nil {
 		t.Fatalf("expected Service struct entity: %v", err)
+	}
+	if !strings.Contains(serviceSignature, "store *store.Store") {
+		t.Fatalf("expected struct fields in signature, got %q", serviceSignature)
 	}
 }

@@ -145,6 +145,32 @@ func TestExtract_MalformedMetadata(t *testing.T) {
 	}
 }
 
+func TestExtract_ArchitectureDocSource(t *testing.T) {
+	extractor := NewExtractor()
+	sources := []*models.Source{
+		{
+			ID:           "arch1",
+			RepositoryID: "repo-1",
+			SourceType:   "architecture_doc",
+			Reference:    "docs/architecture/overview.md",
+			Title:        "Architecture Overview",
+			MetadataJSON: `{"status":"Accepted"}`,
+			Timestamp:    time.Now(),
+		},
+	}
+
+	decisions, err := extractor.Extract(context.Background(), sources)
+	if err != nil {
+		t.Fatalf("Extract failed: %v", err)
+	}
+	if len(decisions) != 1 {
+		t.Fatalf("expected 1 decision, got %d", len(decisions))
+	}
+	if decisions[0].Title != "Architecture Overview" {
+		t.Fatalf("unexpected title: %q", decisions[0].Title)
+	}
+}
+
 func TestExtract_NonADRSource(t *testing.T) {
 	extractor := NewExtractor()
 	sources := []*models.Source{

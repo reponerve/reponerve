@@ -14,10 +14,18 @@ type Input struct {
 	Events       []*models.Event
 	Decisions    []*memorymodels.Decision
 	Facts        []*memorymodels.Fact
+	Sources      []*models.Source
 }
 
 // BuildDocuments converts extracted memories into FTS5 documents.
 func BuildDocuments(in Input) []storage.MemorySearchDocument {
+	sourceByID := make(map[string]*models.Source, len(in.Sources))
+	for _, src := range in.Sources {
+		if src != nil {
+			sourceByID[src.ID] = src
+		}
+	}
+
 	var docs []storage.MemorySearchDocument
 
 	for _, ev := range in.Events {
@@ -37,12 +45,16 @@ func BuildDocuments(in Input) []storage.MemorySearchDocument {
 		if d == nil || d.RepositoryID != in.RepositoryID {
 			continue
 		}
+		content := d.Status
+		if src := sourceByID[d.SourceID]; src != nil {
+			content = joinNonEmpty(d.Status, sourceDocumentText(src.MetadataJSON, src.Title))
+		}
 		docs = append(docs, storage.MemorySearchDocument{
 			MemoryID:     d.ID,
 			RepositoryID: d.RepositoryID,
 			EntityType:   "DECISION",
 			Title:        d.Title,
-			Content:      d.Status,
+			Content:      content,
 		})
 	}
 

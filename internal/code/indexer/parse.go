@@ -30,9 +30,10 @@ type builder struct {
 
 	entities    []*codemodels.CodeEntity
 	rels        []*codemodels.CodeRelationship
-	packageIDs  map[string]string
+		packageIDs  map[string]string
 	fileIDs     map[string]string
 	funcIndex   map[string]string
+	methodIndex map[string]string
 	relKeys     map[string]struct{}
 }
 
@@ -45,6 +46,7 @@ func newBuilder(repositoryID, modulePath, repoPath string, at time.Time) *builde
 		packageIDs:   make(map[string]string),
 		fileIDs:      make(map[string]string),
 		funcIndex:    make(map[string]string),
+		methodIndex:  make(map[string]string),
 		relKeys:      make(map[string]struct{}),
 	}
 }
@@ -203,6 +205,7 @@ func (b *builder) addTypeSymbol(file *ast.File, fset *token.FileSet, filePath, p
 	qualified := symbolQualifiedName(packagePath, spec.Name.Name)
 	startLine := fset.Position(spec.Pos()).Line
 	endLine := fset.Position(spec.End()).Line
+	signature := formatTypeSpecSignature(spec)
 
 	id := code.EntityID(b.repositoryID, entityType, qualified)
 	b.entities = append(b.entities, &codemodels.CodeEntity{
@@ -217,6 +220,7 @@ func (b *builder) addTypeSymbol(file *ast.File, fset *token.FileSet, filePath, p
 		Language:      "go",
 		StartLine:     startLine,
 		EndLine:       endLine,
+		Signature:     signature,
 		EvidenceJSON:  marshalEntityEvidence(filePath, startLine, endLine),
 		IndexedAt:     b.indexedAt,
 	})
@@ -263,7 +267,12 @@ func (b *builder) addFuncSymbol(file *ast.File, fset *token.FileSet, filePath, p
 	})
 	b.link(relBelongsToPackage, id, packageID, filePath, decl.Name.Name, "", startLine)
 	b.link(relDefinedInFile, id, fileID, filePath, decl.Name.Name, filepath.Base(filePath), startLine)
-	b.funcIndex[funcIndexKey(packagePath, decl.Name.Name)] = id
+	if entityType == codemodels.EntityTypeMethod && decl.Recv != nil && len(decl.Recv.List) > 0 {
+		recv := receiverName(decl.Recv.List[0].Type)
+		b.methodIndex[methodIndexKey(packagePath, recv, decl.Name.Name)] = id
+	} else {
+		b.funcIndex[qualified] = id
+	}
 	return id
 }
 
@@ -327,4 +336,105 @@ func formatFuncSignature(decl *ast.FuncDecl) string {
 
 func formatMethodSignature(recv string, decl *ast.FuncDecl) string {
 	return fmt.Sprintf("func (%s) %s(...)", recv, decl.Name.Name)
+}
+
+func formatTypeSpecSignature(spec *ast.TypeSpec) string {
+	switch t := spec.Type.(type) {
+	case *ast.StructType:
+		return formatStructFields(t)
+	case *ast.InterfaceType:
+		return formatInterfaceMembers(t)
+	case *ast.Ident:
+		return "type " + spec.Name.Name + " " + t.Name
+	case *ast.SelectorExpr:
+		return "type " + spec.Name.Name + " " + formatTypeExpr(t)
+	default:
+		if spec.Assign.IsValid() {
+			return "type " + spec.Name.Name + " = " + formatTypeExpr(spec.Type)
+		}
+		return "type " + spec.Name.Name + " " + formatTypeExpr(spec.Type)
+	}
+}
+
+func formatStructFields(st *ast.StructType) string {
+	if st == nil || st.Fields == nil {
+		return ""
+	}
+	var parts []string
+	for _, field := range st.Fields.List {
+		typeStr := formatTypeExpr(field.Type)
+		if len(field.Names) == 0 {
+			parts = append(parts, typeStr)
+			continue
+		}
+		for _, name := range field.Names {
+			parts = append(parts, name.Name+" "+typeStr)
+		}
+	}
+	return strings.Join(parts, "; ")
+}
+
+func formatInterfaceMembers(iface *ast.InterfaceType) string {
+	if iface == nil || iface.Methods == nil {
+		return ""
+	}
+	var parts []string
+	for _, method := range iface.Methods.List {
+		if len(method.Names) == 0 {
+			parts = append(parts, formatTypeExpr(method.Type))
+			continue
+		}
+		for _, name := range method.Names {
+			parts = append(parts, name.Name+formatFuncTypeSuffix(method.Type))
+		}
+	}
+	return strings.Join(parts, "; ")
+}
+
+func formatFuncTypeSuffix(expr ast.Expr) string {
+	ft, ok := expr.(*ast.FuncType)
+	if !ok {
+		return " " + formatTypeExpr(expr)
+	}
+	if ft.Params == nil || len(ft.Params.List) == 0 {
+		return "()"
+	}
+	return "(...)"
+}
+
+func formatTypeExpr(expr ast.Expr) string {
+	switch t := expr.(type) {
+	case *ast.Ident:
+		return t.Name
+	case *ast.StarExpr:
+		return "*" + formatTypeExpr(t.X)
+	case *ast.SelectorExpr:
+		return formatTypeExpr(t.X) + "." + t.Sel.Name
+	case *ast.ArrayType:
+		if t.Len == nil {
+			return "[]" + formatTypeExpr(t.Elt)
+		}
+		return "[]" + formatTypeExpr(t.Elt)
+	case *ast.MapType:
+		return "map[" + formatTypeExpr(t.Key) + "]" + formatTypeExpr(t.Value)
+	case *ast.InterfaceType:
+		if t.Methods == nil || len(t.Methods.List) == 0 {
+			return "interface{}"
+		}
+		return "interface{...}"
+	case *ast.StructType:
+		return "struct{...}"
+	case *ast.FuncType:
+		return "func" + formatFuncTypeSuffix(t)
+	case *ast.ChanType:
+		if t.Dir == ast.SEND {
+			return "chan<- " + formatTypeExpr(t.Value)
+		}
+		if t.Dir == ast.RECV {
+			return "<-chan " + formatTypeExpr(t.Value)
+		}
+		return "chan " + formatTypeExpr(t.Value)
+	default:
+		return "?"
+	}
 }

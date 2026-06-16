@@ -29,3 +29,87 @@ func RunExplanation(
 	cmd.Print(development.FormatExplanation(out))
 	return nil
 }
+
+// RunPlan executes a Development Experience plan workflow for CLI commands.
+func RunPlan(
+	cmd *cobra.Command,
+	task string,
+	run func(context.Context, *Handle, string) (*development.DevelopmentPlan, error),
+) error {
+	session, err := Open(cmd.Context(), config.GetWorkspaceDir())
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	out, err := run(cmd.Context(), session, task)
+	if err != nil {
+		return err
+	}
+
+	cmd.Print(development.FormatPlan(out))
+	return nil
+}
+
+// RunReview executes a Development Experience review workflow for CLI commands.
+func RunReview(
+	cmd *cobra.Command,
+	topic string,
+	run func(context.Context, *Handle, string) (*development.DevelopmentReviewGuide, error),
+) error {
+	session, err := Open(cmd.Context(), config.GetWorkspaceDir())
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	out, err := run(cmd.Context(), session, topic)
+	if err != nil {
+		return err
+	}
+
+	cmd.Print(development.FormatReviewGuide(out))
+	return nil
+}
+
+// RunOnboarding executes a Development Experience onboarding workflow for CLI commands.
+func RunOnboarding(
+	cmd *cobra.Command,
+	assignment string,
+	run func(context.Context, *Handle, string) (*development.DevelopmentOnboardingGuide, error),
+) error {
+	session, err := Open(cmd.Context(), config.GetWorkspaceDir())
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	out, err := run(cmd.Context(), session, assignment)
+	if err != nil {
+		return err
+	}
+
+	cmd.Print(development.FormatOnboarding(out))
+	return nil
+}
+
+// RunImpact executes a Development Experience impact workflow for CLI commands.
+func RunImpact(
+	cmd *cobra.Command,
+	subject string,
+	run func(context.Context, *Handle, string) (*development.DevelopmentImpactReport, error),
+) error {
+	session, err := Open(cmd.Context(), config.GetWorkspaceDir())
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	out, err := run(cmd.Context(), session, subject)
+	if err != nil {
+		return err
+	}
+
+	cmd.Print(development.FormatImpactReport(out))
+	return nil
+}
