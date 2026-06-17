@@ -2,19 +2,18 @@ package indexer
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"time"
 
+	"github.com/reponerve/reponerve/internal/code/lang"
 	codemodels "github.com/reponerve/reponerve/internal/code/models"
 	"github.com/reponerve/reponerve/internal/storage"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
-// Indexer performs deterministic Go code indexing for a repository.
 type Indexer struct {
 	db            *sqlite.Database
 	entityStore   storage.CodeEntityStore
@@ -43,13 +42,18 @@ func New(
 // Index rebuilds code intelligence for the repository path.
 func (idx *Indexer) Index(ctx context.Context, repositoryID, repositoryPath string) error {
 	repositoryPath = filepath.Clean(repositoryPath)
-	if _, err := os.Stat(filepath.Join(repositoryPath, "go.mod")); err != nil {
-		if _, workErr := os.Stat(filepath.Join(repositoryPath, "go.work")); workErr != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				return nil
-			}
-			return fmt.Errorf("stat go.mod: %w", err)
-		}
+
+	hasGoMod := fileExists(filepath.Join(repositoryPath, "go.mod"))
+	hasGoWork := fileExists(filepath.Join(repositoryPath, "go.work"))
+	allFiles, err := listAllIndexableFiles(repositoryPath)
+	if err != nil {
+		return fmt.Errorf("source file discovery failed: %w", err)
+	}
+	if len(allFiles) == 0 {
+		return nil
+	}
+	if !hasGoMod && !hasGoWork && !hasNonGoFiles(allFiles) {
+		return nil
 	}
 
 	skip, err := shouldSkipIndexing(ctx, idx.stateStore, repositoryID, repositoryPath)
@@ -57,9 +61,9 @@ func (idx *Indexer) Index(ctx context.Context, repositoryID, repositoryPath stri
 		return fmt.Errorf("incremental index check: %w", err)
 	}
 	if skip {
-		currentFiles, ferr := listGoFiles(repositoryPath)
+		currentFiles, ferr := listAllIndexableFiles(repositoryPath)
 		if ferr != nil {
-			return fmt.Errorf("go file discovery failed: %w", ferr)
+			return fmt.Errorf("source file discovery failed: %w", ferr)
 		}
 		state, _ := idx.stateStore.GetByRepository(ctx, repositoryID)
 		if state != nil && state.FileCount != len(currentFiles) {
@@ -70,36 +74,27 @@ func (idx *Indexer) Index(ctx context.Context, repositoryID, repositoryPath stri
 		return nil
 	}
 
-	moduleRoots, err := discoverModuleRoots(repositoryPath)
-	if err != nil {
-		return fmt.Errorf("module discovery failed: %w", err)
+	now := time.Now().UTC()
+	defaultModule := filepath.Base(repositoryPath)
+	if defaultModule == "" || defaultModule == "." {
+		defaultModule = "."
+	}
+	b := newBuilder(repositoryID, defaultModule, repositoryPath, now)
+
+	if hasGoMod || hasGoWork {
+		if err := idx.indexGoModules(b, repositoryPath); err != nil {
+			return err
+		}
 	}
 
-	now := time.Now().UTC()
-	b := newBuilder(repositoryID, moduleRoots[0].modulePath, repositoryPath, now)
-
-	for _, root := range moduleRoots {
-		files, err := listGoFiles(root.path)
-		if err != nil {
-			return fmt.Errorf("go file discovery failed: %w", err)
-		}
-		sort.Strings(files)
-
-		moduleID := b.addModuleEntity(root.modulePath, root.goModFile)
-		prefix := ""
-		if root.path != repositoryPath {
-			relRoot, err := filepath.Rel(repositoryPath, root.path)
-			if err == nil && relRoot != "." {
-				prefix = filepath.ToSlash(relRoot)
-			}
-		}
-		for _, filePath := range files {
-			if prefix != "" {
-				filePath = prefix + "/" + filePath
-			}
-			if err := b.parseFile(filePath, moduleID); err != nil {
-				return err
-			}
+	multiLangFiles, err := listMultiLangFiles(repositoryPath)
+	if err != nil {
+		return fmt.Errorf("multi-language file discovery failed: %w", err)
+	}
+	for _, filePath := range multiLangFiles {
+		language := lang.Detect(filePath)
+		if err := b.parseTreeSitterFile(filePath, language); err != nil {
+			return err
 		}
 	}
 
@@ -159,6 +154,56 @@ func (idx *Indexer) Index(ctx context.Context, repositoryID, repositoryPath stri
 	}
 
 	return nil
+}
+
+func (idx *Indexer) indexGoModules(b *builder, repositoryPath string) error {
+	moduleRoots, err := discoverModuleRoots(repositoryPath)
+	if err != nil {
+		return fmt.Errorf("module discovery failed: %w", err)
+	}
+	if len(moduleRoots) == 0 {
+		return nil
+	}
+	b.modulePath = moduleRoots[0].modulePath
+
+	for _, root := range moduleRoots {
+		files, err := listGoFiles(root.path)
+		if err != nil {
+			return fmt.Errorf("go file discovery failed: %w", err)
+		}
+
+		moduleID := b.addModuleEntity(root.modulePath, root.goModFile)
+		prefix := ""
+		if root.path != repositoryPath {
+			relRoot, err := filepath.Rel(repositoryPath, root.path)
+			if err == nil && relRoot != "." {
+				prefix = filepath.ToSlash(relRoot)
+			}
+		}
+		for _, filePath := range files {
+			if prefix != "" {
+				filePath = prefix + "/" + filePath
+			}
+			if err := b.parseFile(filePath, moduleID); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func hasNonGoFiles(files []string) bool {
+	for _, f := range files {
+		if lang.Detect(f) != lang.Go {
+			return true
+		}
+	}
+	return false
 }
 
 func sortEntities(entities []*codemodels.CodeEntity) {

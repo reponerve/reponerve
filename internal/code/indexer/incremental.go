@@ -17,25 +17,27 @@ func shouldSkipIndexing(ctx context.Context, stateStore storage.CodeIndexStateSt
 	if err != nil || state == nil || state.LastIndexedAt.IsZero() {
 		return false, err
 	}
-	changed, err := repositoryGoFilesChangedSince(repositoryPath, state.LastIndexedAt)
+	changed, err := repositorySourceFilesChangedSince(repositoryPath, state.LastIndexedAt)
 	if err != nil {
 		return false, err
 	}
 	return !changed, nil
 }
 
-func repositoryGoFilesChangedSince(repositoryPath string, since time.Time) (bool, error) {
-	files, err := listGoFiles(repositoryPath)
+func repositorySourceFilesChangedSince(repositoryPath string, since time.Time) (bool, error) {
+	files, err := listAllIndexableFiles(repositoryPath)
 	if err != nil {
 		return true, err
 	}
-	goModPath := filepath.Join(repositoryPath, "go.mod")
-	if info, err := os.Stat(goModPath); err == nil && info.ModTime().After(since) {
-		return true, nil
-	}
-	workPath := filepath.Join(repositoryPath, "go.work")
-	if info, err := os.Stat(workPath); err == nil && info.ModTime().After(since) {
-		return true, nil
+	for _, marker := range []string{
+		"go.mod", "go.work", "package.json", "pyproject.toml", "Cargo.toml",
+		"pom.xml", "build.gradle", "build.gradle.kts", "Gemfile", "composer.json",
+		"Package.swift", "CMakeLists.txt", "build.sbt", "pubspec.yaml", "mix.exs", "build.zig.zon",
+	} {
+		markerPath := filepath.Join(repositoryPath, marker)
+		if info, err := os.Stat(markerPath); err == nil && info.ModTime().After(since) {
+			return true, nil
+		}
 	}
 	for _, rel := range files {
 		abs := filepath.Join(repositoryPath, filepath.FromSlash(rel))

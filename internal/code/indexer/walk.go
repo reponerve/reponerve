@@ -5,7 +5,10 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
+
+	"github.com/reponerve/reponerve/internal/code/lang"
 )
 
 var skipDirNames = map[string]bool{
@@ -17,6 +20,23 @@ var skipDirNames = map[string]bool{
 }
 
 func listGoFiles(repoPath string) ([]string, error) {
+	return listFilesByPredicate(repoPath, func(rel string) bool {
+		return lang.Detect(rel) == lang.Go && lang.IsIndexable(rel)
+	})
+}
+
+func listMultiLangFiles(repoPath string) ([]string, error) {
+	return listFilesByPredicate(repoPath, func(rel string) bool {
+		detected := lang.Detect(rel)
+		return detected != "" && detected != lang.Go && lang.IsIndexable(rel)
+	})
+}
+
+func listAllIndexableFiles(repoPath string) ([]string, error) {
+	return listFilesByPredicate(repoPath, lang.IsIndexable)
+}
+
+func listFilesByPredicate(repoPath string, keep func(rel string) bool) ([]string, error) {
 	repoPath = filepath.Clean(repoPath)
 	var files []string
 
@@ -32,25 +52,24 @@ func listGoFiles(repoPath string) ([]string, error) {
 			return nil
 		}
 
-		if !strings.HasSuffix(d.Name(), ".go") || strings.HasSuffix(d.Name(), "_test.go") {
-			return nil
-		}
-
-		if isGeneratedFile(path) {
-			return nil
-		}
-
 		rel, err := filepath.Rel(repoPath, path)
 		if err != nil {
 			return err
 		}
-		files = append(files, filepath.ToSlash(rel))
+		rel = filepath.ToSlash(rel)
+		if !keep(rel) {
+			return nil
+		}
+		if lang.Detect(rel) == lang.Go && isGeneratedFile(path) {
+			return nil
+		}
+		files = append(files, rel)
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-
+	sort.Strings(files)
 	return files, nil
 }
 

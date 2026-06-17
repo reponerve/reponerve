@@ -34,6 +34,8 @@ type builder struct {
 	fileIDs     map[string]string
 	funcIndex   map[string]string
 	methodIndex map[string]string
+	langModuleIDs  map[string]string
+	langPackageIDs map[string]string
 	relKeys     map[string]struct{}
 }
 
@@ -43,11 +45,13 @@ func newBuilder(repositoryID, modulePath, repoPath string, at time.Time) *builde
 		modulePath:   modulePath,
 		repoPath:     repoPath,
 		indexedAt:    at,
-		packageIDs:   make(map[string]string),
-		fileIDs:      make(map[string]string),
-		funcIndex:    make(map[string]string),
-		methodIndex:  make(map[string]string),
-		relKeys:      make(map[string]struct{}),
+		packageIDs:     make(map[string]string),
+		fileIDs:        make(map[string]string),
+		funcIndex:      make(map[string]string),
+		methodIndex:    make(map[string]string),
+		langModuleIDs:  make(map[string]string),
+		langPackageIDs: make(map[string]string),
+		relKeys:        make(map[string]struct{}),
 	}
 }
 

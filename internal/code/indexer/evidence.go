@@ -20,12 +20,16 @@ type relationshipEvidence struct {
 }
 
 func marshalEntityEvidence(file string, startLine, endLine int) string {
+	return marshalEntityEvidenceWithParser(file, startLine, endLine, "go/parser")
+}
+
+func marshalEntityEvidenceWithParser(file string, startLine, endLine int, parser string) string {
 	b, _ := json.Marshal(entityEvidence{
-		Source:    "go/ast",
+		Source:    parser,
 		File:      file,
 		StartLine: startLine,
 		EndLine:   endLine,
-		Parser:    "go/parser",
+		Parser:    parser,
 	})
 	return string(b)
 }
