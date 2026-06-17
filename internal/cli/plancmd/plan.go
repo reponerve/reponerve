@@ -11,7 +11,7 @@ import (
 
 // NewCommand creates the plan subcommand.
 func NewCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "plan [task]",
 		Short: "Plan implementation for a development task",
 		Long:  `Prepare implementation guidance by orchestrating search, code intelligence, learning paths, reviewers, and change planning.`,
@@ -25,4 +25,5 @@ func NewCommand() *cobra.Command {
 			})
 		},
 	}
+	return devwire.BindDECmd(cmd)
 }

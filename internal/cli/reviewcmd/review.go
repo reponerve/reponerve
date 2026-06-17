@@ -11,7 +11,7 @@ import (
 
 // NewCommand creates the review subcommand.
 func NewCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "review [topic]",
 		Short: "Prepare a code review guide for a feature or area",
 		Long:  `Prepare review guidance by orchestrating reviewer recommendations, ownership intelligence, repository search, and code intelligence.`,
@@ -25,4 +25,5 @@ func NewCommand() *cobra.Command {
 			})
 		},
 	}
+	return devwire.BindDECmd(cmd)
 }

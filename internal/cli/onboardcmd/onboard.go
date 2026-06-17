@@ -12,7 +12,7 @@ import (
 
 // NewCommand creates the onboard subcommand.
 func NewCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "onboard [assignment]",
 		Short: "First-day repository context with optional assignment plan",
 		Long:  `Assemble day-one orientation, key decisions, and an optional task plan from repository and code intelligence.`,
@@ -30,4 +30,5 @@ func NewCommand() *cobra.Command {
 			})
 		},
 	}
+	return devwire.BindDECmd(cmd)
 }

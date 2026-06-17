@@ -23,5 +23,5 @@ func NewCommand() *cobra.Command {
 			return session.Service.ExplainInterface(ctx, session.RepositoryID, symbol, packagePath)
 		})
 	}
-	return cmd
+	return devwire.BindDECmd(cmd)
 }

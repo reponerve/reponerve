@@ -12,7 +12,7 @@ Part of: v1.0.0 (single product release)
 
 # Objective
 
-Deliver graph discovery, exploration, and repository-scoped session memory — Graphify and ICM capabilities on RepoNerve's evidence model.
+Deliver graph discovery, exploration, and repository-scoped session memory on RepoNerve's evidence model.
 
 ---
 

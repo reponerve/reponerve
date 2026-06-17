@@ -26,8 +26,7 @@ func RunExplanation(
 		return err
 	}
 
-	cmd.Print(development.FormatExplanation(out))
-	return nil
+	return WriteDEResult(cmd, development.FormatExplanation(out), out)
 }
 
 // RunPlan executes a Development Experience plan workflow for CLI commands.
@@ -47,8 +46,7 @@ func RunPlan(
 		return err
 	}
 
-	cmd.Print(development.FormatPlan(out))
-	return nil
+	return WriteDEResult(cmd, development.FormatPlan(out), out)
 }
 
 // RunReview executes a Development Experience review workflow for CLI commands.
@@ -68,8 +66,7 @@ func RunReview(
 		return err
 	}
 
-	cmd.Print(development.FormatReviewGuide(out))
-	return nil
+	return WriteDEResult(cmd, development.FormatReviewGuide(out), out)
 }
 
 // RunOnboarding executes a Development Experience onboarding workflow for CLI commands.
@@ -89,8 +86,7 @@ func RunOnboarding(
 		return err
 	}
 
-	cmd.Print(development.FormatOnboarding(out))
-	return nil
+	return WriteDEResult(cmd, development.FormatOnboarding(out), out)
 }
 
 // RunImpact executes a Development Experience impact workflow for CLI commands.
@@ -110,6 +106,5 @@ func RunImpact(
 		return err
 	}
 
-	cmd.Print(development.FormatImpactReport(out))
-	return nil
+	return WriteDEResult(cmd, development.FormatImpactReport(out), out)
 }
