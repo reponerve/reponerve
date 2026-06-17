@@ -38,6 +38,15 @@ reponerve scan
 
 `reponerve init` writes project integration files (`.cursor/`, `.vscode/mcp.json`, `.continue/`) and installs the global Cursor skill to `~/.cursor/skills/reponerve/`. Re-run `reponerve integrate` to refresh, or `reponerve integrate --force` to overwrite skill files.
 
+Optional: keep repository memory fresh after each commit:
+
+```bash
+reponerve hook install    # post-commit → reponerve scan
+reponerve hook status
+```
+
+Works in any git repo (Cursor, Claude Code, VS Code, terminal agents). `reponerve hook uninstall` removes the RepoNerve block without deleting other hook content.
+
 Install the binary: `go install ./cmd/reponerve` (from this repo) or your release artifact.
 
 ---
@@ -108,9 +117,12 @@ When MCP is off, the agent runs CLI in the terminal. You chat normally; the skil
 
 ```bash
 reponerve ask "Why do we use SQLite?" --json
+reponerve ask "Why do we use SQLite?" --format caveman --token-budget 1500
 reponerve plan "Add OAuth login" --json
 reponerve onboard --json
 ```
+
+MCP equivalent: pass `"format": "caveman"` and `"token_budget": 1500` on `ask`, `explain`, `plan`, and other DE tools.
 
 `--json` returns the **same envelope as MCP**: `structured`, `agent`, `formatted`.
 

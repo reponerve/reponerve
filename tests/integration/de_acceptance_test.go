@@ -30,6 +30,16 @@ func TestDevelopmentExperienceAcceptance(t *testing.T) {
 		assertHasEvidenceOrSummary(t, out)
 	})
 
+	t.Run("ask decision rationale use verb", func(t *testing.T) {
+		out, err := execute("ask", "Why do we use Redis?")
+		if err != nil {
+			t.Fatalf("ask use-verb failed: %v\n%s", err, out)
+		}
+		if !strings.Contains(out, "decision_rationale") {
+			t.Fatalf("expected decision_rationale, got:\n%s", out)
+		}
+	})
+
 	t.Run("ask decision rationale", func(t *testing.T) {
 		out, err := execute("ask", "Why are we using Redis?")
 		if err != nil {

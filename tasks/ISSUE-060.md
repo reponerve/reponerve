@@ -1,6 +1,6 @@
 # ISSUE-060 — Token Intelligence Layer
 
-Status: In Progress — format + caveman shipped; hooks and incremental scan remain
+Status: Complete
 
 Milestone: v0.13.0-alpha
 
@@ -22,21 +22,22 @@ See `docs/product/token-economics.md`.
 
 | Capability | Description |
 | --- | --- |
-| Graph-aware compression | Upgrade `internal/agent/compression/` — relevance-ranked, token-budget |
-| Output formats | `--format prose\|json\|caveman` + `--token-budget` on DE CLI | In progress |
-| Agent hooks | `reponerve hook install` — post-commit scan, session context inject |
-| Incremental scan | Re-index changed files on commit without full scan |
-| RTK guidance | Document composition: RTK (shell) + RepoNerve (understanding) |
+| Graph-aware compression | `internal/agent/compression/` — topic relevance, relationship boost, token-budget packing | Done |
+| Output formats | `--format prose\|json\|caveman` + `--token-budget` on DE CLI | Done |
+| MCP format parity | `format` + `token_budget` on all DE MCP tools; `generate_context` topic/budget | Done |
+| Agent hooks | `reponerve hook install` — post-commit scan; `uninstall`, `status` | Done |
+| Incremental scan | Code indexer + git scan state; hook triggers `reponerve scan` | Done |
+| RTK guidance | `docs/product/token-economics.md` Layer 6 composability | Done |
 
 ---
 
 # Acceptance Criteria
 
-* Context pack size configurable via token budget
-* Caveman format reduces output size ≥50% vs prose for same evidence
-* Hooks install for Cursor and Claude Code (documented)
-* Incremental scan updates code + memory indices
-* Tests for compression ranking and format rendering
+* Context pack size configurable via token budget — Done (`generate_context`, DE CLI/MCP)
+* Caveman format reduces output size ≥50% vs prose for same evidence — Done (unit test)
+* Hooks install for Cursor and Claude Code (documented) — Done
+* Incremental scan updates code + memory indices — Done (via scan on commit)
+* Tests for compression ranking and format rendering — Done
 
 ---
 

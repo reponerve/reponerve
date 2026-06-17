@@ -348,6 +348,41 @@ func prioritizeAndCapRelated(refs []EntityRef, limit int) []EntityRef {
 	return scored[:limit]
 }
 
+func prioritizeRelatedForTopic(refs []EntityRef, topic string, limit int) []EntityRef {
+	if len(refs) <= limit {
+		return refs
+	}
+	topic = strings.ToLower(strings.TrimSpace(topic))
+	scored := make([]EntityRef, len(refs))
+	copy(scored, refs)
+	sort.SliceStable(scored, func(i, j int) bool {
+		si := topicMatchScore(topic, scored[i].Label)
+		sj := topicMatchScore(topic, scored[j].Label)
+		if si != sj {
+			return si > sj
+		}
+		return relatedPriority(scored[i].EntityType) < relatedPriority(scored[j].EntityType)
+	})
+	return scored[:limit]
+}
+
+func topicMatchScore(topic, label string) int {
+	if topic == "" {
+		return 0
+	}
+	label = strings.ToLower(label)
+	score := 0
+	for _, part := range strings.Fields(topic) {
+		if part != "" && strings.Contains(label, part) {
+			score += 10
+		}
+	}
+	if strings.Contains(label, topic) {
+		score += 20
+	}
+	return score
+}
+
 func relatedPriority(entityType string) int {
 	switch strings.ToUpper(entityType) {
 	case agentsearch.EntityTypeDecision:

@@ -41,6 +41,7 @@ func (s *Server) handleDevelopmentTool(
 	}
 
 	dev := s.service.DevelopmentService
+	outOpts := parseDevelopmentOutputOptions(getArg)
 
 	switch toolName {
 	case "ask":
@@ -57,7 +58,7 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("ask failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatAnswer(answer), answer)
+		s.sendDevelopmentResult(id, development.FormatAnswer(answer), answer, outOpts)
 
 	case "explain":
 		topic, err := getArg("topic", true)
@@ -73,7 +74,7 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("explain failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatExplanation(out), out)
+		s.sendDevelopmentResult(id, development.FormatExplanation(out), out, outOpts)
 
 	case "explain_file":
 		filePath, err := getArg("file_path", true)
@@ -86,7 +87,7 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("explain_file failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatExplanation(out), out)
+		s.sendDevelopmentResult(id, development.FormatExplanation(out), out, outOpts)
 
 	case "explain_function":
 		symbol, err := getArg("symbol", true)
@@ -100,7 +101,7 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("explain_function failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatExplanation(out), out)
+		s.sendDevelopmentResult(id, development.FormatExplanation(out), out, outOpts)
 
 	case "explain_struct":
 		symbol, err := getArg("symbol", true)
@@ -114,7 +115,7 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("explain_struct failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatExplanation(out), out)
+		s.sendDevelopmentResult(id, development.FormatExplanation(out), out, outOpts)
 
 	case "explain_interface":
 		symbol, err := getArg("symbol", true)
@@ -128,7 +129,7 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("explain_interface failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatExplanation(out), out)
+		s.sendDevelopmentResult(id, development.FormatExplanation(out), out, outOpts)
 
 	case "explain_type":
 		symbol, err := getArg("symbol", true)
@@ -142,7 +143,7 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("explain_type failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatExplanation(out), out)
+		s.sendDevelopmentResult(id, development.FormatExplanation(out), out, outOpts)
 
 	case "plan":
 		task, err := getArg("task", true)
@@ -158,7 +159,7 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("plan failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatPlan(out), out)
+		s.sendDevelopmentResult(id, development.FormatPlan(out), out, outOpts)
 
 	case "review":
 		topic, err := getArg("topic", true)
@@ -174,7 +175,7 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("review failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatReviewGuide(out), out)
+		s.sendDevelopmentResult(id, development.FormatReviewGuide(out), out, outOpts)
 
 	case "analyze_topic_impact":
 		subject, err := getArg("subject", true)
@@ -190,7 +191,7 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("analyze_topic_impact failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatImpactReport(out), out)
+		s.sendDevelopmentResult(id, development.FormatImpactReport(out), out, outOpts)
 
 	case "onboard":
 		assignment, _ := getArg("assignment", false)
@@ -202,14 +203,14 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, fmt.Sprintf("onboard failed: %v", err))
 			return true
 		}
-		s.sendDevelopmentResult(id, development.FormatOnboarding(out), out)
+		s.sendDevelopmentResult(id, development.FormatOnboarding(out), out, outOpts)
 	}
 
 	return true
 }
 
-func (s *Server) sendDevelopmentResult(id *json.RawMessage, formatted string, structured any) {
-	s.sendToolSuccess(id, development.NewMCPResult(formatted, structured))
+func (s *Server) sendDevelopmentResult(id *json.RawMessage, formatted string, structured any, opts development.OutputOptions) {
+	s.sendToolSuccess(id, development.NewMCPResultWithFormat(formatted, structured, opts))
 }
 
 func (s *Server) sendToolText(id *json.RawMessage, text string) {

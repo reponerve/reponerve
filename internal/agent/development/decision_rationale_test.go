@@ -5,6 +5,26 @@ import (
 	"testing"
 )
 
+func TestRxWhyUseQuestionPatterns(t *testing.T) {
+	cases := []struct {
+		question string
+		subject  string
+	}{
+		{"Why are we using Redis?", "Redis"},
+		{"Why do we use SQLite?", "SQLite"},
+		{"why do we use sqlite?", "sqlite"},
+	}
+	for _, tc := range cases {
+		m := rxWhyUse.FindStringSubmatch(tc.question)
+		if len(m) < 2 {
+			t.Fatalf("no match for %q", tc.question)
+		}
+		if !strings.EqualFold(strings.TrimSpace(m[1]), tc.subject) {
+			t.Fatalf("subject for %q: got %q want %q", tc.question, m[1], tc.subject)
+		}
+	}
+}
+
 func TestAdrRationaleSnippet(t *testing.T) {
 	meta := `{"content":"# Use Redis\n\n## Context\nWe need a fast cache for sessions.\n\n## Decision\nUse Redis.\n"}`
 	snippet := adrRationaleSnippet(meta)

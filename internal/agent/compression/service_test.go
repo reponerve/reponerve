@@ -47,7 +47,7 @@ func TestService_Unit(t *testing.T) {
 		}
 		g := ctxengine.NewGenerator(r)
 		obs := onboarding.NewService(g)
-		s := NewService(g, obs)
+		s := NewService(g, obs, nil)
 
 		opts := CompressionOptions{
 			MaxDecisions: 5,
@@ -77,7 +77,7 @@ func TestService_Unit(t *testing.T) {
 		}
 		g := ctxengine.NewGenerator(r)
 		obs := onboarding.NewService(g)
-		s := NewService(g, obs)
+		s := NewService(g, obs, nil)
 
 		_, err := s.Compress(ctx, repoID, CompressionOptions{})
 		if err == nil {
@@ -99,7 +99,7 @@ func TestService_Unit(t *testing.T) {
 		}
 		g := ctxengine.NewGenerator(r)
 		obs := onboarding.NewService(g)
-		s := NewService(g, obs)
+		s := NewService(g, obs, nil)
 
 		opts := CompressionOptions{
 			MaxDecisions: 5,
@@ -172,7 +172,7 @@ func TestService_Unit(t *testing.T) {
 
 		g := ctxengine.NewGenerator(r)
 		obs := onboarding.NewService(g)
-		s := NewService(g, obs)
+		s := NewService(g, obs, nil)
 
 		// Max limits enforce truncation to 2 elements for all types
 		opts := CompressionOptions{
@@ -253,7 +253,7 @@ func TestService_Unit(t *testing.T) {
 
 		g := ctxengine.NewGenerator(r)
 		obs := onboarding.NewService(g)
-		s := NewService(g, obs)
+		s := NewService(g, obs, nil)
 
 		opts := CompressionOptions{
 			MaxDecisions: 0,
@@ -281,31 +281,29 @@ func TestService_Unit(t *testing.T) {
 		}
 	})
 
-	t.Run("Large limits", func(t *testing.T) {
+	t.Run("Topic relevance ranking", func(t *testing.T) {
 		r := &mockContextReader{
 			data: &ctxengine.ContextData{
 				RepositoryID: repoID,
 				Decisions: []*memorymodels.Decision{
-					{ID: "dec_1"},
+					{ID: "dec_redis", Title: "Use Redis for caching"},
+					{ID: "dec_sqlite", Title: "Local-first SQLite storage"},
 				},
 			},
 		}
-
 		g := ctxengine.NewGenerator(r)
 		obs := onboarding.NewService(g)
-		s := NewService(g, obs)
+		s := NewService(g, obs, nil)
 
-		opts := CompressionOptions{
-			MaxDecisions: 1000,
-		}
-
-		cCtx, err := s.Compress(ctx, repoID, opts)
+		cCtx, err := s.Compress(ctx, repoID, CompressionOptions{
+			Topic:        "sqlite",
+			MaxDecisions: 1,
+		})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-
-		if len(cCtx.Decisions) != 1 || cCtx.Decisions[0].ID != "dec_1" {
-			t.Errorf("expected all elements when limit is very large, got: %v", cCtx.Decisions)
+		if len(cCtx.Decisions) != 1 || cCtx.Decisions[0].ID != "dec_sqlite" {
+			t.Fatalf("expected sqlite decision first, got %+v", cCtx.Decisions)
 		}
 	})
 }
@@ -399,7 +397,7 @@ func TestService_Integration(t *testing.T) {
 
 	// Instantiation of services
 	obs := onboarding.NewService(generator)
-	service := NewService(generator, obs)
+	service := NewService(generator, obs, nil)
 
 	// Compress with limit 2
 	opts := CompressionOptions{

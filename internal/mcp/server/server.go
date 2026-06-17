@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/reponerve/reponerve/internal/agent/compression"
+	"github.com/reponerve/reponerve/internal/agent/onboarding"
 	"github.com/reponerve/reponerve/internal/graph/model"
 	"github.com/reponerve/reponerve/internal/graph/traversal"
 	"github.com/reponerve/reponerve/internal/mcp"
@@ -685,6 +687,34 @@ func (s *Server) handleCallTool(ctx context.Context, id *json.RawMessage, params
 			s.sendToolError(id, fmt.Sprintf("failed to resolve repository ID: %v", err))
 			return
 		}
+		topic, _ := getArg("topic", false)
+		tokenBudget := 0
+		if budgetStr, err := getArg("token_budget", false); err == nil && strings.TrimSpace(budgetStr) != "" {
+			if n, err := strconv.Atoi(strings.TrimSpace(budgetStr)); err == nil {
+				tokenBudget = n
+			}
+		}
+		if strings.TrimSpace(topic) != "" || tokenBudget > 0 {
+			comp := compression.NewService(
+				s.service.Generator,
+				onboarding.NewService(s.service.Generator),
+				s.service.RelationshipReader,
+			)
+			compressed, err := comp.Compress(ctx, repoID, compression.CompressionOptions{
+				Topic:        strings.TrimSpace(topic),
+				TokenBudget:  tokenBudget,
+				MaxDecisions: 50,
+				MaxIntents:   50,
+				MaxFacts:     50,
+				MaxEvents:    50,
+			})
+			if err != nil {
+				s.sendToolError(id, fmt.Sprintf("failed to compress context: %v", err))
+				return
+			}
+			s.sendToolSuccess(id, compressed)
+			return
+		}
 		rc, err := s.service.Generator.Generate(ctx, repoID)
 		if err != nil {
 			s.sendToolError(id, fmt.Sprintf("failed to generate context: %v", err))
@@ -1276,10 +1306,24 @@ func getInputSchema(toolName string) InputSchema {
 		}
 		schema.Required = []string{"repository_id", "entity_type", "entity_id"}
 
-	case "list_decisions", "list_events", "list_intents", "list_facts", "generate_context", "export_context", "list_contributors", "list_expertise":
+	case "list_decisions", "list_events", "list_intents", "list_facts", "export_context", "list_contributors", "list_expertise":
 		schema.Properties["repository_id"] = map[string]interface{}{
 			"type":        "string",
 			"description": "Optional repository filter",
+		}
+
+	case "generate_context":
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+		schema.Properties["topic"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional topic for relevance-ranked compression",
+		}
+		schema.Properties["token_budget"] = map[string]interface{}{
+			"type":        "integer",
+			"description": "Optional approximate token budget for compressed context",
 		}
 
 	case "trace_graph", "find_dependencies", "find_dependents":
@@ -1408,6 +1452,10 @@ func getInputSchema(toolName string) InputSchema {
 			"type":        "string",
 			"description": "Optional repository filter",
 		}
+	}
+
+	if isDevelopmentTool(toolName) {
+		addDevelopmentOutputSchema(&schema)
 	}
 
 	return schema

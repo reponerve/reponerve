@@ -15,6 +15,7 @@ import (
 	onboardcmd "github.com/reponerve/reponerve/internal/cli/onboardcmd"
 	plancmd "github.com/reponerve/reponerve/internal/cli/plancmd"
 	reviewcmd "github.com/reponerve/reponerve/internal/cli/reviewcmd"
+	hookcmd "github.com/reponerve/reponerve/internal/cli/hook"
 	initcmd "github.com/reponerve/reponerve/internal/cli/init"
 	integratecmd "github.com/reponerve/reponerve/internal/cli/integrate"
 	searchcmd "github.com/reponerve/reponerve/internal/cli/search"
@@ -35,6 +36,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(initcmd.NewCommand())
 	rootCmd.AddCommand(integratecmd.NewCommand())
 	rootCmd.AddCommand(scancmd.NewCommand())
+	rootCmd.AddCommand(hookcmd.NewCommand())
 	rootCmd.AddCommand(askcmd.NewCommand())
 	rootCmd.AddCommand(searchcmd.NewCommand())
 	rootCmd.AddCommand(explaincmd.NewCommand())

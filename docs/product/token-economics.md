@@ -97,6 +97,23 @@ Understanding persists in `.reponerve/`. Session 50 recalls auth context in hund
 
 RTK compresses shell output. RepoNerve compresses understanding. Together they address the two largest token sinks in agent sessions.
 
+**Recommended composition:**
+
+| Layer | Tool | What it compresses |
+| --- | --- | --- |
+| Shell | [RTK](https://github.com/rtk-ai/rtk) (or similar) | `git`, `test`, `build` command output |
+| Understanding | RepoNerve | Repository memory, code context, plans, ADRs |
+
+Typical flow:
+
+```text
+reponerve ask "..." --format caveman --token-budget 1500   # understanding pack
+rtk git diff                                               # compact shell evidence
+→ paste both into agent context → implement
+```
+
+Do not ask the LLM to re-read the repository when RepoNerve already indexed it. Do not paste raw 500-line test logs when RTK can summarize them deterministically.
+
 ---
 
 # Example: Same Task, Different Cost
@@ -134,11 +151,11 @@ RTK compresses shell output. RepoNerve compresses understanding. Together they a
 | --- | --- |
 | Deterministic extraction (no LLM scan) | ✅ Shipped |
 | Repository memory + graph + MCP | ✅ Shipped |
-| Token-efficient context packs | ⚠️ Basic truncation; graph-aware budgeting planned |
-| Code intelligence (fewer file reads) | ❌ ISSUE-057 |
-| Development Experience commands | ❌ ISSUE-057 (mostly stubs) |
-| Structured/caveman output format | ❌ ISSUE-060 (v1.0) |
-| Incremental scan on commit | ❌ ISSUE-060 (v1.0) |
+| Token-efficient context packs | ✅ v0.13.0-alpha — graph-aware compression + token budget |
+| Code intelligence (fewer file reads) | ✅ ISSUE-057 |
+| Development Experience commands | ✅ ISSUE-057 |
+| Structured/caveman output format | ✅ v0.13.0-alpha |
+| Incremental scan on commit | ✅ `reponerve hook install` + scan state |
 
 See `docs/product/implementation-status.md` for full gap analysis.
 

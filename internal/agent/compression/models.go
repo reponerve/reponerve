@@ -7,10 +7,12 @@ import (
 
 // CompressionOptions specifies limit thresholds for each entity type in the context.
 type CompressionOptions struct {
-	MaxDecisions int `json:"maxDecisions"`
-	MaxIntents   int `json:"maxIntents"`
-	MaxFacts     int `json:"maxFacts"`
-	MaxEvents    int `json:"maxEvents"`
+	Topic        string `json:"topic,omitempty"`
+	TokenBudget  int    `json:"tokenBudget,omitempty"`
+	MaxDecisions int    `json:"maxDecisions"`
+	MaxIntents   int    `json:"maxIntents"`
+	MaxFacts     int    `json:"maxFacts"`
+	MaxEvents    int    `json:"maxEvents"`
 }
 
 // CompressedContext holds the deterministically truncated repository context.

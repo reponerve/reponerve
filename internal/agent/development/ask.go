@@ -35,7 +35,7 @@ var (
 	rxWhoWorkedOn = regexp.MustCompile(`(?i)^who worked on\s+(.+?)\??$`)
 	rxWhoTouched  = regexp.MustCompile(`(?i)^who touched\s+(.+?)\??$`)
 	rxWhoOwns     = regexp.MustCompile(`(?i)^who owns\s+(.+?)\??$`)
-	rxWhyUsing    = regexp.MustCompile(`(?i)^why (?:are we |do we )?using\s+(.+?)\??$`)
+	rxWhyUse      = regexp.MustCompile(`(?i)^why (?:are we |do we )?(?:use|using|uses|used)\s+(.+?)\??$`)
 	rxWhatDepends = regexp.MustCompile(`(?i)^what depends on\s+(.+?)\??$`)
 	rxWhatIs      = regexp.MustCompile(`(?i)^what is (?:the )?(?:struct |type |function )?(.+?)\??$`)
 	rxWhatDoes    = regexp.MustCompile(`(?i)^what does (?:the )?(.+?) do\??$`)
@@ -92,7 +92,7 @@ func (s *Service) Ask(ctx context.Context, req DevelopmentRequest) (*Development
 	if matches := rxWhoTouched.FindStringSubmatch(question); len(matches) > 1 {
 		return s.answerAuthorship(ctx, req.RepositoryID, question, matches[1], "contributors")
 	}
-	if matches := rxWhyUsing.FindStringSubmatch(question); len(matches) > 1 {
+	if matches := rxWhyUse.FindStringSubmatch(question); len(matches) > 1 {
 		return s.answerDecisionRationale(ctx, req.RepositoryID, question, matches[1])
 	}
 	if matches := rxWhatDepends.FindStringSubmatch(question); len(matches) > 1 {
@@ -395,7 +395,7 @@ func (s *Service) answerDecisionRationale(ctx context.Context, repositoryID, que
 		return nil, err
 	}
 	refs, ev, _ := s.relatedFromTopic(ctx, repositoryID, topic)
-	out.Related = refs
+	out.Related = prioritizeRelatedForTopic(refs, subject, 15)
 	out.Evidence = append(out.Evidence, ev...)
 
 	decisions, err := s.decisionReader.ListByRepository(ctx, repositoryID)
