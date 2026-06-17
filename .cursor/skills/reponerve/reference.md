@@ -4,19 +4,19 @@ Use **MCP tools** when connected; otherwise use **CLI** (same semantics).
 
 ## Development Experience
 
-| Goal | MCP tool | CLI |
+| Goal | MCP tool | CLI (no MCP) |
 | --- | --- | --- |
-| Pasted task / plan | `plan` | `reponerve plan "..."` |
-| Question / what-is | `ask` | `reponerve ask "..."` |
-| Topic explain | `explain` | `reponerve explain "..."` |
-| File | `explain_file` | `reponerve explain-file "path"` |
-| Function | `explain_function` | `reponerve explain-function "Name" --package pkg` |
-| Struct | `explain_struct` | `reponerve explain-struct "Name" --package pkg` |
-| Interface | `explain_interface` | `reponerve explain-interface "Name"` |
-| Type alias | `explain_type` | `reponerve explain-type "Name"` |
-| Topic impact | `analyze_topic_impact` | `reponerve impact "subject"` |
-| Review prep | `review` | `reponerve review "topic"` |
-| Day-one orientation | `onboard` | `reponerve onboard` |
+| Pasted task / plan | `plan` | `reponerve plan "..." --json` |
+| Question / what-is | `ask` | `reponerve ask "..." --json` |
+| Topic explain | `explain` | `reponerve explain "..." --json` |
+| File | `explain_file` | `reponerve explain-file "path" --json` |
+| Function | `explain_function` | `reponerve explain-function "Name" --package pkg --json` |
+| Struct | `explain_struct` | `reponerve explain-struct "Name" --package pkg --json` |
+| Interface | `explain_interface` | `reponerve explain-interface "Name" --json` |
+| Type alias | `explain_type` | `reponerve explain-type "Name" --json` |
+| Topic impact | `analyze_topic_impact` | `reponerve impact "subject" --json` |
+| Review prep | `review` | `reponerve review "topic" --json` |
+| Day-one orientation | `onboard` | `reponerve onboard --json` |
 
 ## Repository memory (high value)
 

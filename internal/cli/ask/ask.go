@@ -10,16 +10,18 @@ import (
 	"github.com/reponerve/reponerve/internal/config"
 )
 
-// NewCommand creates and returns the ask subcommand.
-func NewCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:   "ask [question]",
-		Short: "Ask a question about the repository",
-		Long:  `Answer repository and development questions using Code Intelligence and Repository Intelligence with evidence-backed output.`,
+func newAskCommand(use, short string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   use,
+		Short: short,
+		Long:  `Answer repository and development questions using Code Intelligence and Repository Intelligence. Use --json for AI chat without MCP (same envelope as MCP tools).`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			question := strings.TrimSpace(args[0])
-			cmd.Printf("Querying repository memory for: %q...\n", question)
+			useJSON, _ := cmd.Flags().GetBool("json")
+			if !useJSON {
+				cmd.Printf("Querying repository memory for: %q...\n", question)
+			}
 
 			session, err := devwire.Open(cmd.Context(), config.GetWorkspaceDir())
 			if err != nil {
@@ -35,8 +37,12 @@ func NewCommand() *cobra.Command {
 				return err
 			}
 
-			cmd.Print(development.FormatAnswer(answer))
-			return nil
+			return devwire.WriteDEResult(cmd, development.FormatAnswer(answer), answer)
 		},
 	}
+	return cmd
+}
+
+func NewCommand() *cobra.Command {
+	return devwire.BindDECmd(newAskCommand("ask [question]", "Ask a question about the repository"))
 }

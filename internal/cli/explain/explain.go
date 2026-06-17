@@ -11,10 +11,10 @@ import (
 
 // NewCommand creates and returns the explain subcommand.
 func NewCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "explain [topic]",
 		Short: "Explain a repository topic with code and repository context",
-		Long:  `Combine Code Intelligence and Repository Intelligence into a unified explanation with evidence and repository-code links.`,
+		Long:  `Combine Code Intelligence and Repository Intelligence into a unified explanation. Use --json for AI chat without MCP.`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return devwire.RunExplanation(cmd, args[0], func(ctx context.Context, session *devwire.Handle, topic string) (*development.DevelopmentExplanation, error) {
@@ -25,4 +25,5 @@ func NewCommand() *cobra.Command {
 			})
 		},
 	}
+	return devwire.BindDECmd(cmd)
 }

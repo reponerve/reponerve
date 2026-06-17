@@ -78,6 +78,12 @@ func Install(opts Options) (Result, error) {
 		result.Skipped = append(result.Skipped, globalResult.Skipped...)
 	}
 
+	if hookPath, err := installChatHooks(opts.ProjectRoot, opts.Force); err != nil {
+		return result, err
+	} else if hookPath != "" {
+		result.Installed = append(result.Installed, hookPath)
+	}
+
 	return result, nil
 }
 
@@ -222,6 +228,7 @@ func FormatSummary(result Result) []string {
 	lines := make([]string, 0, len(result.Installed)+len(result.Updated)+1)
 	if len(result.Installed)+len(result.Updated) > 0 {
 		lines = append(lines, "✓ IDE integration installed (Cursor skill + MCP for Cursor, VS Code, Continue)")
+		lines = append(lines, "  Chat without MCP: reponerve ask \"...\" --json  (or /reponerve in chat)")
 	}
 	for _, path := range result.Installed {
 		lines = append(lines, fmt.Sprintf("  + %s", path))

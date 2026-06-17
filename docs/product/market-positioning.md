@@ -55,7 +55,7 @@ Users do not buy intelligence. They buy understanding, development speed, confid
 | --- | --- | --- |
 | Supermemory, ICM, Mem0 | Cross-session conversation memory, user profiles | RepoNerve remembers the **repository**, not chats |
 | RTK | Shell output compression (60–90% token savings) | Composes with RepoNerve: RTK compresses shell; RepoNerve compresses understanding |
-| Graphify | Docs/code → living KG, communities, audit trail | RepoNerve is deterministic-first; optional inference only with evidence tags |
+| Knowledge-graph tools (generic) | Docs/code → living KG, communities, audit trail | RepoNerve is deterministic-first; optional inference only with evidence tags |
 
 ## Tier 4: Context Packing (weak competition)
 
@@ -70,7 +70,7 @@ Repomix, code2prompt — dump repo into prompts. No structure, no memory, no gra
 GitNexus/Cortex     ████████████     ██░░░░░░░░░░    █░░░░░░░░░░░  █░░░░░░░░░  ████████████
 Sourcegraph Cody    ████████████     ████░░░░░░░░    ██░░░░░░░░░░  ████░░░░░░  ░░░░░░░░░░░░
 Supermemory/ICM     ████░░░░░░░░     ██████░░░░░░    ░░░░░░░░░░░░  ██░░░░░░░░  ████████░░░░
-Graphify            ██████░░░░░░     ████████░░░░    ░░░░░░░░░░░░  ████████░░  ████████████
+KG discovery tools   ██████░░░░░░     ████████░░░░    ░░░░░░░░░░░░  ████████░░  ████████████
 RepoNerve (today)   ██░░░░░░░░░░     ████████████    ████████░░░░  ████████████ ████████████
 RepoNerve (v1.0)    ████████████     ████████████    ████████████  ████████████ ████████████
 ```

@@ -11,7 +11,7 @@ import (
 
 // NewCommand creates the impact subcommand.
 func NewCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "impact [subject]",
 		Short: "Analyze impact of a service, feature, or area",
 		Long: `Analyze repository and code impact for a natural-language subject by orchestrating knowledge graph impact, agent impact analysis, code intelligence, and ownership intelligence.`,
@@ -25,4 +25,5 @@ func NewCommand() *cobra.Command {
 			})
 		},
 	}
+	return devwire.BindDECmd(cmd)
 }

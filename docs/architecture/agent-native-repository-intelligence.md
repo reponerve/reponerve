@@ -414,7 +414,7 @@ RepoNerve composes with — does not replace:
 
 * **RTK** — shell output compression
 * **LLM coding agents** — Cursor, Claude Code, Copilot (implementation)
-* **Graphify-style discovery** — communities, surprises (ISSUE-061, v1.0)
+* **Graph discovery** — communities, surprises (ISSUE-061, v1.0)
 
 Full competitive analysis: `docs/product/market-positioning.md`. Iteration plan: `docs/roadmap/v1.0-iteration-plan.md`.
 

@@ -102,9 +102,25 @@ RepoNerve works with **any LLM** the host application provides:
 
 RepoNerve never calls external LLM APIs. **No API keys** are required for RepoNerve itself. Token savings come from delivering pre-digested evidence instead of raw repo exploration.
 
-### Web chat (no MCP)
+### Chat without MCP (recommended default)
 
-For browser-only assistants:
+When MCP is off, the agent runs CLI in the terminal. You chat normally; the skill runs RepoNerve for you.
+
+```bash
+reponerve ask "Why do we use SQLite?" --json
+reponerve plan "Add OAuth login" --json
+reponerve onboard --json
+```
+
+`--json` returns the **same envelope as MCP**: `structured`, `agent`, `formatted`.
+
+- **Cursor:** `/reponerve ask "..."` or ask naturally — skill auto-loads
+- **Claude Code:** `CLAUDE.md` RepoNerve section (installed by `reponerve init`)
+- **Any agent with bash:** follow `.cursor/skills/reponerve/SKILL.md`
+
+### Web chat (no MCP, no terminal)
+
+For browser-only assistants where the agent cannot run CLI:
 
 ```bash
 reponerve context export -o /tmp/repo-context.md
@@ -119,9 +135,9 @@ Paste into the chat with: "Answer only from this RepoNerve evidence."
 
 | You type | RepoNerve should use |
 | --- | --- |
-| Paste full ticket | `ask` or `plan` |
-| "I'm new here" | `onboard` |
-| "What is RepositoryContext?" | `ask` or `explain` |
+| Paste full ticket | `plan` / `reponerve plan "..." --json` |
+| "I'm new here" | `onboard` / `reponerve onboard --json` |
+| "What is RepositoryContext?" | `ask` / `reponerve ask "..." --json` |
 | "Explain this file: internal/foo/bar.go" | `explain_file` |
 | "Who owns the storage layer?" | `list_expertise`, `recommend_reviewers` |
 | "What ADRs mention authentication?" | `list_decisions`, `ask` |
@@ -137,7 +153,7 @@ Whether the host is Cursor, Copilot, or Claude:
 1. **Load RepoNerve context before** broad file reads or edits
 2. **Cite only** paths, symbols, and decisions from RepoNerve output
 3. **Say "no evidence"** when RepoNerve does not have a fact — do not invent
-4. For MCP responses, read `structured` → `agent` → `formatted` (see `docs/architecture/agent-context-contract.md`)
+4. Read `structured` → `agent` → `formatted` (MCP or `reponerve ... --json`)
 
 Cursor users: also follow `.cursor/skills/reponerve/SKILL.md`.
 
@@ -147,7 +163,7 @@ Cursor users: also follow `.cursor/skills/reponerve/SKILL.md`.
 
 | Problem | Fix |
 | --- | --- |
-| Tools not in chat | Enable Agent mode; confirm MCP server is running |
+| Tools not in chat | Use CLI: `reponerve ask "..." --json` (no MCP required) |
 | Empty answers | Run `reponerve scan`; check `.reponerve/memory.db` exists |
 | Wrong repo | Set `REPONERVE_WORKSPACE` to `<project>/.reponerve` |
 | MCP JSON errors on stdout | Rebuild CLI; check Output → MCP for stderr pollution |

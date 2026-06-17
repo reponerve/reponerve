@@ -286,7 +286,7 @@ Many tools provide `Code Graph → Retrieval → LLM Context`. RepoNerve provide
 RepoNerve composes with adjacent tools:
 
 - **RTK** — compresses shell output; RepoNerve compresses understanding
-- **Graphify-style graph discovery** — communities and surprises (ISSUE-061, v1.0)
+- **Graph discovery** — communities and surprises (ISSUE-061, v1.0)
 - **Agent memory tools** — remember conversations; RepoNerve remembers the repository
 
 See `docs/product/market-positioning.md`.

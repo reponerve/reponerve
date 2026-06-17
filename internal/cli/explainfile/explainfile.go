@@ -11,7 +11,7 @@ import (
 
 // NewCommand creates the explain-file subcommand.
 func NewCommand() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "explain-file [path]",
 		Short: "Explain an indexed source file",
 		Long:  `Resolve a file path through Code Intelligence and attach related repository context via repository-code links.`,
@@ -22,4 +22,5 @@ func NewCommand() *cobra.Command {
 			})
 		},
 	}
+	return devwire.BindDECmd(cmd)
 }
