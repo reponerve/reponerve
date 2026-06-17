@@ -2,6 +2,7 @@ package devwire
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -9,38 +10,63 @@ import (
 	"github.com/reponerve/reponerve/internal/agent/development"
 )
 
-func TestWriteDEResultText(t *testing.T) {
-	cmd := newTestCmd(false)
+func TestWriteDEResultProse(t *testing.T) {
+	cmd := newTestCmd(FormatProse, false, 0)
 	out, err := captureWriteDEResult(cmd)
 	if err != nil {
 		t.Fatalf("WriteDEResult: %v", err)
 	}
-	if out != "hello" {
-		t.Fatalf("expected text output, got %q", out)
+	if out != "hello\n" {
+		t.Fatalf("expected prose output, got %q", out)
 	}
 }
 
 func TestWriteDEResultJSON(t *testing.T) {
-	cmd := newTestCmd(true)
+	cmd := newTestCmd(FormatJSON, true, 0)
 	out, err := captureWriteDEResult(cmd)
 	if err != nil {
 		t.Fatalf("WriteDEResult: %v", err)
 	}
-	if out == "" || out == "hello" {
-		t.Fatalf("expected JSON envelope, got %q", out)
-	}
 	for _, part := range []string{`"formatted"`, `"structured"`, `"agent"`, `"completeness"`} {
-		if !bytes.Contains([]byte(out), []byte(part)) {
+		if !strings.Contains(out, part) {
 			t.Fatalf("missing %s in %s", part, out)
 		}
 	}
 }
 
-func newTestCmd(useJSON bool) *cobra.Command {
+func TestWriteDEResultCaveman(t *testing.T) {
+	cmd := newTestCmd(FormatCaveman, false, 0)
+	cmd.SetOut(&bytes.Buffer{})
+	formatted := "ENTITY BRIEFINGS\n  foo [bar]\n"
+	if err := WriteDEResult(cmd, formatted, &development.DevelopmentAnswer{Question: "q"}); err != nil {
+		t.Fatal(err)
+	}
+	out := cmd.OutOrStdout().(*bytes.Buffer).String()
+	if strings.Contains(out, "ENTITY BRIEFINGS") {
+		t.Fatalf("expected caveman header, got %q", out)
+	}
+}
+
+func TestResolveFormatJSONFlag(t *testing.T) {
 	cmd := &cobra.Command{}
-	BindJSONFlag(cmd)
+	BindOutputFlags(cmd)
+	_ = cmd.Flags().Set("json", "true")
+	format, err := ResolveFormat(cmd)
+	if err != nil || format != FormatJSON {
+		t.Fatalf("json flag: format=%q err=%v", format, err)
+	}
+}
+
+func newTestCmd(format string, useJSON bool, budget int) *cobra.Command {
+	cmd := &cobra.Command{}
+	BindOutputFlags(cmd)
 	if useJSON {
 		_ = cmd.Flags().Set("json", "true")
+	} else {
+		_ = cmd.Flags().Set("format", format)
+	}
+	if budget > 0 {
+		_ = cmd.Flags().Set("token-budget", "10")
 	}
 	return cmd
 }

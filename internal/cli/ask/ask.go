@@ -18,8 +18,11 @@ func newAskCommand(use, short string) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			question := strings.TrimSpace(args[0])
-			useJSON, _ := cmd.Flags().GetBool("json")
-			if !useJSON {
+			format, err := devwire.ResolveFormat(cmd)
+			if err != nil {
+				return err
+			}
+			if format == devwire.FormatProse {
 				cmd.Printf("Querying repository memory for: %q...\n", question)
 			}
 

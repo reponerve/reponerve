@@ -1,6 +1,6 @@
 # ISSUE-060 — Token Intelligence Layer
 
-Status: Planned
+Status: In Progress — format + caveman shipped; hooks and incremental scan remain
 
 Milestone: v0.13.0-alpha
 
@@ -23,7 +23,7 @@ See `docs/product/token-economics.md`.
 | Capability | Description |
 | --- | --- |
 | Graph-aware compression | Upgrade `internal/agent/compression/` — relevance-ranked, token-budget |
-| Output formats | `--format caveman\|prose\|json` on CLI and MCP |
+| Output formats | `--format prose\|json\|caveman` + `--token-budget` on DE CLI | In progress |
 | Agent hooks | `reponerve hook install` — post-commit scan, session context inject |
 | Incremental scan | Re-index changed files on commit without full scan |
 | RTK guidance | Document composition: RTK (shell) + RepoNerve (understanding) |
