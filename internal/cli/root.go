@@ -5,6 +5,11 @@ import (
 
 	askcmd "github.com/reponerve/reponerve/internal/cli/ask"
 	contextcmd "github.com/reponerve/reponerve/internal/cli/contextcmd"
+	explorecmd "github.com/reponerve/reponerve/internal/cli/explore"
+	forgetcmd "github.com/reponerve/reponerve/internal/cli/forget"
+	handoffcmd "github.com/reponerve/reponerve/internal/cli/handoff"
+	remembercmd "github.com/reponerve/reponerve/internal/cli/remember"
+	workflowcmd "github.com/reponerve/reponerve/internal/cli/workflowcmd"
 	explaincmd "github.com/reponerve/reponerve/internal/cli/explain"
 	explainfilecmd "github.com/reponerve/reponerve/internal/cli/explainfile"
 	explainfunctioncmd "github.com/reponerve/reponerve/internal/cli/explainfunction"
@@ -39,6 +44,11 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(hookcmd.NewCommand())
 	rootCmd.AddCommand(askcmd.NewCommand())
 	rootCmd.AddCommand(searchcmd.NewCommand())
+	rootCmd.AddCommand(explorecmd.NewCommand())
+	rootCmd.AddCommand(remembercmd.NewCommand())
+	rootCmd.AddCommand(forgetcmd.NewCommand())
+	rootCmd.AddCommand(handoffcmd.NewCommand())
+	rootCmd.AddCommand(workflowcmd.NewCommand())
 	rootCmd.AddCommand(explaincmd.NewCommand())
 	rootCmd.AddCommand(explainfilecmd.NewCommand())
 	rootCmd.AddCommand(explainfunctioncmd.NewCommand())

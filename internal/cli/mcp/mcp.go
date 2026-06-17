@@ -97,6 +97,12 @@ func NewCommand() *cobra.Command {
 				travEngine, impactSvc, discoverySvc, learningSvc, reviewerSvc, changePlanSvc,
 				developmentSvc,
 			)
+			svc.SessionMemoryService = devwire.WireSessionMemoryService(db, workspaceDir)
+			_, wfSvc, err := devwire.WireWorkflowService(cmd.Context(), db, cfg.Repository.Path)
+			if err != nil {
+				return fmt.Errorf("failed to wire workflow service: %w", err)
+			}
+			svc.WorkflowService = wfSvc
 			registry := mcp.NewRegistry()
 			srv := server.NewServer(registry, svc, cmd.InOrStdin(), cmd.OutOrStdout())
 

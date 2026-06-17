@@ -1161,6 +1161,12 @@ func (s *Server) handleCallTool(ctx context.Context, id *json.RawMessage, params
 		s.sendToolSuccess(id, impactReport)
 
 	default:
+		if s.handleGraphTool(ctx, id, params.Name, getArg, resolveRepoID) {
+			return
+		}
+		if s.handleSessionTool(ctx, id, params.Name, getArg, resolveRepoID) {
+			return
+		}
 		if s.handleDevelopmentTool(ctx, id, params.Name, getArg, resolveRepoID) {
 			return
 		}
@@ -1448,6 +1454,53 @@ func getInputSchema(toolName string) InputSchema {
 			"type":        "string",
 			"description": "Optional first assignment or pasted task to plan",
 		}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "discover_surprises", "suggest_questions":
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "query_graph":
+		schema.Properties["start_node_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Graph node ID to start traversal from",
+		}
+		schema.Required = []string{"start_node_id"}
+		schema.Properties["token_budget"] = map[string]interface{}{
+			"type":        "integer",
+			"description": "Approximate token budget for traversal (default 500)",
+		}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "remember":
+		schema.Properties["content"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Session knowledge to remember",
+		}
+		schema.Required = []string{"content"}
+		schema.Properties["subject"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Topic subject for the memory fact",
+		}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "forget":
+		schema.Properties["fact_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Session fact ID to remove",
+		}
+		schema.Required = []string{"fact_id"}
 		schema.Properties["repository_id"] = map[string]interface{}{
 			"type":        "string",
 			"description": "Optional repository filter",

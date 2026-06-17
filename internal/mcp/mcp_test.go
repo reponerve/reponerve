@@ -109,9 +109,9 @@ func TestRegistry_Unit(t *testing.T) {
 		r := NewRegistry()
 		list := r.List()
 
-		// Expect exactly 38 tools registered initially
-		if len(list) != 38 {
-			t.Errorf("expected 38 initial tools, got %d", len(list))
+		// Expect exactly 43 tools registered initially
+		if len(list) != 43 {
+			t.Errorf("expected 43 initial tools, got %d", len(list))
 		}
 
 		expectedNames := []string{
@@ -119,6 +119,7 @@ func TestRegistry_Unit(t *testing.T) {
 			"analyze_topic_impact",
 			"ask",
 			"discover_knowledge",
+			"discover_surprises",
 			"explain",
 			"explain_decision",
 			"explain_event",
@@ -130,6 +131,7 @@ func TestRegistry_Unit(t *testing.T) {
 			"export_context",
 			"find_dependencies",
 			"find_dependents",
+			"forget",
 			"generate_change_plan",
 			"generate_context",
 			"generate_learning_path",
@@ -146,8 +148,11 @@ func TestRegistry_Unit(t *testing.T) {
 			"list_intents",
 			"onboard",
 			"plan",
+			"query_graph",
 			"recommend_reviewers",
+			"remember",
 			"review",
+			"suggest_questions",
 			"trace_contributor",
 			"trace_decision",
 			"trace_event",
@@ -181,10 +186,10 @@ func TestRegistry_Unit(t *testing.T) {
 			t.Errorf("expected description %q, got %q", tool.Description, got.Description)
 		}
 
-		// Verify listing has 39 tools (38 defaults + 1 custom) sorted alphabetically
+		// Verify listing has 44 tools (43 defaults + 1 custom) sorted alphabetically
 		list := r.List()
-		if len(list) != 39 {
-			t.Errorf("expected 39 tools after registration, got %d", len(list))
+		if len(list) != 44 {
+			t.Errorf("expected 44 tools after registration, got %d", len(list))
 		}
 	})
 
@@ -344,6 +349,11 @@ func TestService_Integration(t *testing.T) {
 		"find_dependencies":      true,
 		"find_dependents":        true,
 		"discover_knowledge":     true,
+		"discover_surprises":     true,
+		"forget":                 true,
+		"query_graph":            true,
+		"remember":               true,
+		"suggest_questions":      true,
 		"generate_learning_path": true,
 		"generate_change_plan":   true,
 	}

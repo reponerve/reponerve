@@ -2,6 +2,8 @@ package mcp
 
 import (
 	"github.com/reponerve/reponerve/internal/agent/development"
+	"github.com/reponerve/reponerve/internal/agent/sessionmemory"
+	"github.com/reponerve/reponerve/internal/agent/workflow"
 	"github.com/reponerve/reponerve/internal/context"
 	"github.com/reponerve/reponerve/internal/context/render"
 	"github.com/reponerve/reponerve/internal/graph/impact"
@@ -31,6 +33,8 @@ type Service struct {
 	ReviewerService      *reviewers.Service
 	ChangePlanService    *changeplan.Service
 	DevelopmentService   *development.Service
+	SessionMemoryService *sessionmemory.Service
+	WorkflowService      *workflow.Service
 }
 
 // NewService creates a new Service instance aggregating the given dependencies.

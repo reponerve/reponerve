@@ -42,3 +42,11 @@ func (s *SQLiteFactStore) UpsertFact(ctx context.Context, fact *models.Fact) err
 	}
 	return nil
 }
+
+// DeleteFact removes a fact memory record by ID.
+func (s *SQLiteFactStore) DeleteFact(ctx context.Context, id string) error {
+	if _, err := s.db.ExecContext(ctx, `DELETE FROM memory_facts WHERE id = ?`, id); err != nil {
+		return fmt.Errorf("failed to delete fact: %w", err)
+	}
+	return nil
+}

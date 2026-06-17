@@ -1,6 +1,6 @@
 # ISSUE-061 — Evidence Graph & Session Memory
 
-Status: Planned
+Status: Complete — v0.14.0-alpha
 
 Milestone: v0.14.0-alpha
 
@@ -20,33 +20,33 @@ Deliver graph discovery, exploration, and repository-scoped session memory on Re
 
 ## Evidence Graph Intelligence
 
-| Capability | Package / surface |
-| --- | --- |
-| Community detection | `internal/graph/communities/` |
-| Surprising connections, god nodes | `internal/graph/discovery/` |
-| Token-budget traversal | `internal/graph/traversal/budget.go` |
-| `reponerve explore` | CLI + HTML export |
-| MCP tools | `discover_surprises`, `suggest_questions`, `query_graph` |
+| Capability | Package / surface | Status |
+| --- | --- | --- |
+| Community detection | `internal/graph/communities/` | Done |
+| Surprising connections, god nodes | `internal/graph/discovery/` | Done |
+| Token-budget traversal | `internal/graph/traversal/budget.go` | Done |
+| `reponerve explore` | CLI + HTML export | Done |
+| MCP tools | `discover_surprises`, `suggest_questions`, `query_graph` | Done |
 
 ## Session Memory
 
-| Capability | Surface |
-| --- | --- |
-| `reponerve remember` / `reponerve forget` | CLI + MCP |
-| Session writeback | Q&A creates traceable Facts with provenance |
-| Temporal relevance | Access-aware memory ranking |
-| Agent handoff bundles | Deterministic context transfer between sessions |
-| Workflow templates | Fixed presets: onboarding, review prep, change prep |
+| Capability | Surface | Status |
+| --- | --- | --- |
+| `reponerve remember` / `reponerve forget` | CLI + MCP | Done |
+| Session writeback | Q&A creates traceable Facts with provenance | Done |
+| Temporal relevance | Access-aware memory ranking | Done |
+| Agent handoff bundles | Deterministic context transfer between sessions | Done |
+| Workflow templates | Fixed presets: onboarding, review prep, change prep | Done |
 
 ---
 
 # Acceptance Criteria
 
-* Communities detected on knowledge graph with deterministic ordering
-* `reponerve explore` renders HTML graph
-* `remember`/`forget` create/update memory with evidence
-* Handoff bundle export/import round-trips
-* Workflow templates invoke existing agent/workflow services
+* Communities detected on knowledge graph with deterministic ordering — Done
+* `reponerve explore` renders HTML graph — Done
+* `remember`/`forget` create/update memory with evidence — Done
+* Handoff bundle export/import round-trips — Done
+* Workflow templates invoke existing agent/workflow services — Done
 
 ---
 

@@ -171,6 +171,26 @@ func NewRegistry() *Registry {
 		Name:        "onboard",
 		Description: "First-day repository context with key decisions and optional assignment plan",
 	})
+	_ = r.Register(ToolDefinition{
+		Name:        "discover_surprises",
+		Description: "Discover god nodes and surprising cross-community graph connections",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "suggest_questions",
+		Description: "Suggest evidence-backed questions from graph structure",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "query_graph",
+		Description: "Traverse the knowledge graph from a start node within a token budget",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "remember",
+		Description: "Store session knowledge as an evidence-backed fact with provenance",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "forget",
+		Description: "Remove a session memory fact by ID",
+	})
 
 	return r
 }
