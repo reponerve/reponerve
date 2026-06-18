@@ -113,14 +113,14 @@ func languageFor(language string) (*gts.Language, error) {
 }
 
 func packagePathForFile(filePath string) string {
-	if i := lastSlash(filePath); i >= 0 {
-		pkg := filePath[:i]
-		if pkg == "" {
-			return "."
-		}
-		return pkg
+	// Use the full file path (including extension) as the symbol namespace.
+	// This guarantees each file is its own namespace, preventing qualified name
+	// collisions between any two files — whether they share a directory, a stem
+	// (e.g. main.js vs main.css), or any other prefix.
+	if filePath == "" {
+		return "."
 	}
-	return "."
+	return filePath
 }
 
 func symbolQualifiedName(packagePath, name string) string {

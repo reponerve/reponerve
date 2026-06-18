@@ -13,4 +13,6 @@ When the user asks about this repository — or uses `/reponerve` — follow `.c
 2. `reponerve ask "..." --json` (or `plan` / `onboard` / `explain-*`)
 3. Answer from `structured` → `agent` → `formatted` only
 
+Verification tasks: use `explain-function` / `explain-struct` / `explain-file` with `--package` — not broad `ask`.
+
 MCP is optional. CLI `--json` is the no-MCP path.

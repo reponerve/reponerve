@@ -59,6 +59,16 @@ If `reponerve` is not found, tell the user to run `go install ./cmd/reponerve` o
 
 **Always use `--json`** in chat without MCP. It emits the same envelope as MCP: `structured`, `agent`, `formatted`.
 
+### Token discipline — pick the narrowest command
+
+| Task | Prefer | Avoid |
+| --- | --- | --- |
+| Verify a fix / "is this correct?" | `explain-function`, `explain-struct`, or `explain-file` with `--package` | broad `ask`, ingesting full `plan`/`review` JSON |
+| Architecture / why questions | `ask` with `--format compact --token-budget 1500` | grep → read many files |
+| Pasted ticket / where to start | `plan --json` | ad-hoc repo exploration |
+
+For symbol checks, always pass `--package` when the symbol name is ambiguous.
+
 ### Step 3 — Read the envelope
 
 1. `structured` — facts (`entity_briefings`, plan scope, evidence)
@@ -89,6 +99,8 @@ If RepoNerve MCP tools are available, prefer them (`ask`, `plan`, `onboard`, …
 
 ```text
 BAD:  grep → 20 files → guess
+BAD:  reponerve ask "is this fix correct?" --json   # too broad for one symbol
+GOOD: reponerve explain-function "Foo" --package internal/bar --json
 GOOD: reponerve ask/plan --json → briefings → 2 scoped files → review
 ```
 

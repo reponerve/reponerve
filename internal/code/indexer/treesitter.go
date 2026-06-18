@@ -31,7 +31,7 @@ func (b *builder) parseTreeSitterFile(filePath, language string) error {
 	fileID := code.EntityID(b.repositoryID, codemodels.EntityTypeFile, filePath)
 	startLine := 1
 	endLine := strings.Count(string(src), "\n") + 1
-	b.entities = append(b.entities, &codemodels.CodeEntity{
+	b.addEntity(&codemodels.CodeEntity{
 		ID:            fileID,
 		RepositoryID:  b.repositoryID,
 		EntityType:    codemodels.EntityTypeFile,
@@ -53,7 +53,7 @@ func (b *builder) parseTreeSitterFile(filePath, language string) error {
 
 	for _, sym := range index.Symbols {
 		id := code.EntityID(b.repositoryID, sym.EntityType, sym.QualifiedName)
-		b.entities = append(b.entities, &codemodels.CodeEntity{
+		b.addEntity(&codemodels.CodeEntity{
 			ID:            id,
 			RepositoryID:  b.repositoryID,
 			EntityType:    sym.EntityType,
@@ -95,7 +95,7 @@ func (b *builder) ensureLangModuleEntity(modulePath, language, evidenceFile stri
 		return id
 	}
 	b.langModuleIDs[qualified] = id
-	b.entities = append(b.entities, &codemodels.CodeEntity{
+	b.addEntity(&codemodels.CodeEntity{
 		ID:            id,
 		RepositoryID:  b.repositoryID,
 		EntityType:    codemodels.EntityTypeModule,
@@ -117,7 +117,7 @@ func (b *builder) ensureLangPackageEntity(packagePath, modulePath, language stri
 	}
 	id := code.EntityID(b.repositoryID, codemodels.EntityTypePackage, qualified)
 	b.langPackageIDs[qualified] = id
-	b.entities = append(b.entities, &codemodels.CodeEntity{
+	b.addEntity(&codemodels.CodeEntity{
 		ID:            id,
 		RepositoryID:  b.repositoryID,
 		EntityType:    codemodels.EntityTypePackage,

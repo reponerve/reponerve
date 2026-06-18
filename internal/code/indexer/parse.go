@@ -30,21 +30,23 @@ type builder struct {
 
 	entities    []*codemodels.CodeEntity
 	rels        []*codemodels.CodeRelationship
-		packageIDs  map[string]string
-	fileIDs     map[string]string
-	funcIndex   map[string]string
-	methodIndex map[string]string
+	entitySet      map[string]struct{}
+	packageIDs     map[string]string
+	fileIDs        map[string]string
+	funcIndex      map[string]string
+	methodIndex    map[string]string
 	langModuleIDs  map[string]string
 	langPackageIDs map[string]string
-	relKeys     map[string]struct{}
+	relKeys        map[string]struct{}
 }
 
 func newBuilder(repositoryID, modulePath, repoPath string, at time.Time) *builder {
 	return &builder{
-		repositoryID: repositoryID,
-		modulePath:   modulePath,
-		repoPath:     repoPath,
-		indexedAt:    at,
+		repositoryID:   repositoryID,
+		modulePath:     modulePath,
+		repoPath:       repoPath,
+		indexedAt:      at,
+		entitySet:      make(map[string]struct{}),
 		packageIDs:     make(map[string]string),
 		fileIDs:        make(map[string]string),
 		funcIndex:      make(map[string]string),
@@ -55,10 +57,22 @@ func newBuilder(repositoryID, modulePath, repoPath string, at time.Time) *builde
 	}
 }
 
+// addEntity appends e to the entity list, silently dropping it if an entity
+// with the same ID was already added. This prevents duplicate IDs from
+// vendored/minified files, multiple init functions, or any other source that
+// produces the same qualified name more than once.
+func (b *builder) addEntity(e *codemodels.CodeEntity) {
+	if _, exists := b.entitySet[e.ID]; exists {
+		return
+	}
+	b.entitySet[e.ID] = struct{}{}
+	b.entities = append(b.entities, e)
+}
+
 func (b *builder) addModuleEntity(modulePath, evidenceFile string) string {
 	qualified := modulePath
 	id := code.EntityID(b.repositoryID, codemodels.EntityTypeModule, qualified)
-	b.entities = append(b.entities, &codemodels.CodeEntity{
+	b.addEntity(&codemodels.CodeEntity{
 		ID:            id,
 		RepositoryID:  b.repositoryID,
 		EntityType:    codemodels.EntityTypeModule,
@@ -103,7 +117,7 @@ func (b *builder) ensurePackageEntity(packagePath string) string {
 		entity.FilePath = packagePath
 	}
 
-	b.entities = append(b.entities, entity)
+	b.addEntity(entity)
 	b.packageIDs[packagePath] = id
 	return id
 }
@@ -134,7 +148,7 @@ func (b *builder) parseFile(filePath, moduleID string) error {
 	fileID := code.EntityID(b.repositoryID, codemodels.EntityTypeFile, fileQualified)
 	startLine := fset.Position(file.Pos()).Line
 	endLine := fset.Position(file.End()).Line
-	b.entities = append(b.entities, &codemodels.CodeEntity{
+	b.addEntity(&codemodels.CodeEntity{
 		ID:            fileID,
 		RepositoryID:  b.repositoryID,
 		EntityType:    codemodels.EntityTypeFile,
@@ -172,7 +186,9 @@ func (b *builder) parseFile(filePath, moduleID string) error {
 			}
 		case *ast.FuncDecl:
 			callerID := b.addFuncSymbol(file, fset, filePath, packagePath, packageID, fileID, d)
-			b.extractCalls(file, fset, filePath, packagePath, callerID, d, importMap)
+			if callerID != "" {
+				b.extractCalls(file, fset, filePath, packagePath, callerID, d, importMap)
+			}
 		}
 	}
 
@@ -212,7 +228,7 @@ func (b *builder) addTypeSymbol(file *ast.File, fset *token.FileSet, filePath, p
 	signature := formatTypeSpecSignature(spec)
 
 	id := code.EntityID(b.repositoryID, entityType, qualified)
-	b.entities = append(b.entities, &codemodels.CodeEntity{
+	b.addEntity(&codemodels.CodeEntity{
 		ID:            id,
 		RepositoryID:  b.repositoryID,
 		EntityType:    entityType,
@@ -237,6 +253,12 @@ func (b *builder) addTypeSymbol(file *ast.File, fset *token.FileSet, filePath, p
 }
 
 func (b *builder) addFuncSymbol(file *ast.File, fset *token.FileSet, filePath, packagePath, packageID, fileID string, decl *ast.FuncDecl) string {
+	// init functions are package-local, cannot be called or imported, and may
+	// appear any number of times in a package — skip them to avoid duplicate IDs.
+	if decl.Name.Name == "init" {
+		return ""
+	}
+
 	startLine := fset.Position(decl.Pos()).Line
 	endLine := fset.Position(decl.End()).Line
 
@@ -253,7 +275,7 @@ func (b *builder) addFuncSymbol(file *ast.File, fset *token.FileSet, filePath, p
 	}
 
 	id := code.EntityID(b.repositoryID, entityType, qualified)
-	b.entities = append(b.entities, &codemodels.CodeEntity{
+	b.addEntity(&codemodels.CodeEntity{
 		ID:            id,
 		RepositoryID:  b.repositoryID,
 		EntityType:    entityType,

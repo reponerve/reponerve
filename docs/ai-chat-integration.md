@@ -151,6 +151,7 @@ Paste into the chat with: "Answer only from this RepoNerve evidence."
 | "I'm new here" | `onboard` / `reponerve onboard --json` |
 | "What is RepositoryContext?" | `ask` / `reponerve ask "..." --json` |
 | "Explain this file: internal/foo/bar.go" | `explain_file` |
+| "Is this fix correct?" / verify one symbol | `explain_function`, `explain_struct`, `explain_file` with `--package` |
 | "Who owns the storage layer?" | `list_expertise`, `recommend_reviewers` |
 | "What ADRs mention authentication?" | `list_decisions`, `ask` |
 | "Review my OAuth change" | `review` |

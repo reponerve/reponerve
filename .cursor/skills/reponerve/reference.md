@@ -18,6 +18,14 @@ Use **MCP tools** when connected; otherwise use **CLI** (same semantics).
 | Review prep | `review` | `reponerve review "topic" --json` |
 | Day-one orientation | `onboard` | `reponerve onboard --json` |
 
+## Token discipline
+
+| Task | Prefer | Avoid |
+| --- | --- | --- |
+| Verify fix / "is this correct?" | `explain_function` / `explain-file` with `--package` | broad `ask`, full `plan`/`review` JSON |
+| Architecture / why | `ask` + `format: compact`, `token_budget: 1500` | grep → bulk file reads |
+| Pasted ticket | `plan` | ad-hoc exploration |
+
 ## Repository memory (high value)
 
 | MCP | CLI |

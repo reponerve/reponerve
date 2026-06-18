@@ -18,10 +18,10 @@ func TestIndexSource_TypeScript(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "frontend/src.getApiBase")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "frontend/src.ApiClient")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "frontend/src.ApiClient.getUser")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeInterface, "frontend/src.UserStore")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "frontend/src/api.ts.getApiBase")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "frontend/src/api.ts.ApiClient")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "frontend/src/api.ts.ApiClient.getUser")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeInterface, "frontend/src/api.ts.UserStore")
 	if len(idx.Imports) == 0 {
 		t.Fatal("expected imports")
 	}
@@ -36,9 +36,9 @@ func TestIndexSource_Python(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "services/app.health_check")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "services/app.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "services/app.Handler.handle")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "services/app/handler.py.health_check")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "services/app/handler.py.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "services/app/handler.py.Handler.handle")
 }
 
 func TestIndexSource_Rust(t *testing.T) {
@@ -47,10 +47,10 @@ func TestIndexSource_Rust(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "crates/api/src.run")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "crates/api/src.Service")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "crates/api/src.Service.name")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeInterface, "crates/api/src.Store")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "crates/api/src/lib.rs.run")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "crates/api/src/lib.rs.Service")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "crates/api/src/lib.rs.Service.name")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeInterface, "crates/api/src/lib.rs.Store")
 }
 
 func TestIndexSource_JavaScript(t *testing.T) {
@@ -59,9 +59,9 @@ func TestIndexSource_JavaScript(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "frontend/src.greet")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "frontend/src.Greeter")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "frontend/src.Greeter.say")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "frontend/src/greet.js.greet")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "frontend/src/greet.js.Greeter")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "frontend/src/greet.js.Greeter.say")
 }
 
 func TestIndexSource_Java(t *testing.T) {
@@ -70,9 +70,9 @@ func TestIndexSource_Java(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "java/src/main/java/com/example/api.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "java/src/main/java/com/example/api.Handler.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "java/src/main/java/com/example/api.Handler.names")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "java/src/main/java/com/example/api/Handler.java.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "java/src/main/java/com/example/api/Handler.java.Handler.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "java/src/main/java/com/example/api/Handler.java.Handler.names")
 }
 
 func TestIndexSource_CSharp(t *testing.T) {
@@ -81,9 +81,9 @@ func TestIndexSource_CSharp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "dotnet/Api.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "dotnet/Api.Handler.Health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "dotnet/Api.Handler.Run")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "dotnet/Api/Handler.cs.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "dotnet/Api/Handler.cs.Handler.Health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "dotnet/Api/Handler.cs.Handler.Run")
 }
 
 func TestIndexSource_Ruby(t *testing.T) {
@@ -92,9 +92,9 @@ func TestIndexSource_Ruby(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "ruby/lib.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "ruby/lib.Handler.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "ruby/lib.bootstrap")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "ruby/lib/handler.rb.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "ruby/lib/handler.rb.Handler.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "ruby/lib/handler.rb.bootstrap")
 }
 
 func TestIndexSource_Kotlin(t *testing.T) {
@@ -103,9 +103,9 @@ func TestIndexSource_Kotlin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "kotlin/src/main/kotlin/com/example.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "kotlin/src/main/kotlin/com/example.Handler.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeInterface, "kotlin/src/main/kotlin/com/example.Store")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "kotlin/src/main/kotlin/com/example/Handler.kt.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "kotlin/src/main/kotlin/com/example/Handler.kt.Handler.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeInterface, "kotlin/src/main/kotlin/com/example/Handler.kt.Store")
 }
 
 func TestIndexSource_Swift(t *testing.T) {
@@ -114,10 +114,10 @@ func TestIndexSource_Swift(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "swift/Sources.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "swift/Sources.Handler.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeInterface, "swift/Sources.Store")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "swift/Sources.bootstrap")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "swift/Sources/Handler.swift.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "swift/Sources/Handler.swift.Handler.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeInterface, "swift/Sources/Handler.swift.Store")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "swift/Sources/Handler.swift.bootstrap")
 }
 
 func TestIndexSource_PHP(t *testing.T) {
@@ -126,9 +126,9 @@ func TestIndexSource_PHP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "php/src.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "php/src.Handler.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "php/src.bootstrap")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "php/src/Handler.php.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "php/src/Handler.php.Handler.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "php/src/Handler.php.bootstrap")
 }
 
 func TestIndexSource_Cpp(t *testing.T) {
@@ -137,9 +137,9 @@ func TestIndexSource_Cpp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "cpp/src.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "cpp/src.Handler.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "cpp/src.bootstrap")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "cpp/src/handler.cpp.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "cpp/src/handler.cpp.Handler.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "cpp/src/handler.cpp.bootstrap")
 }
 
 func TestIndexSource_C(t *testing.T) {
@@ -148,8 +148,8 @@ func TestIndexSource_C(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "c/src.Service")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "c/src.run")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "c/src/handler.c.Service")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "c/src/handler.c.run")
 }
 
 func TestIndexSource_Scala(t *testing.T) {
@@ -158,10 +158,10 @@ func TestIndexSource_Scala(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "scala/src/main/scala/com/example.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "scala/src/main/scala/com/example.Handler.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeInterface, "scala/src/main/scala/com/example.Store")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "scala/src/main/scala/com/example.Bootstrap")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "scala/src/main/scala/com/example/Handler.scala.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "scala/src/main/scala/com/example/Handler.scala.Handler.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeInterface, "scala/src/main/scala/com/example/Handler.scala.Store")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "scala/src/main/scala/com/example/Handler.scala.Bootstrap")
 }
 
 func TestIndexSource_Lua(t *testing.T) {
@@ -170,10 +170,10 @@ func TestIndexSource_Lua(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "lua/lib.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "lua/lib.Handler.new")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "lua/lib.Handler.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "lua/lib.bootstrap")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "lua/lib/handler.lua.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "lua/lib/handler.lua.Handler.new")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "lua/lib/handler.lua.Handler.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "lua/lib/handler.lua.bootstrap")
 }
 
 func TestIndexSource_Bash(t *testing.T) {
@@ -182,8 +182,8 @@ func TestIndexSource_Bash(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "bash/scripts.health_check")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "bash/scripts.run_handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "bash/scripts/handler.sh.health_check")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "bash/scripts/handler.sh.run_handler")
 }
 
 func TestIndexSource_SQL(t *testing.T) {
@@ -192,8 +192,8 @@ func TestIndexSource_SQL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "sql.handlers")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeTypeAlias, "sql.handler_names")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "sql/schema.sql.handlers")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeTypeAlias, "sql/schema.sql.handler_names")
 }
 
 func TestIndexSource_Dart(t *testing.T) {
@@ -202,10 +202,10 @@ func TestIndexSource_Dart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "dart/lib.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "dart/lib.Handler.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "dart/lib.Handler.run")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "dart/lib.bootstrap")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "dart/lib/handler.dart.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "dart/lib/handler.dart.Handler.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "dart/lib/handler.dart.Handler.run")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "dart/lib/handler.dart.bootstrap")
 }
 
 func TestIndexSource_Elixir(t *testing.T) {
@@ -214,9 +214,9 @@ func TestIndexSource_Elixir(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "elixir/lib.App.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "elixir/lib.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "elixir/lib.App.Store")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "elixir/lib/handler.ex.App.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "elixir/lib/handler.ex.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "elixir/lib/handler.ex.App.Store")
 }
 
 func TestIndexSource_Zig(t *testing.T) {
@@ -225,9 +225,9 @@ func TestIndexSource_Zig(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "zig/src.Handler")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "zig/src.Handler.health")
-	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "zig/src.bootstrap")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeStruct, "zig/src/handler.zig.Handler")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "zig/src/handler.zig.Handler.health")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "zig/src/handler.zig.bootstrap")
 }
 
 func readTestFile(t *testing.T, parts ...string) []byte {

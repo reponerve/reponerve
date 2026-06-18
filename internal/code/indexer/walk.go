@@ -12,11 +12,27 @@ import (
 )
 
 var skipDirNames = map[string]bool{
-	".git":       true,
-	"vendor":     true,
-	".reponerve": true,
-	"bin":        true,
+	".git":         true,
+	"vendor":       true,
+	".reponerve":   true,
+	"bin":          true,
 	"node_modules": true,
+	// Common build output directories — contain generated/minified files that
+	// produce false symbol collisions and add no indexing value.
+	"build":       true,
+	"dist":        true,
+	"out":         true,
+	"target":      true,
+	".next":       true,
+	".nuxt":       true,
+	".output":     true,
+	".cache":      true,
+	"__pycache__": true,
+	"_build":      true,
+	"coverage":    true,
+	// Agent/tooling directories — not project source; pollute plan/ask context.
+	".agents":       true,
+	"graphify-venv": true,
 }
 
 func listGoFiles(repoPath string) ([]string, error) {
