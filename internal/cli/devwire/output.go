@@ -13,7 +13,7 @@ import (
 const (
 	FormatProse   = development.OutputFormatProse
 	FormatJSON    = development.OutputFormatJSON
-	FormatCaveman = development.OutputFormatCaveman
+	FormatCompact = development.OutputFormatCompact
 )
 
 // BindDECmd registers --format, --json, and --token-budget on a DE command.
@@ -24,9 +24,9 @@ func BindDECmd(cmd *cobra.Command) *cobra.Command {
 
 // BindOutputFlags registers output format flags.
 func BindOutputFlags(cmd *cobra.Command) {
-	cmd.Flags().String("format", FormatProse, "Output format: prose, json, caveman")
+	cmd.Flags().String("format", FormatProse, "Output format: prose, json, compact")
 	cmd.Flags().Bool("json", false, "Emit MCP-compatible JSON (same as --format json)")
-	cmd.Flags().Int("token-budget", 0, "Approximate max tokens for prose/caveman output (0 = unlimited)")
+	cmd.Flags().Int("token-budget", 0, "Approximate max tokens for prose/compact output (0 = unlimited)")
 }
 
 // ResolveFormat returns the effective output format from flags.
@@ -57,5 +57,5 @@ func WriteDEResult(cmd *cobra.Command, formatted string, structured any) error {
 
 // FormatErrorf wraps unsupported format errors for CLI callers.
 func FormatErrorf(format string) error {
-	return fmt.Errorf("unsupported format %q (use prose, json, or caveman)", format)
+	return fmt.Errorf("unsupported format %q (use prose, json, or compact)", format)
 }

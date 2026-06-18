@@ -6,7 +6,7 @@ import (
 	"unicode"
 )
 
-var cavemanHeaderReplacements = map[string]string{
+var compactHeaderReplacements = map[string]string{
 	"ENTITY BRIEFINGS":        "BRIEF",
 	"Entity Briefings:":       "BRIEF:",
 	"CODE CONTEXT":            "CODE",
@@ -65,13 +65,13 @@ var cavemanHeaderReplacements = map[string]string{
 var rxEvidenceSource = regexp.MustCompile(`^·\s+source:\s+(\S+)`)
 var rxEvidenceType = regexp.MustCompile(`^type:\s+(\S+)`)
 
-// ToCaveman compresses prose DE output for token-efficient agent consumption.
-func ToCaveman(text string) string {
+// ToCompact compresses prose DE output for token-efficient agent consumption.
+func ToCompact(text string) string {
 	if text == "" {
 		return ""
 	}
 	out := text
-	for from, to := range cavemanHeaderReplacements {
+	for from, to := range compactHeaderReplacements {
 		out = strings.ReplaceAll(out, from, to)
 	}
 

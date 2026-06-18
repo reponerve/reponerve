@@ -240,11 +240,15 @@ Release Status:
 ```text
 Knowledge Preservation — Core Platform Capability
 Repository Intelligence — Complete
-Code Intelligence — In Progress (ISSUE-057)
-Repository-Code Linking — In Progress (ISSUE-057)
-Feature Understanding — In Progress (ISSUE-057)
-Development Experience — In Progress (ISSUE-057)
-v1.0.0 — Release deferred (single product release; no v1.x)
+Code Intelligence — Complete (Go + 19 languages)
+Repository-Code Linking — Complete
+Feature Understanding — Complete
+Development Experience — Complete
+Token Intelligence — Complete
+Evidence Graph & Session Memory — Complete
+Multi-Language Code Intelligence — Complete
+Software Understanding — Delivered
+v1.0.0 — Release review approved (pending git tag)
 ```
 
 Completed Milestones:
@@ -258,23 +262,20 @@ v0.5.0-alpha  ✓ MCP Server
 v0.7.0-alpha  ✓ Ownership Intelligence
 v0.8.0-alpha  ✓ Knowledge Graph Intelligence
 v0.9.0-alpha  ✓ Repository Intelligence
-v1.0.0-alpha  ✓ Agent Context, Search, Session, Workflow, Production Readiness
+v0.10.0-alpha ✓ Foundation Fixes (ISSUE-059)
+v0.12.0-alpha ✓ Code Intelligence + DE (ISSUE-057)
+v0.13.0-alpha ✓ Token Intelligence (ISSUE-060)
+v0.14.0-alpha ✓ Graph + Session Memory (ISSUE-061)
+v0.15.0-alpha ✓ Multi-Language (ISSUE-062)
 ```
 
 Current Focus:
 
 ```text
-ISSUE-059 — Foundation fixes (v0.10.0-alpha)
-ISSUE-057 — Code Intelligence & Development Experience (v0.11–v0.12.0-alpha)
-ISSUE-060 — Token Intelligence (v0.13.0-alpha)
-ISSUE-061 — Evidence Graph & Session Memory (v0.14.0-alpha)
-ISSUE-062 — Multi-language (v0.15.0-alpha)
-ARCH-001 — Architecture Realignment (documentation approval)
+v1.0.0 release — git tag and publish release notes
 ```
 
-RepoNerve v1.0.0 is not tagged until all issues above pass acceptance criteria.
-
-**Implementation honesty:** Repository Intelligence is shipped. Code Intelligence and most Development Experience commands are not yet implemented — `explain` is currently a stub. See `docs/product/implementation-status.md`.
+See `docs/releases/v1.0.0-checklist.md` and `docs/audits/v1.0-release-review.md`.
 
 ---
 
@@ -363,7 +364,7 @@ See `docs/copilot-chat-integration.md`. Open `.vscode/mcp.json` → Start → Co
 
 ### Cursor
 
-See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 38 MCP tools.
+See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 43 MCP tools.
 
 ---
 
@@ -408,22 +409,18 @@ See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 3
 * Agent Session Intelligence
 * Workflow Intelligence
 
-## In Progress — v0.x Iterations Toward v1.0.0
+## v1.0.0 Release (approved, pending tag)
 
-| Iteration | Issue | Scope |
+| Iteration | Issue | Status |
 | --- | --- | --- |
-| v0.10.0-alpha | ISSUE-059 | Foundation fixes |
-| v0.11–v0.12.0-alpha | ISSUE-057 | Code Intelligence + Development Experience |
-| v0.13.0-alpha | ISSUE-060 | Token Intelligence |
-| v0.14.0-alpha | ISSUE-061 | Evidence Graph + Session Memory |
-| v0.15.0-alpha | ISSUE-062 | Multi-language code intelligence |
-| **v1.0.0** | Phase 8 | Full product release |
+| v0.10.0-alpha | ISSUE-059 | ✅ Foundation fixes |
+| v0.11–v0.12.0-alpha | ISSUE-057 | ✅ Code Intelligence + Development Experience |
+| v0.13.0-alpha | ISSUE-060 | ✅ Token Intelligence |
+| v0.14.0-alpha | ISSUE-061 | ✅ Evidence Graph + Session Memory |
+| v0.15.0-alpha | ISSUE-062 | ✅ Multi-language code intelligence |
+| **v1.0.0** | — | 🚀 Release review approved |
 
-RepoNerve v1.0.0 is the only product release. All iterations must complete before the tag.
-
-See `docs/roadmap/v1.0-iteration-plan.md`.
-
-All remaining scope (ISSUE-057 through ISSUE-062) ships in v1.0.0 via v0.10–v0.15 alpha iterations: `docs/roadmap/v1.0-iteration-plan.md`.
+See `docs/roadmap/v1.0-iteration-plan.md` and `docs/releases/v1.0.0.md`.
 
 ---
 

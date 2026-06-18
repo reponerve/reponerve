@@ -1,6 +1,6 @@
 # RepoNerve MCP Compatibility Matrix
 
-RepoNerve exposes **38 MCP tools** over **STDIO** (`reponerve mcp`). Any MCP-capable client can use RepoNerve in **AI chat** with **any underlying LLM** the client provides.
+RepoNerve exposes **43 MCP tools** over **STDIO** (`reponerve mcp`). Any MCP-capable client can use RepoNerve in **AI chat** with **any underlying LLM** the client provides.
 
 **Transport:** STDIO JSON-RPC  
 **Launch:** `reponerve mcp`  

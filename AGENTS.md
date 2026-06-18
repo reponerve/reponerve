@@ -38,9 +38,9 @@ Development Experience (`ask`, `explain`, `explain-file`, `explain-function`, `e
 
 Software Understanding is what they receive.
 
-v1.0 is blocked until ISSUE-057 completes all v1.0 scope. See `docs/roadmap/v1.0-prd.md` and `docs/vision/vision.md`.
+v1.0.0 scope is complete (ISSUE-057 through ISSUE-062). Release review approved 2026-06-11; pending `v1.0.0` git tag. See `docs/roadmap/v1.0-prd.md` and `docs/vision/vision.md`.
 
-**Implementation status:** Repository Intelligence is shipped. Code Intelligence and most Development Experience commands are not yet implemented. See `docs/product/implementation-status.md`.
+**Implementation status:** All v1.0 capabilities shipped. See `docs/product/implementation-status.md` and `docs/audits/v1.0-release-review.md`.
 
 **Product strategy docs:**
 
@@ -71,7 +71,7 @@ RepoNerve is consumed in Cursor through **both** an Agent Skill and MCP — not 
 | --- | --- | --- |
 | **Skill** | `.cursor/skills/reponerve/SKILL.md` | Always — context-first workflow, pasted tasks, onboarding, anti-hallucination |
 | **Rule** | `.cursor/rules/reponerve.mdc` | Reminds agents to load the skill before explaining or editing |
-| **MCP** | `.cursor/mcp.json` → `reponerve mcp` | When connected — 38 tools (`ask`, `explain`, `plan`, `onboard`, …) |
+| **MCP** | `.cursor/mcp.json` → `reponerve mcp` | When connected — 43 tools (`ask`, `explain`, `plan`, `onboard`, …) |
 
 **Workflow:** Read the skill → call MCP tools when available → otherwise run matching `reponerve` CLI commands (see `.cursor/skills/reponerve/reference.md`). Do not grep the repo before RepoNerve context is loaded.
 
@@ -99,15 +99,13 @@ RepoNerve is designed for **direct chat** in any major IDE — not only Cursor. 
 
 ## Current Development Phase
 
-Phase 7 - v0.x Iterations Toward v1.0 (ISSUE-059 through ISSUE-062)
+Phase 8 — v1.0.0 Release
 
-Current Issues (all required for v1.0.0):
-
-ISSUE-059 → ISSUE-057 → ISSUE-060 → ISSUE-061 → ISSUE-062
+All engineering iterations complete (ISSUE-059 through ISSUE-062). Release review approved 2026-06-11.
 
 Current Release Target:
 
-v1.0.0 — the only product release; delivered via v0.10–v0.15 alpha iterations (see `docs/roadmap/v1.0-iteration-plan.md`)
+v1.0.0 — pending git tag (see `docs/releases/v1.0.0-checklist.md`)
 
 ---
 
@@ -225,7 +223,7 @@ Before implementation:
 
 ## Current Goal
 
-Complete ISSUE-057 (Code Intelligence & Development Experience) to deliver Software Understanding and approve RepoNerve for v1.0.0 release.
+Tag v1.0.0 and publish release notes per `docs/releases/v1.0.0.md`.
 
 # RepoNerve Architecture Rules
 

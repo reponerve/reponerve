@@ -26,7 +26,7 @@ func parseDevelopmentOutputOptions(getArg func(string, bool) (string, error)) de
 func addDevelopmentOutputSchema(schema *InputSchema) {
 	schema.Properties["format"] = map[string]interface{}{
 		"type":        "string",
-		"description": "Formatted output style: prose, json, or caveman (default: prose)",
+		"description": "Formatted output style: prose, json, or compact (default: prose)",
 	}
 	schema.Properties["token_budget"] = map[string]interface{}{
 		"type":        "integer",

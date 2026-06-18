@@ -117,12 +117,12 @@ When MCP is off, the agent runs CLI in the terminal. You chat normally; the skil
 
 ```bash
 reponerve ask "Why do we use SQLite?" --json
-reponerve ask "Why do we use SQLite?" --format caveman --token-budget 1500
+reponerve ask "Why do we use SQLite?" --format compact --token-budget 1500
 reponerve plan "Add OAuth login" --json
 reponerve onboard --json
 ```
 
-MCP equivalent: pass `"format": "caveman"` and `"token_budget": 1500` on `ask`, `explain`, `plan`, and other DE tools.
+MCP equivalent: pass `"format": "compact"` and `"token_budget": 1500` on `ask`, `explain`, `plan`, and other DE tools.
 
 `--json` returns the **same envelope as MCP**: `structured`, `agent`, `formatted`.
 

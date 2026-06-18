@@ -34,8 +34,8 @@ func TestWriteDEResultJSON(t *testing.T) {
 	}
 }
 
-func TestWriteDEResultCaveman(t *testing.T) {
-	cmd := newTestCmd(FormatCaveman, false, 0)
+func TestWriteDEResultCompact(t *testing.T) {
+	cmd := newTestCmd(FormatCompact, false, 0)
 	cmd.SetOut(&bytes.Buffer{})
 	formatted := "ENTITY BRIEFINGS\n  foo [bar]\n"
 	if err := WriteDEResult(cmd, formatted, &development.DevelopmentAnswer{Question: "q"}); err != nil {
@@ -43,7 +43,7 @@ func TestWriteDEResultCaveman(t *testing.T) {
 	}
 	out := cmd.OutOrStdout().(*bytes.Buffer).String()
 	if strings.Contains(out, "ENTITY BRIEFINGS") {
-		t.Fatalf("expected caveman header, got %q", out)
+		t.Fatalf("expected compact header, got %q", out)
 	}
 }
 

@@ -141,7 +141,7 @@ See `docs/copilot-chat-integration.md` for the full tool list. Highlights:
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | REPONERVE_WORKSPACE="$(pwd)/.reponerve" reponerve mcp
 ```
 
-You should receive JSON with 38 tools. Any non-JSON output on stdout breaks MCP.
+You should receive JSON with 43 tools. Any non-JSON output on stdout breaks MCP.
 
 ### Empty or stale results
 

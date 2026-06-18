@@ -48,7 +48,7 @@ If `reponerve` is not found, tell the user to run `go install ./cmd/reponerve` o
 | User intent | Command |
 | --- | --- |
 | Any question | `reponerve ask "<question>" --json` |
-| Token-efficient | add `--format caveman --token-budget 1500` |
+| Token-efficient | add `--format compact --token-budget 1500` |
 | Pasted task / plan | `reponerve plan "<task>" --json` |
 | Day one / new here | `reponerve onboard --json` |
 | Explain topic | `reponerve explain "<topic>" --json` |

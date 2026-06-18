@@ -2,7 +2,7 @@
 
 Version: 1.0
 
-Status: Draft
+Status: Current
 
 Updated: 2026-06-11
 
@@ -83,11 +83,11 @@ Development Experience and MCP expose **evidence-backed context packs**:
 
 * Relevance-ranked subgraph for the task
 * Truncation by token budget (not naive list limits)
-* Structured output formats (`caveman` format — ISSUE-060, v1.0)
+* Structured output formats (`compact` format — ISSUE-060, v1.0)
 
 ## Layer 4: MCP as Surgical Interface
 
-27 MCP tools return bounded, structured responses instead of raw file dumps. Fewer tool calls, smaller responses.
+43 MCP tools return bounded, structured responses instead of raw file dumps. Fewer tool calls, smaller responses.
 
 ## Layer 5: Durable Understanding Across Sessions
 
@@ -107,7 +107,7 @@ RTK compresses shell output. RepoNerve compresses understanding. Together they a
 Typical flow:
 
 ```text
-reponerve ask "..." --format caveman --token-budget 1500   # understanding pack
+reponerve ask "..." --format compact --token-budget 1500   # understanding pack
 rtk git diff                                               # compact shell evidence
 → paste both into agent context → implement
 ```
@@ -154,8 +154,10 @@ Do not ask the LLM to re-read the repository when RepoNerve already indexed it. 
 | Token-efficient context packs | ✅ v0.13.0-alpha — graph-aware compression + token budget |
 | Code intelligence (fewer file reads) | ✅ ISSUE-057 |
 | Development Experience commands | ✅ ISSUE-057 |
-| Structured/caveman output format | ✅ v0.13.0-alpha |
+| Structured/compact output format | ✅ v0.13.0-alpha |
 | Incremental scan on commit | ✅ `reponerve hook install` + scan state |
+| Graph discovery + session memory | ✅ v0.14.0-alpha |
+| Multi-language code intelligence | ✅ v0.15.0-alpha |
 
 See `docs/product/implementation-status.md` for full gap analysis.
 

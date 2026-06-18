@@ -206,7 +206,7 @@ v1.0 includes:
 **ISSUE-060 — Token Intelligence**
 
 - Graph-aware compression, token budgets
-- `--format caveman|prose|json`
+- `--format compact|prose|json`
 - `reponerve hook install`, incremental scan
 
 **ISSUE-061 — Evidence Graph & Session Memory**

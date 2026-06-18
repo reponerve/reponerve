@@ -9,7 +9,7 @@ import (
 const (
 	OutputFormatProse   = "prose"
 	OutputFormatJSON    = "json"
-	OutputFormatCaveman = "caveman"
+	OutputFormatCompact = "compact"
 )
 
 // OutputOptions controls formatted DE output for CLI and MCP.
@@ -21,8 +21,8 @@ type OutputOptions struct {
 // NormalizeOutputFormat returns a supported format name.
 func NormalizeOutputFormat(format string) string {
 	switch strings.ToLower(strings.TrimSpace(format)) {
-	case OutputFormatCaveman:
-		return OutputFormatCaveman
+	case OutputFormatCompact:
+		return OutputFormatCompact
 	case OutputFormatJSON:
 		return OutputFormatJSON
 	default:
@@ -30,12 +30,12 @@ func NormalizeOutputFormat(format string) string {
 	}
 }
 
-// ApplyOutputFormat renders prose with optional caveman compression and token budget.
+// ApplyOutputFormat renders prose with optional compact compression and token budget.
 func ApplyOutputFormat(formatted string, opts OutputOptions) string {
 	out := formatted
 	switch NormalizeOutputFormat(opts.Format) {
-	case OutputFormatCaveman:
-		out = ToCaveman(out)
+	case OutputFormatCompact:
+		out = ToCompact(out)
 	}
 	return TruncateToTokenBudget(out, opts.TokenBudget)
 }
@@ -78,7 +78,7 @@ func ResolveFormat(cmd *cobra.Command) (string, error) {
 	}
 	format = strings.ToLower(strings.TrimSpace(format))
 	switch format {
-	case OutputFormatProse, OutputFormatJSON, OutputFormatCaveman:
+	case OutputFormatProse, OutputFormatJSON, OutputFormatCompact:
 		return format, nil
 	default:
 		return "", &formatError{format: format}
@@ -88,5 +88,5 @@ func ResolveFormat(cmd *cobra.Command) (string, error) {
 type formatError struct{ format string }
 
 func (e *formatError) Error() string {
-	return "unsupported format " + e.format + " (use prose, json, or caveman)"
+	return "unsupported format " + e.format + " (use prose, json, or compact)"
 }

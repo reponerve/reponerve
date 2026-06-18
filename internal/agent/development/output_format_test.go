@@ -5,11 +5,11 @@ import (
 	"testing"
 )
 
-func TestApplyOutputFormat_CavemanAndBudget(t *testing.T) {
+func TestApplyOutputFormat_CompactAndBudget(t *testing.T) {
 	in := strings.Repeat("Question: Why SQLite?\n\nRelated Entities:\n  - internal/storage/sqlite/sqlite.go [FILE]\n", 8)
-	out := ApplyOutputFormat(in, OutputOptions{Format: OutputFormatCaveman, TokenBudget: 50})
+	out := ApplyOutputFormat(in, OutputOptions{Format: OutputFormatCompact, TokenBudget: 50})
 	if strings.Contains(out, "Question:") {
-		t.Fatalf("expected caveman header compression: %q", out[:min(80, len(out))])
+		t.Fatalf("expected compact header compression: %q", out[:min(80, len(out))])
 	}
 	if len(out) > 50*4+3 {
 		t.Fatalf("budget not applied: len=%d", len(out))
@@ -18,9 +18,9 @@ func TestApplyOutputFormat_CavemanAndBudget(t *testing.T) {
 
 func TestNewMCPResultWithFormat(t *testing.T) {
 	result := NewMCPResultWithFormat("Question: test\n", map[string]string{"k": "v"}, OutputOptions{
-		Format: OutputFormatCaveman,
+		Format: OutputFormatCompact,
 	})
 	if !strings.HasPrefix(result.Formatted, "Q:") {
-		t.Fatalf("expected caveman formatted output, got %q", result.Formatted)
+		t.Fatalf("expected compact formatted output, got %q", result.Formatted)
 	}
 }

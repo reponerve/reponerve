@@ -23,7 +23,7 @@ See `docs/product/token-economics.md`.
 | Capability | Description |
 | --- | --- |
 | Graph-aware compression | `internal/agent/compression/` — topic relevance, relationship boost, token-budget packing | Done |
-| Output formats | `--format prose\|json\|caveman` + `--token-budget` on DE CLI | Done |
+| Output formats | `--format prose\|json\|compact` + `--token-budget` on DE CLI | Done |
 | MCP format parity | `format` + `token_budget` on all DE MCP tools; `generate_context` topic/budget | Done |
 | Agent hooks | `reponerve hook install` — post-commit scan; `uninstall`, `status` | Done |
 | Incremental scan | Code indexer + git scan state; hook triggers `reponerve scan` | Done |
@@ -34,7 +34,7 @@ See `docs/product/token-economics.md`.
 # Acceptance Criteria
 
 * Context pack size configurable via token budget — Done (`generate_context`, DE CLI/MCP)
-* Caveman format reduces output size ≥50% vs prose for same evidence — Done (unit test)
+* Compact format reduces output size ≥50% vs prose for same evidence — Done (unit test)
 * Hooks install for Cursor and Claude Code (documented) — Done
 * Incremental scan updates code + memory indices — Done (via scan on commit)
 * Tests for compression ranking and format rendering — Done
