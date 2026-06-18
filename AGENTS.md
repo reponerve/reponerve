@@ -223,7 +223,7 @@ Before implementation:
 
 ## Current Goal
 
-Tag v1.0.0 and publish release notes per `docs/releases/v1.0.0.md`.
+v1.0.0 released. Post-v1.0 work follows `docs/roadmap/v1.x-backlog.md` (RFC-gated).
 
 # RepoNerve Architecture Rules
 
@@ -563,3 +563,11 @@ feat(ownership): implement expertise detection
 feat(graph): implement graph traversal engine
 
 release: v0.7.0-alpha ownership intelligence complete
+
+---
+
+# Commit Policy
+
+Never add `Co-authored-by` trailers to commits — including `Co-authored-by: Cursor <cursoragent@cursor.com>` or any other agent attribution line.
+
+Commit messages must contain only the subject and body written for the change. No co-author, signed-off-by, or tool attribution footers unless the user explicitly requests them.
