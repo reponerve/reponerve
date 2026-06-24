@@ -22,7 +22,7 @@ When MCP is connected, Cursor Agent calls tools directly. When MCP is off, the *
 - RepoNerve initialized and scanned in the project:
 
 ```bash
-reponerve init    # also installs Cursor skill + MCP configs
+reponerve init    # skill + MCP + Native Development Discipline rules
 reponerve scan
 ```
 
@@ -102,6 +102,13 @@ In each target repo: `reponerve init && reponerve scan`. Optionally add `.cursor
 
 `.cursor/rules/reponerve.mdc` nudges agents to load the skill before explaining or editing this repository.
 
+`reponerve init` also installs **Native Development Discipline** rules:
+
+* `.cursor/rules/coding-guidelines.mdc` — surgical changes, simplicity, verifiable goals
+* `.cursor/rules/development-discipline.mdc` — when to run `plan`, `review`, `impact` (evidence-backed habits)
+
+See `docs/rfc/RFC-003-native-development-discipline.md`. No separate discipline skills are required in target repositories.
+
 ## Using RepoNerve in Agent chat
 
 1. Open Cursor Agent chat (`Cmd+L` / `Ctrl+L`).
@@ -141,7 +148,7 @@ See `docs/copilot-chat-integration.md` for the full tool list. Highlights:
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | REPONERVE_WORKSPACE="$(pwd)/.reponerve" reponerve mcp
 ```
 
-You should receive JSON with 43 tools. Any non-JSON output on stdout breaks MCP.
+You should receive JSON with 45 tools. Any non-JSON output on stdout breaks MCP.
 
 ### Empty or stale results
 

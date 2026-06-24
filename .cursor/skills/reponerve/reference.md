@@ -9,6 +9,8 @@ Use **MCP tools** when connected; otherwise use **CLI** (same semantics).
 | Pasted task / plan | `plan` | `reponerve plan "..." --json` |
 | Question / what-is | `ask` | `reponerve ask "..." --json` |
 | Topic explain | `explain` | `reponerve explain "..." --json` |
+| Feature list | `list_features` | `reponerve list-features --json` |
+| Feature explain | `explain_feature` | `reponerve explain-feature "Authentication" --json` |
 | File | `explain_file` | `reponerve explain-file "path" --json` |
 | Function | `explain_function` | `reponerve explain-function "Name" --package pkg --json` |
 | Struct | `explain_struct` | `reponerve explain-struct "Name" --package pkg --json` |
@@ -18,12 +20,25 @@ Use **MCP tools** when connected; otherwise use **CLI** (same semantics).
 | Review prep | `review` | `reponerve review "topic" --json` |
 | Day-one orientation | `onboard` | `reponerve onboard --json` |
 
+## Native Development Discipline
+
+Bundled on `reponerve init` — no separate discipline skills required.
+
+| Intent | MCP / CLI |
+| --- | --- |
+| Feature / ticket | `plan` |
+| Ship / merge / PR | `review` (Ship Readiness; `ship_check` in v1.2) |
+| Reuse before new code | `ask` (Reuse Protocol; `reuse_check` in v1.2) |
+
+Rules: `.cursor/rules/development-discipline.mdc`, `coding-guidelines.mdc`
+
 ## Token discipline
 
 | Task | Prefer | Avoid |
 | --- | --- | --- |
 | Verify fix / "is this correct?" | `explain_function` / `explain-file` with `--package` | broad `ask`, full `plan`/`review` JSON |
-| Architecture / why | `ask` + `format: compact`, `token_budget: 1500` | grep → bulk file reads |
+| Feature-level topic (auth, MCP) | `explain_feature` or `explain` with domain name | grep for feature code |
+| Architecture / why | `ask` + `format: compact` (default budget 1500) | grep → bulk file reads |
 | Pasted ticket | `plan` | ad-hoc exploration |
 
 ## Repository memory (high value)

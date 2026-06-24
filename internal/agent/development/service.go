@@ -14,6 +14,7 @@ import (
 	graphimpact "github.com/reponerve/reponerve/internal/graph/impact"
 	codemodels "github.com/reponerve/reponerve/internal/code/models"
 	"github.com/reponerve/reponerve/internal/intelligence/changeplan"
+	"github.com/reponerve/reponerve/internal/intelligence/feature"
 	"github.com/reponerve/reponerve/internal/intelligence/learning"
 	"github.com/reponerve/reponerve/internal/intelligence/reviewers"
 	"github.com/reponerve/reponerve/internal/query/storage"
@@ -47,6 +48,7 @@ type Service struct {
 	changePlanService   *changeplan.Service
 	graphImpactService  *graphimpact.Service
 	agentImpactService  *agentimpact.Service
+	featureService      *feature.Service
 }
 
 // NewService creates a Development Experience service.
@@ -69,6 +71,7 @@ func NewService(
 	changePlanService *changeplan.Service,
 	graphImpactService *graphimpact.Service,
 	agentImpactService *agentimpact.Service,
+	featureService *feature.Service,
 ) *Service {
 	return &Service{
 		codeService:       codeService,
@@ -90,6 +93,7 @@ func NewService(
 		changePlanService:  changePlanService,
 		graphImpactService: graphImpactService,
 		agentImpactService: agentImpactService,
+		featureService:     featureService,
 	}
 }
 
@@ -98,11 +102,80 @@ func (s *Service) Explain(ctx context.Context, req DevelopmentRequest) (*Develop
 	if strings.TrimSpace(req.Topic) == "" {
 		return nil, fmt.Errorf("topic cannot be empty")
 	}
+	if s.featureService != nil {
+		if feat, err := s.featureService.MatchFeature(ctx, req.RepositoryID, req.Topic); err != nil {
+			return nil, err
+		} else if feat != nil && feature.ShouldAutoExplain(req.Topic, feat) {
+			return s.ExplainFeature(ctx, req.RepositoryID, feat.Name)
+		}
+	}
 	topic, err := s.router.ResolveTopic(ctx, req.RepositoryID, req.Topic)
 	if err != nil {
 		return nil, err
 	}
 	return s.assembleExplanation(ctx, req.RepositoryID, req.Topic, topic)
+}
+
+// ListFeatures returns derived repository features.
+func (s *Service) ListFeatures(ctx context.Context, repositoryID string) (*feature.ListResult, error) {
+	if s.featureService == nil {
+		return nil, fmt.Errorf("feature intelligence is not configured")
+	}
+	return s.featureService.ListFeatures(ctx, repositoryID)
+}
+
+// ExplainFeature explains one derived feature by name.
+func (s *Service) ExplainFeature(ctx context.Context, repositoryID, name string) (*DevelopmentExplanation, error) {
+	if s.featureService == nil {
+		return nil, fmt.Errorf("feature intelligence is not configured")
+	}
+	list, err := s.featureService.ListFeatures(ctx, repositoryID)
+	if err != nil {
+		return nil, err
+	}
+	var matched *feature.Summary
+	needle := strings.ToLower(strings.TrimSpace(name))
+	for i := range list.Features {
+		f := &list.Features[i]
+		if strings.ToLower(f.Name) == needle || f.ID == name {
+			matched = f
+			break
+		}
+	}
+	if matched == nil {
+		if m, err := s.featureService.MatchFeature(ctx, repositoryID, name); err != nil {
+			return nil, err
+		} else if m != nil {
+			matched = m
+		}
+	}
+	if matched == nil {
+		return nil, fmt.Errorf("feature not found: %s", name)
+	}
+
+	topic, err := s.router.ResolveTopicForTerms(ctx, repositoryID, matched.Name, matched.SearchTerms())
+	if err != nil {
+		return nil, err
+	}
+	out, err := s.assembleExplanation(ctx, repositoryID, matched.Name, topic)
+	if err != nil {
+		return nil, err
+	}
+	out.Feature = matched
+	if out.SourceServices == nil {
+		out.SourceServices = []string{}
+	}
+	out.SourceServices = appendUniqueString(out.SourceServices, "feature_intelligence")
+	return out, nil
+}
+
+func appendUniqueString(slice []string, value string) []string {
+	for _, s := range slice {
+		if s == value {
+			return slice
+		}
+	}
+	return append(slice, value)
 }
 
 // ExplainFile explains one indexed file path.

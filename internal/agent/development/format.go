@@ -3,6 +3,8 @@ package development
 import (
 	"fmt"
 	"strings"
+
+	"github.com/reponerve/reponerve/internal/intelligence/feature"
 )
 
 // FormatExplanation renders a DevelopmentExplanation for CLI output.
@@ -12,6 +14,16 @@ func FormatExplanation(out *DevelopmentExplanation) string {
 	}
 
 	var b strings.Builder
+	if out.Feature != nil {
+		fmt.Fprintf(&b, "Feature: %s\n", out.Feature.Name)
+		if len(out.Feature.Keywords) > 0 {
+			fmt.Fprintf(&b, "  Keywords: %s\n", strings.Join(out.Feature.Keywords, ", "))
+		}
+		if len(out.Feature.Sources) > 0 {
+			fmt.Fprintf(&b, "  Sources: %s\n", strings.Join(out.Feature.Sources, ", "))
+		}
+		b.WriteString("\n")
+	}
 	fmt.Fprintf(&b, "Topic: %s\n\n", out.Topic)
 
 	if len(out.EntityBriefings) > 0 {
@@ -145,10 +157,7 @@ func FormatAnswer(out *DevelopmentAnswer) string {
 	}
 
 	if len(out.Related) > 0 {
-		b.WriteString("Related Entities:\n")
-		for _, ref := range out.Related {
-			fmt.Fprintf(&b, "  - %s\n", formatEntityRefLine(ref))
-		}
+		writeEntitySectionCapped(&b, "Related Entities", out.Related, MaxRelatedRefs)
 		b.WriteString("\n")
 	}
 
@@ -212,17 +221,17 @@ func FormatPlan(out *DevelopmentPlan) string {
 		b.WriteString("\n")
 	}
 
-	writeEntitySection(&b, "Impacted Areas", out.ImpactedAreas)
-	writeEntitySection(&b, "Relevant Decisions", out.RelevantDecisions)
-	writeEntitySection(&b, "Relevant Facts", out.RelevantFacts)
-	writeEntitySection(&b, "Owners", out.Owners)
-	writeEntitySection(&b, "Reviewers", out.Reviewers)
+	writeEntitySectionCapped(&b, "Impacted Areas", out.ImpactedAreas, MaxImpactedAreas)
+	writeEntitySectionCapped(&b, "Relevant Decisions", out.RelevantDecisions, MaxImpactedAreas)
+	writeEntitySectionCapped(&b, "Relevant Facts", out.RelevantFacts, MaxImpactedAreas)
+	writeEntitySectionCapped(&b, "Owners", out.Owners, MaxRelatedRefs)
+	writeEntitySectionCapped(&b, "Reviewers", out.Reviewers, MaxRelatedRefs)
 
 	if out.SuggestedWorkflow != "" {
 		fmt.Fprintf(&b, "Suggested Workflow: %s\n\n", out.SuggestedWorkflow)
 	}
 
-	writeEntitySection(&b, "Starting Points", out.StartingPoints)
+	writeEntitySectionCapped(&b, "Starting Points", out.StartingPoints, MaxPlanStartingPoints)
 
 	if len(out.RepositoryCodeLinks) > 0 {
 		b.WriteString("Repository-Code Links:\n")
@@ -248,6 +257,23 @@ func FormatPlan(out *DevelopmentPlan) string {
 		}
 	}
 
+	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+// FormatFeatureList renders a feature list for CLI output.
+func FormatFeatureList(out *feature.ListResult) string {
+	if out == nil || len(out.Features) == 0 {
+		return "No features derived for this repository.\n"
+	}
+	var b strings.Builder
+	b.WriteString("Features:\n")
+	for _, f := range out.Features {
+		fmt.Fprintf(&b, "  - %s", f.Name)
+		if len(f.Sources) > 0 {
+			fmt.Fprintf(&b, " [%s]", strings.Join(f.Sources, ", "))
+		}
+		b.WriteString("\n")
+	}
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }
 
@@ -385,6 +411,20 @@ func FormatReviewGuide(out *DevelopmentReviewGuide) string {
 	}
 
 	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+func writeEntitySectionCapped(b *strings.Builder, title string, refs []EntityRef, limit int) {
+	if len(refs) == 0 {
+		return
+	}
+	capped, omitted := capEntityRefs(refs, limit)
+	fmt.Fprintf(b, "%s:\n", title)
+	for _, ref := range capped {
+		fmt.Fprintf(b, "  - %s\n", formatEntityRefLine(ref))
+	}
+	if omitted > 0 {
+		fmt.Fprintf(b, "  - … +%d more (use explain_function or explain_file)\n", omitted)
+	}
 }
 
 func writeEntitySection(b *strings.Builder, title string, refs []EntityRef) {

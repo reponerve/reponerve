@@ -15,8 +15,8 @@ func TestInstallProjectFiles(t *testing.T) {
 		t.Fatalf("Install() error = %v", err)
 	}
 
-	if len(result.Installed) < 6 {
-		t.Fatalf("expected at least 6 installed paths, got %v", result.Installed)
+	if len(result.Installed) < 8 {
+		t.Fatalf("expected at least 8 installed paths, got %v", result.Installed)
 	}
 
 	required := []string{
@@ -25,6 +25,8 @@ func TestInstallProjectFiles(t *testing.T) {
 		".continue/mcpServers/reponerve.json",
 		".cursor/skills/reponerve/SKILL.md",
 		".cursor/rules/reponerve.mdc",
+		".cursor/rules/coding-guidelines.mdc",
+		".cursor/rules/development-discipline.mdc",
 	}
 	for _, rel := range required {
 		if _, err := os.Stat(filepath.Join(root, rel)); err != nil {

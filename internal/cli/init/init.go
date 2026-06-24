@@ -20,8 +20,8 @@ func NewCommand() *cobra.Command {
 		Short: "Initialize RepoNerve inside a repository",
 		Long: `Initialize a new RepoNerve workspace, config file, and database in the current repository.
 
-Also installs IDE integration automatically: Cursor skill + MCP, VS Code Copilot MCP,
-and Continue MCP configuration.`,
+Also installs IDE integration automatically: Cursor skill + MCP, Native Development Discipline
+rules (coding guidelines + plan/review habits), VS Code Copilot MCP, and Continue MCP configuration.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			workspaceDir := config.GetWorkspaceDir()
 

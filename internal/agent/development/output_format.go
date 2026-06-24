@@ -42,11 +42,15 @@ func ApplyOutputFormat(formatted string, opts OutputOptions) string {
 
 // NewMCPResultWithFormat builds the MCP envelope with formatted output options applied.
 func NewMCPResultWithFormat(formatted string, structured any, opts OutputOptions) MCPResult {
+	opts = opts.WithDefaultBudget()
+	pruned, report := PruneStructured(structured)
 	display := ApplyOutputFormat(formatted, opts)
+	meta := BuildAgentContextMeta(pruned)
+	ApplyPruneReport(&meta, report)
 	return MCPResult{
 		Formatted:  display,
-		Structured: structured,
-		Agent:      BuildAgentContextMeta(structured),
+		Structured: pruned,
+		Agent:      meta,
 	}
 }
 

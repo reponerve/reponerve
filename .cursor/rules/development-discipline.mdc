@@ -1,0 +1,57 @@
+---
+description: >-
+  RepoNerve Native Development Discipline — evidence-backed plan, review, and
+  ship habits. Installed by reponerve init. Use RepoNerve tools before ad-hoc exploration.
+alwaysApply: true
+---
+
+# Native Development Discipline
+
+RepoNerve ships development discipline with every initialized repository. Rules are **evidence-backed** — run RepoNerve commands and answer from the JSON envelope (`structured` → `agent` → `formatted`), not from repo-wide grep.
+
+Full spec: `docs/rfc/RFC-003-native-development-discipline.md`
+
+## When to apply
+
+| User intent | Action |
+| --- | --- |
+| New feature, epic, pasted ticket | `reponerve plan "<task>" --json` before coding |
+| Ship, merge, PR, release | `reponerve review "<topic>" --json` (Ship Readiness — Phase C adds `ship-check`) |
+| Rename, breaking change, "what breaks?" | `reponerve impact "<subject>" --json` |
+| Before adding code in an area | `reponerve ask "what already implements X?" --json` (Phase B adds `reuse-check`) |
+| Verify one symbol or file | `explain-function` / `explain-file` with `--package` — narrow tools only |
+
+## Skip discipline overhead
+
+Answer normally (no extra review framing) when the user:
+
+- Asks informational questions: "what is", "how does", "where is"
+- Requests `explain`, `explain-*`, or `ask` for understanding only
+- Requests a small direct edit with clear scope and no ship/review ask
+
+## Reuse Protocol (habit until `reuse-check` ships)
+
+Before writing new functions, services, or modules:
+
+1. Run `reponerve plan` or `reponerve ask` for the intent.
+2. Prefer extending existing symbols surfaced in `structured` (entity briefings, plan starting points).
+3. Only add new code when reuse candidates are ruled out with evidence from the envelope.
+
+## Ship Readiness (habit until `ship-check` ships)
+
+Before recommending merge or deploy:
+
+1. Run `reponerve review` for the change topic.
+2. Surface risks from `structured` evidence — tests, migrations, ADRs, ownership.
+3. State rollback or verification steps when the review pack implies risk.
+
+## Non-negotiables
+
+- No secrets in code, logs, or errors.
+- No empty catch blocks or silent failures.
+- No data model change without a migration strategy when the repo uses migrations.
+- No deployment recommendation without a verification step.
+
+## Token discipline
+
+Use `--format compact` and default budget (1500) on broad `ask` / `plan` / `review`. If `agent.truncated` is true, follow `agent.prefer_narrow_tools` — do not grep the whole repository.

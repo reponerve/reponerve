@@ -17,6 +17,7 @@ import (
 	"github.com/reponerve/reponerve/internal/graph/traversal"
 	"github.com/reponerve/reponerve/internal/intelligence/changeplan"
 	"github.com/reponerve/reponerve/internal/intelligence/discovery"
+	"github.com/reponerve/reponerve/internal/intelligence/feature"
 	"github.com/reponerve/reponerve/internal/intelligence/learning"
 	"github.com/reponerve/reponerve/internal/intelligence/reviewers"
 	"github.com/reponerve/reponerve/internal/query/storage"
@@ -78,6 +79,7 @@ func WireDevelopmentService(ctx context.Context, db *sqlite.Database, repository
 	relReader := storage.NewSQLiteCodeRelationshipReader(db)
 	repoCodeReader := storage.NewSQLiteRepositoryCodeRelationshipReader(db)
 	codeSvc := code.NewService(codeEntityReader, relReader, repoCodeReader)
+	featureSvc := feature.NewService(eventReader, expertiseReader, decisionReader)
 
 	devSvc := development.NewService(
 		codeSvc,
@@ -98,6 +100,7 @@ func WireDevelopmentService(ctx context.Context, db *sqlite.Database, repository
 		changePlanSvc,
 		graphImpactSvc,
 		agentImpactSvc,
+		featureSvc,
 	)
 
 	return repo.ID, devSvc, nil

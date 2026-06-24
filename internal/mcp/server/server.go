@@ -1459,6 +1459,23 @@ func getInputSchema(toolName string) InputSchema {
 			"description": "Optional repository filter",
 		}
 
+	case "list_features":
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "explain_feature":
+		schema.Properties["feature"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Feature name to explain (e.g. Authentication, MCP)",
+		}
+		schema.Required = []string{"feature"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
 	case "discover_surprises", "suggest_questions":
 		schema.Properties["repository_id"] = map[string]interface{}{
 			"type":        "string",

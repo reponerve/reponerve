@@ -45,7 +45,7 @@ func TestAnalyzeImpact_TopicResolution(t *testing.T) {
 		&mockContributorReader{},
 		nil,
 		"",
-		nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil,
 	)
 
 	out, err := svc.AnalyzeImpact(context.Background(), development.DevelopmentRequest{

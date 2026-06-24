@@ -230,7 +230,7 @@ func TestExplain_ResolvesCodeAndRepository(t *testing.T) {
 		&mockContributorReader{},
 		nil,
 		"",
-		nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil,
 	)
 
 	out, err := svc.Explain(context.Background(), development.DevelopmentRequest{
@@ -287,7 +287,7 @@ func TestAsk_OwnershipQuestion(t *testing.T) {
 		&mockContributorReader{},
 		nil,
 		"",
-		nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil,
 	)
 
 	out, err := svc.Ask(context.Background(), development.DevelopmentRequest{

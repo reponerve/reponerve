@@ -184,6 +184,14 @@ func NewRegistry() *Registry {
 		Description: "Traverse the knowledge graph from a start node within a token budget",
 	})
 	_ = r.Register(ToolDefinition{
+		Name:        "list_features",
+		Description: "List derived repository features (domains and capabilities)",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "explain_feature",
+		Description: "Explain a derived feature with code, ownership, and decision context",
+	})
+	_ = r.Register(ToolDefinition{
 		Name:        "remember",
 		Description: "Store session knowledge as an evidence-backed fact with provenance",
 	})

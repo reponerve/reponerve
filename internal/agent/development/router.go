@@ -112,7 +112,52 @@ func (r *Router) searchCodeEntities(ctx context.Context, repositoryID, topic str
 	for _, m := range matches {
 		out = append(out, m.entity)
 	}
+	const maxTopicCodeMatches = 20
+	if len(out) > maxTopicCodeMatches {
+		out = out[:maxTopicCodeMatches]
+	}
 	return out, nil
+}
+
+// ResolveTopicForTerms resolves a topic using explicit search terms (e.g. feature keywords).
+func (r *Router) ResolveTopicForTerms(ctx context.Context, repositoryID, displayInput string, terms []string) (*ResolvedTopic, error) {
+	if repositoryID == "" {
+		return nil, fmt.Errorf("repository ID cannot be empty")
+	}
+	query := strings.TrimSpace(strings.Join(terms, " "))
+	if query == "" {
+		return nil, fmt.Errorf("terms cannot be empty")
+	}
+
+	topic := &ResolvedTopic{
+		Input:            normalizeTopic(displayInput),
+		RepositoryHitIDs: make(map[string]struct{}),
+		CodeEntityIDs:    make(map[string]struct{}),
+	}
+
+	searchResult, err := r.searchService.Search(ctx, repositoryID, query)
+	if err != nil {
+		return nil, fmt.Errorf("repository search: %w", err)
+	}
+	for _, hit := range searchResult.Hits {
+		topic.RepositoryHitIDs[hit.EntityID] = struct{}{}
+	}
+
+	codeMatches, err := r.searchCodeEntities(ctx, repositoryID, query)
+	if err != nil {
+		return nil, fmt.Errorf("code search: %w", err)
+	}
+	for _, entity := range codeMatches {
+		topic.CodeEntityIDs[entity.ID] = struct{}{}
+	}
+
+	if err := r.expandRepositoryCodeLinks(ctx, repositoryID, topic); err != nil {
+		return nil, err
+	}
+
+	topic.PrimaryEntityType = classifyPrimaryEntityType(topic)
+	topic.MatchEvidence = buildMatchEvidence(topic.Input, len(searchResult.Hits), len(codeMatches))
+	return topic, nil
 }
 
 func (r *Router) expandRepositoryCodeLinks(ctx context.Context, repositoryID string, topic *ResolvedTopic) error {

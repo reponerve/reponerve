@@ -38,7 +38,7 @@ Development Experience (`ask`, `explain`, `explain-file`, `explain-function`, `e
 
 Software Understanding is what they receive.
 
-v1.0.0 scope is complete (ISSUE-057 through ISSUE-062). Release review approved 2026-06-11; pending `v1.0.0` git tag. See `docs/roadmap/v1.0-prd.md` and `docs/vision/vision.md`.
+v1.0.0 scope shipped (`v1.0.0` tagged 2026-06-18; latest patch `v1.0.1`). See `docs/roadmap/v1.0-prd.md`, `docs/vision/vision.md`, and `docs/releases/versioning.md`.
 
 **Implementation status:** All v1.0 capabilities shipped. See `docs/product/implementation-status.md` and `docs/audits/v1.0-release-review.md`.
 
@@ -71,7 +71,7 @@ RepoNerve is consumed in Cursor through **both** an Agent Skill and MCP — not 
 | --- | --- | --- |
 | **Skill** | `.cursor/skills/reponerve/SKILL.md` | Always — context-first workflow, pasted tasks, onboarding, anti-hallucination |
 | **Rule** | `.cursor/rules/reponerve.mdc` | Reminds agents to load the skill before explaining or editing |
-| **MCP** | `.cursor/mcp.json` → `reponerve mcp` | When connected — 43 tools (`ask`, `explain`, `plan`, `onboard`, …) |
+| **MCP** | `.cursor/mcp.json` → `reponerve mcp` | When connected — 45 tools (`ask`, `explain`, `explain_feature`, `list_features`, `plan`, `onboard`, …) |
 
 **Workflow:** Read the skill → call MCP tools when available → otherwise run matching `reponerve` CLI commands (see `.cursor/skills/reponerve/reference.md`). Do not grep the repo before RepoNerve context is loaded.
 
@@ -99,13 +99,9 @@ RepoNerve is designed for **direct chat** in any major IDE — not only Cursor. 
 
 ## Current Development Phase
 
-Phase 8 — v1.0.0 Release
+Post-v1.0 — semver releases on `main` (see `docs/releases/versioning.md`).
 
-All engineering iterations complete (ISSUE-059 through ISSUE-062). Release review approved 2026-06-11.
-
-Current Release Target:
-
-v1.0.0 — pending git tag (see `docs/releases/v1.0.0-checklist.md`)
+`v1.0.0` shipped 2026-06-18. Latest tag: `v1.0.1`. Post-v1.0 work is RFC-gated (`docs/roadmap/v1.x-backlog.md`).
 
 ---
 

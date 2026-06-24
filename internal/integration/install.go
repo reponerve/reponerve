@@ -45,6 +45,8 @@ func Install(opts Options) (Result, error) {
 		{"skill-SKILL.md", ".cursor/skills/reponerve/SKILL.md", nil},
 		{"skill-reference.md", ".cursor/skills/reponerve/reference.md", nil},
 		{"rule-reponerve.mdc", ".cursor/rules/reponerve.mdc", nil},
+		{"rule-coding-guidelines.mdc", ".cursor/rules/coding-guidelines.mdc", nil},
+		{"rule-development-discipline.mdc", ".cursor/rules/development-discipline.mdc", nil},
 	}
 
 	for _, file := range projectFiles {
@@ -227,7 +229,7 @@ func installGlobalSkill(force bool) (Result, error) {
 func FormatSummary(result Result) []string {
 	lines := make([]string, 0, len(result.Installed)+len(result.Updated)+1)
 	if len(result.Installed)+len(result.Updated) > 0 {
-		lines = append(lines, "✓ IDE integration installed (Cursor skill + MCP for Cursor, VS Code, Continue)")
+		lines = append(lines, "✓ IDE integration installed (Cursor skill + MCP + development discipline rules)")
 		lines = append(lines, "  Chat without MCP: reponerve ask \"...\" --json  (or /reponerve in chat)")
 	}
 	for _, path := range result.Installed {

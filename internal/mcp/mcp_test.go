@@ -109,9 +109,9 @@ func TestRegistry_Unit(t *testing.T) {
 		r := NewRegistry()
 		list := r.List()
 
-		// Expect exactly 43 tools registered initially
-		if len(list) != 43 {
-			t.Errorf("expected 43 initial tools, got %d", len(list))
+		// Expect exactly 45 tools registered initially
+		if len(list) != 45 {
+			t.Errorf("expected 45 initial tools, got %d", len(list))
 		}
 
 		expectedNames := []string{
@@ -123,6 +123,7 @@ func TestRegistry_Unit(t *testing.T) {
 			"explain",
 			"explain_decision",
 			"explain_event",
+			"explain_feature",
 			"explain_file",
 			"explain_function",
 			"explain_interface",
@@ -145,6 +146,7 @@ func TestRegistry_Unit(t *testing.T) {
 			"list_events",
 			"list_expertise",
 			"list_facts",
+			"list_features",
 			"list_intents",
 			"onboard",
 			"plan",
@@ -186,10 +188,10 @@ func TestRegistry_Unit(t *testing.T) {
 			t.Errorf("expected description %q, got %q", tool.Description, got.Description)
 		}
 
-		// Verify listing has 44 tools (43 defaults + 1 custom) sorted alphabetically
+		// Verify listing has 46 tools (45 defaults + 1 custom) sorted alphabetically
 		list := r.List()
-		if len(list) != 44 {
-			t.Errorf("expected 44 tools after registration, got %d", len(list))
+		if len(list) != 46 {
+			t.Errorf("expected 46 tools after registration, got %d", len(list))
 		}
 	})
 
@@ -326,6 +328,7 @@ func TestService_Integration(t *testing.T) {
 		"plan":                   true,
 		"review":                 true,
 		"explain_event":          true,
+		"explain_feature":        true,
 		"export_context":         true,
 		"generate_context":       true,
 		"get_contributor":        true,
@@ -338,6 +341,7 @@ func TestService_Integration(t *testing.T) {
 		"list_events":            true,
 		"list_expertise":         true,
 		"list_facts":             true,
+		"list_features":          true,
 		"list_intents":           true,
 		"recommend_reviewers":    true,
 		"trace_contributor":      true,

@@ -32,11 +32,11 @@ The assistant should invoke `onboard`, `ask`, `plan`, `explain_file`, `analyze_t
 
 ```bash
 go install github.com/reponerve/reponerve/cmd/reponerve@latest   # or go install ./cmd/reponerve
-reponerve init    # creates workspace + installs Cursor skill + MCP configs automatically
+reponerve init    # workspace + skill + MCP + Native Development Discipline rules
 reponerve scan
 ```
 
-`reponerve init` writes project integration files (`.cursor/`, `.vscode/mcp.json`, `.continue/`) and installs the global Cursor skill to `~/.cursor/skills/reponerve/`. Re-run `reponerve integrate` to refresh, or `reponerve integrate --force` to overwrite skill files.
+`reponerve init` writes project integration files (`.cursor/`, `.vscode/mcp.json`, `.continue/`), Native Development Discipline rules (`coding-guidelines.mdc`, `development-discipline.mdc`), and installs the global Cursor skill to `~/.cursor/skills/reponerve/`. See `docs/rfc/RFC-003-native-development-discipline.md`. Re-run `reponerve integrate` to refresh, or `reponerve integrate --force` to overwrite skill files.
 
 Optional: keep repository memory fresh after each commit:
 
@@ -126,9 +126,9 @@ reponerve plan "Add OAuth login" --json
 reponerve onboard --json
 ```
 
-MCP equivalent: pass `"format": "compact"` and `"token_budget": 1500` on `ask`, `explain`, `plan`, and other DE tools.
+MCP equivalent: pass `"format": "compact"` on `ask`, `explain`, `plan`, and other DE tools. When `token_budget` is omitted, **1500** is applied automatically (RFC-001).
 
-`--json` returns the **same envelope as MCP**: `structured`, `agent`, `formatted`.
+`--json` returns the **same envelope as MCP**: `structured`, `agent`, `formatted`. When responses are capped, check `agent.truncated` and use narrow tools (`explain_function`, `explain_file`) instead of grep.
 
 - **Cursor:** `/reponerve ask "..."` or ask naturally — skill auto-loads
 - **Claude Code:** `CLAUDE.md` RepoNerve section (installed by `reponerve init`)
@@ -158,6 +158,8 @@ Paste into the chat with: "Answer only from this RepoNerve evidence."
 | "Is this fix correct?" / verify one symbol | `explain_function`, `explain_struct`, `explain_file` with `--package` |
 | "Who owns the storage layer?" | `list_expertise`, `recommend_reviewers` |
 | "What ADRs mention authentication?" | `list_decisions`, `ask` |
+| "What features exist?" | `list_features` / `reponerve list-features --json` |
+| "Explain authentication feature" | `explain_feature` / `reponerve explain-feature "Authentication" --json` |
 | "Review my OAuth change" | `review` |
 | "Impact of renaming Config struct" | `analyze_topic_impact` |
 

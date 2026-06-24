@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/reponerve/reponerve/internal/agent/development"
 )
@@ -11,7 +12,8 @@ import (
 func isDevelopmentTool(name string) bool {
 	switch name {
 	case "ask", "explain", "explain_file", "explain_function", "explain_struct",
-		"explain_interface", "explain_type", "plan", "review", "analyze_topic_impact", "onboard":
+		"explain_interface", "explain_type", "plan", "review", "analyze_topic_impact", "onboard",
+		"list_features", "explain_feature":
 		return true
 	default:
 		return false
@@ -204,6 +206,31 @@ func (s *Server) handleDevelopmentTool(
 			return true
 		}
 		s.sendDevelopmentResult(id, development.FormatOnboarding(out), out, outOpts)
+
+	case "list_features":
+		out, err := dev.ListFeatures(ctx, repoID)
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("list_features failed: %v", err))
+			return true
+		}
+		s.sendDevelopmentResult(id, development.FormatFeatureList(out), out, outOpts)
+
+	case "explain_feature":
+		name, _ := getArg("feature", false)
+		if strings.TrimSpace(name) == "" {
+			var err error
+			name, err = getArg("name", true)
+			if err != nil {
+				s.sendToolError(id, err.Error())
+				return true
+			}
+		}
+		out, err := dev.ExplainFeature(ctx, repoID, name)
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("explain_feature failed: %v", err))
+			return true
+		}
+		s.sendDevelopmentResult(id, development.FormatExplanation(out), out, outOpts)
 	}
 
 	return true

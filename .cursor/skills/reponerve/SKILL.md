@@ -59,6 +59,19 @@ If `reponerve` is not found, tell the user to run `go install ./cmd/reponerve` o
 
 **Always use `--json`** in chat without MCP. It emits the same envelope as MCP: `structured`, `agent`, `formatted`.
 
+### Native Development Discipline
+
+Installed on `reponerve init` (`.cursor/rules/development-discipline.mdc` + `coding-guidelines.mdc`):
+
+| Intent | Run first |
+| --- | --- |
+| Feature / pasted ticket | `plan --json` |
+| Ship / merge / PR | `review --json` |
+| Breaking change | `impact --json` |
+| New code in an area | `ask` for existing implementations (future: `reuse-check`) |
+
+Skip extra discipline on informational `ask` / `explain-*` only.
+
 ### Token discipline — pick the narrowest command
 
 | Task | Prefer | Avoid |

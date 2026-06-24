@@ -22,6 +22,9 @@ type AgentContextMeta struct {
 	Kind                 string   `json:"kind"`
 	Completeness         string   `json:"completeness"`
 	MustUseBeforeEdit    bool     `json:"must_use_before_edit"`
+	Truncated            bool     `json:"truncated,omitempty"`
+	TruncatedFields      []string `json:"truncated_fields,omitempty"`
+	PreferNarrowTools    []string `json:"prefer_narrow_tools,omitempty"`
 	GuidanceForAgent     []string `json:"guidance_for_agent"`
 	RecommendedNextTools []string `json:"recommended_next_tools,omitempty"`
 }
@@ -154,6 +157,12 @@ func metaFromExplanation(e *DevelopmentExplanation) AgentContextMeta {
 	if len(e.EntityBriefings) > 0 {
 		meta.Completeness = CompletenessFull
 		meta.MustUseBeforeEdit = true
+		if e.Feature != nil {
+			meta.Kind = "feature_explanation"
+			meta.GuidanceForAgent = append(meta.GuidanceForAgent,
+				"Feature-level explanation: use feature.keywords and entity_briefings before editing.",
+			)
+		}
 		if len(e.EntityBriefings) > 1 {
 			meta.GuidanceForAgent = append(meta.GuidanceForAgent,
 				"Compare briefings before choosing a symbol to edit.",

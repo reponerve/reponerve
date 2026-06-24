@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	codemodels "github.com/reponerve/reponerve/internal/code/models"
+	"github.com/reponerve/reponerve/internal/intelligence/feature"
 )
 
 // DevelopmentRequest is input for Development Experience workflows.
@@ -146,6 +147,7 @@ type DevelopmentAnswer struct {
 // DevelopmentExplanation is the unified explain output contract.
 type DevelopmentExplanation struct {
 	Topic               string                  `json:"topic"`
+	Feature             *feature.Summary        `json:"feature,omitempty"`
 	EntityBriefings     []EntityBriefing        `json:"entity_briefings,omitempty"`
 	CodeContext         *CodeContext            `json:"code_context"`
 	RepositoryContext   *RepositoryContext      `json:"repository_context"`

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -17,10 +18,10 @@ func parseDevelopmentOutputOptions(getArg func(string, bool) (string, error)) de
 	if err != nil || strings.TrimSpace(budgetStr) == "" {
 		budgetStr, _ = getArg("token-budget", false)
 	}
-	if budget, err := strconv.Atoi(strings.TrimSpace(budgetStr)); err == nil {
+	if budget, err := strconv.Atoi(strings.TrimSpace(budgetStr)); err == nil && budget > 0 {
 		opts.TokenBudget = budget
 	}
-	return opts
+	return opts.WithDefaultBudget()
 }
 
 func addDevelopmentOutputSchema(schema *InputSchema) {
@@ -30,6 +31,6 @@ func addDevelopmentOutputSchema(schema *InputSchema) {
 	}
 	schema.Properties["token_budget"] = map[string]interface{}{
 		"type":        "integer",
-		"description": "Approximate max tokens for formatted output (0 = unlimited)",
+		"description": fmt.Sprintf("Approximate max tokens for formatted output (default %d)", development.DefaultTokenBudget),
 	}
 }

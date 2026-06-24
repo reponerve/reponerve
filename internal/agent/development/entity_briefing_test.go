@@ -55,7 +55,7 @@ func TestAsk_WhatIsConceptRoutesToBriefing(t *testing.T) {
 		&mockContributorReader{},
 		nil,
 		"",
-		nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil,
 	)
 
 	out, err := svc.Ask(context.Background(), development.DevelopmentRequest{
@@ -107,7 +107,7 @@ func TestExplainStruct_AmbiguousReturnsBriefings(t *testing.T) {
 		&mockContributorReader{},
 		nil,
 		"",
-		nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil,
 	)
 
 	out, err := svc.ExplainStruct(context.Background(), repoID, "Service", "")

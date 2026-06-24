@@ -248,7 +248,7 @@ Token Intelligence — Complete
 Evidence Graph & Session Memory — Complete
 Multi-Language Code Intelligence — Complete
 Software Understanding — Delivered
-v1.0.0 — Release review approved (pending git tag)
+v1.0.0 — Released (2026-06-18); latest v1.0.1
 ```
 
 Completed Milestones:
@@ -409,18 +409,19 @@ See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 4
 * Agent Session Intelligence
 * Workflow Intelligence
 
-## v1.0.0 Release (approved, pending tag)
+## v1.0.0 Release (shipped)
 
 | Iteration | Issue | Status |
 | --- | --- | --- |
 | v0.10.0-alpha | ISSUE-059 | ✅ Foundation fixes |
 | v0.11–v0.12.0-alpha | ISSUE-057 | ✅ Code Intelligence + Development Experience |
-| v0.13.0-alpha | ISSUE-060 | ✅ Token Intelligence |
-| v0.14.0-alpha | ISSUE-061 | ✅ Evidence Graph + Session Memory |
-| v0.15.0-alpha | ISSUE-062 | ✅ Multi-language code intelligence |
-| **v1.0.0** | — | 🚀 Release review approved |
+| v0.13.0-alpha | ISSUE-060 | ✅ Token Intelligence (in v1.0.0) |
+| v0.14.0-alpha | ISSUE-061 | ✅ Evidence Graph + Session Memory (in v1.0.0) |
+| v0.15.0-alpha | ISSUE-062 | ✅ Multi-language code intelligence (in v1.0.0) |
+| **v1.0.0** | — | ✅ Tagged 2026-06-18 |
+| **v1.0.1** | — | ✅ Patch — scan reliability |
 
-See `docs/roadmap/v1.0-iteration-plan.md` and `docs/releases/v1.0.0.md`.
+See `docs/releases/v1.0.0.md` and `docs/releases/versioning.md` for post-1.0 semver policy.
 
 ---
 

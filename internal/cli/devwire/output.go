@@ -26,7 +26,7 @@ func BindDECmd(cmd *cobra.Command) *cobra.Command {
 func BindOutputFlags(cmd *cobra.Command) {
 	cmd.Flags().String("format", FormatProse, "Output format: prose, json, compact")
 	cmd.Flags().Bool("json", false, "Emit MCP-compatible JSON (same as --format json)")
-	cmd.Flags().Int("token-budget", 0, "Approximate max tokens for prose/compact output (0 = unlimited)")
+	cmd.Flags().Int("token-budget", 0, fmt.Sprintf("Approximate max tokens for prose/compact output (0 = default %d)", development.DefaultTokenBudget))
 }
 
 // ResolveFormat returns the effective output format from flags.

@@ -168,8 +168,8 @@ func TestServer_JSONRPC(t *testing.T) {
 			t.Fatalf("failed to unmarshal tools list: %v", err)
 		}
 
-		if len(result.Tools) != 43 {
-			t.Errorf("expected 43 tools, got %d", len(result.Tools))
+		if len(result.Tools) != 45 {
+			t.Errorf("expected 45 tools, got %d", len(result.Tools))
 		}
 
 		expectedTools := map[string]bool{
@@ -177,6 +177,7 @@ func TestServer_JSONRPC(t *testing.T) {
 			"ask":                    true,
 			"explain":                true,
 			"explain_decision":       true,
+			"explain_feature":        true,
 			"explain_file":           true,
 			"explain_function":       true,
 			"explain_interface":      true,
@@ -198,6 +199,7 @@ func TestServer_JSONRPC(t *testing.T) {
 			"list_events":            true,
 			"list_expertise":         true,
 			"list_facts":             true,
+			"list_features":          true,
 			"list_intents":           true,
 			"recommend_reviewers":    true,
 			"trace_contributor":      true,

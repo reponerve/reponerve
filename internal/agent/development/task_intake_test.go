@@ -67,7 +67,7 @@ func TestAsk_TaskDescriptionRoutesToPlan(t *testing.T) {
 		&mockContributorReader{},
 		nil,
 		"",
-		nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil,
 	)
 
 	out, err := svc.Ask(context.Background(), development.DevelopmentRequest{
@@ -125,7 +125,7 @@ func TestPlan_IncludesEntityBriefings(t *testing.T) {
 		&mockContributorReader{},
 		nil,
 		"",
-		nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil,
 	)
 
 	out, err := svc.Plan(context.Background(), development.DevelopmentRequest{

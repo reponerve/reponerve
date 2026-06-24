@@ -46,7 +46,7 @@ func TestPrepareReview_TopicResolution(t *testing.T) {
 		&mockContributorReader{},
 		nil,
 		"",
-		nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil,
 	)
 
 	out, err := svc.PrepareReview(context.Background(), development.DevelopmentRequest{
