@@ -1476,6 +1476,28 @@ func getInputSchema(toolName string) InputSchema {
 			"description": "Optional repository filter",
 		}
 
+	case "reuse_check":
+		schema.Properties["intent"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Implementation intent to find reuse candidates for",
+		}
+		schema.Required = []string{"intent"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "ship_check":
+		schema.Properties["topic"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Change topic or feature area to assess for ship readiness",
+		}
+		schema.Required = []string{"topic"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
 	case "discover_surprises", "suggest_questions":
 		schema.Properties["repository_id"] = map[string]interface{}{
 			"type":        "string",

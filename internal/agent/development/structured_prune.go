@@ -75,6 +75,31 @@ func PruneStructured(structured any) (any, PruneReport) {
 			report = mergePruneReport(report, pr)
 		}
 		return &c, report
+	case *ReuseCheckResult:
+		if v == nil {
+			return structured, report
+		}
+		c := *v
+		c.ReuseCandidates, report = pruneReuseCandidates(c.ReuseCandidates, report)
+		c.RelatedDecisions, report = pruneField(c.RelatedDecisions, "related_decisions", MaxImpactedAreas, report)
+		c.Evidence, report = pruneEvidence(c.Evidence, report)
+		return &c, report
+	case ReuseCheckResult:
+		out, r := PruneStructured(&v)
+		return *out.(*ReuseCheckResult), r
+	case *ShipCheckResult:
+		if v == nil {
+			return structured, report
+		}
+		c := *v
+		c.ImpactedAreas, report = pruneImpacted(c.ImpactedAreas, report)
+		c.ShipBlockers, report = pruneShipItems(c.ShipBlockers, "ship_blockers", report)
+		c.Advisories, report = pruneShipItems(c.Advisories, "advisories", report)
+		c.Evidence, report = pruneEvidence(c.Evidence, report)
+		return &c, report
+	case ShipCheckResult:
+		out, r := PruneStructured(&v)
+		return *out.(*ShipCheckResult), r
 	default:
 		return structured, report
 	}
@@ -138,6 +163,26 @@ func pruneField(refs []EntityRef, field string, limit int, report PruneReport) (
 		report.OmittedCounts[field] = omitted
 	}
 	return capped, report
+}
+
+func pruneReuseCandidates(candidates []ReuseCandidate, report PruneReport) ([]ReuseCandidate, PruneReport) {
+	if len(candidates) <= MaxReuseCandidates {
+		return candidates, report
+	}
+	report.Truncated = true
+	report.TruncatedFields = append(report.TruncatedFields, "reuse_candidates")
+	report.OmittedCounts["reuse_candidates"] = len(candidates) - MaxReuseCandidates
+	return candidates[:MaxReuseCandidates], report
+}
+
+func pruneShipItems(items []ShipCheckItem, field string, report PruneReport) ([]ShipCheckItem, PruneReport) {
+	if len(items) <= MaxShipCheckItems {
+		return items, report
+	}
+	report.Truncated = true
+	report.TruncatedFields = append(report.TruncatedFields, field)
+	report.OmittedCounts[field] = len(items) - MaxShipCheckItems
+	return items[:MaxShipCheckItems], report
 }
 
 func mergePruneReport(base, add PruneReport) PruneReport {

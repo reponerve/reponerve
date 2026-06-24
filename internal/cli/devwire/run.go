@@ -108,3 +108,43 @@ func RunImpact(
 
 	return WriteDEResult(cmd, development.FormatImpactReport(out), out)
 }
+
+// RunReuseCheck executes the Reuse Protocol workflow for CLI commands.
+func RunReuseCheck(
+	cmd *cobra.Command,
+	intent string,
+	run func(context.Context, *Handle, string) (*development.ReuseCheckResult, error),
+) error {
+	session, err := Open(cmd.Context(), config.GetWorkspaceDir())
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	out, err := run(cmd.Context(), session, intent)
+	if err != nil {
+		return err
+	}
+
+	return WriteDEResult(cmd, development.FormatReuseCheck(out), out)
+}
+
+// RunShipCheck executes the Ship Readiness workflow for CLI commands.
+func RunShipCheck(
+	cmd *cobra.Command,
+	topic string,
+	run func(context.Context, *Handle, string) (*development.ShipCheckResult, error),
+) error {
+	session, err := Open(cmd.Context(), config.GetWorkspaceDir())
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	out, err := run(cmd.Context(), session, topic)
+	if err != nil {
+		return err
+	}
+
+	return WriteDEResult(cmd, development.FormatShipCheck(out), out)
+}

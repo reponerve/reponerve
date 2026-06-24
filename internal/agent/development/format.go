@@ -413,6 +413,105 @@ func FormatReviewGuide(out *DevelopmentReviewGuide) string {
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }
 
+// FormatReuseCheck renders a ReuseCheckResult for CLI output.
+func FormatReuseCheck(out *ReuseCheckResult) string {
+	if out == nil {
+		return ""
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "Intent: %s\n\n", out.Intent)
+
+	if len(out.ReuseCandidates) > 0 {
+		b.WriteString("Reuse Candidates:\n")
+		capped := out.ReuseCandidates
+		omitted := 0
+		if len(capped) > MaxReuseCandidates {
+			omitted = len(capped) - MaxReuseCandidates
+			capped = capped[:MaxReuseCandidates]
+		}
+		for _, c := range capped {
+			line := fmt.Sprintf("  - %s [%s]", c.QualifiedName, c.EntityType)
+			if c.DefinedIn != "" {
+				line += fmt.Sprintf(" — %s", c.DefinedIn)
+			}
+			if c.Role != "" {
+				line += fmt.Sprintf(" (%s)", c.Role)
+			}
+			b.WriteString(line + "\n")
+		}
+		if omitted > 0 {
+			fmt.Fprintf(&b, "  - … +%d more (use explain_function or explain_file)\n", omitted)
+		}
+		b.WriteString("\n")
+	} else {
+		b.WriteString("Reuse Candidates: none found — run plan or ask before adding code.\n\n")
+	}
+
+	writeEntitySectionCapped(&b, "Related Decisions", out.RelatedDecisions, MaxImpactedAreas)
+
+	if len(out.Evidence) > 0 {
+		b.WriteString("Evidence:\n")
+		for _, ev := range out.Evidence {
+			fmt.Fprintf(&b, "  - source: %s type: %s\n", ev.Source, ev.Type)
+		}
+		b.WriteString("\n")
+	}
+	if len(out.SourceServices) > 0 {
+		b.WriteString("Source Services:\n")
+		for _, svc := range out.SourceServices {
+			fmt.Fprintf(&b, "  - %s\n", svc)
+		}
+	}
+	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+// FormatShipCheck renders a ShipCheckResult for CLI output.
+func FormatShipCheck(out *ShipCheckResult) string {
+	if out == nil {
+		return ""
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "Topic: %s\n\n", out.Topic)
+
+	writeShipCheckSection(&b, "Ship Blockers", out.ShipBlockers)
+	writeShipCheckSection(&b, "Advisories", out.Advisories)
+
+	writeEntitySectionCapped(&b, "Impacted Areas", out.ImpactedAreas, MaxImpactedAreas)
+	writeEntitySectionCapped(&b, "Related Knowledge", out.RelatedKnowledge, MaxRelatedRefs)
+	writeEntitySectionCapped(&b, "Recommended Reviewers", out.RecommendedReviewers, MaxRelatedRefs)
+
+	if len(out.Evidence) > 0 {
+		b.WriteString("Evidence:\n")
+		for _, ev := range out.Evidence {
+			fmt.Fprintf(&b, "  - source: %s type: %s\n", ev.Source, ev.Type)
+		}
+		b.WriteString("\n")
+	}
+	if len(out.SourceServices) > 0 {
+		b.WriteString("Source Services:\n")
+		for _, svc := range out.SourceServices {
+			fmt.Fprintf(&b, "  - %s\n", svc)
+		}
+	}
+	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+func writeShipCheckSection(b *strings.Builder, title string, items []ShipCheckItem) {
+	if len(items) == 0 {
+		return
+	}
+	fmt.Fprintf(b, "%s:\n", title)
+	limit := MaxShipCheckItems
+	for i, item := range items {
+		if i >= limit {
+			fmt.Fprintf(b, "  - … +%d more\n", len(items)-limit)
+			break
+		}
+		fmt.Fprintf(b, "  - [%s/%s] %s\n", item.Severity, item.Category, item.Message)
+	}
+	b.WriteString("\n")
+}
+
 func writeEntitySectionCapped(b *strings.Builder, title string, refs []EntityRef, limit int) {
 	if len(refs) == 0 {
 		return

@@ -56,6 +56,14 @@ func BuildAgentContextMeta(structured any) AgentContextMeta {
 		return metaFromOnboarding(v)
 	case DevelopmentOnboardingGuide:
 		return metaFromOnboarding(&v)
+	case *ReuseCheckResult:
+		return metaFromReuseCheck(v)
+	case ReuseCheckResult:
+		return metaFromReuseCheck(&v)
+	case *ShipCheckResult:
+		return metaFromShipCheck(v)
+	case ShipCheckResult:
+		return metaFromShipCheck(&v)
 	default:
 		return AgentContextMeta{
 			Kind:             "unknown",
@@ -286,4 +294,48 @@ func metaFromReview(g *DevelopmentReviewGuide) AgentContextMeta {
 			"Involve recommended_reviewers when expertise is required.",
 		},
 	}
+}
+
+func metaFromReuseCheck(r *ReuseCheckResult) AgentContextMeta {
+	if r == nil {
+		return AgentContextMeta{Kind: "reuse_check", Completeness: CompletenessPartial}
+	}
+	meta := AgentContextMeta{
+		Kind:             "reuse_check",
+		MustUseBeforeEdit: true,
+		GuidanceForAgent: append([]string{
+			"Reuse Protocol: extend reuse_candidates before writing new code.",
+			"Use defined_in and explain_function / explain_file to verify fit.",
+		}, guidanceEvidenceOnly...),
+		RecommendedNextTools: r.RecommendedNextTools,
+	}
+	if len(r.ReuseCandidates) > 0 {
+		meta.Completeness = CompletenessFull
+	} else {
+		meta.Completeness = CompletenessPartial
+	}
+	return meta
+}
+
+func metaFromShipCheck(r *ShipCheckResult) AgentContextMeta {
+	if r == nil {
+		return AgentContextMeta{Kind: "ship_check", Completeness: CompletenessPartial}
+	}
+	meta := AgentContextMeta{
+		Kind: "ship_check",
+		GuidanceForAgent: append([]string{
+			"Ship Readiness: resolve ship_blockers before merge.",
+			"Treat advisories as required pre-ship checks unless ruled out with evidence.",
+		}, guidanceEvidenceOnly...),
+		RecommendedNextTools: r.RecommendedNextTools,
+	}
+	if len(r.ShipBlockers) > 0 {
+		meta.Completeness = CompletenessPartial
+		meta.MustUseBeforeEdit = true
+	} else if len(r.Advisories) > 0 || len(r.ImpactedAreas) > 0 {
+		meta.Completeness = CompletenessFull
+	} else {
+		meta.Completeness = CompletenessPartial
+	}
+	return meta
 }

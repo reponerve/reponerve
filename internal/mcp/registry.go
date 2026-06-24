@@ -192,6 +192,14 @@ func NewRegistry() *Registry {
 		Description: "Explain a derived feature with code, ownership, and decision context",
 	})
 	_ = r.Register(ToolDefinition{
+		Name:        "reuse_check",
+		Description: "Find existing symbols and patterns to reuse before writing new code (Reuse Protocol)",
+	})
+	_ = r.Register(ToolDefinition{
+		Name:        "ship_check",
+		Description: "Assess ship readiness with blockers and advisories from repository evidence",
+	})
+	_ = r.Register(ToolDefinition{
 		Name:        "remember",
 		Description: "Store session knowledge as an evidence-backed fact with provenance",
 	})

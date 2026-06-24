@@ -109,9 +109,9 @@ func TestRegistry_Unit(t *testing.T) {
 		r := NewRegistry()
 		list := r.List()
 
-		// Expect exactly 45 tools registered initially
-		if len(list) != 45 {
-			t.Errorf("expected 45 initial tools, got %d", len(list))
+		// Expect exactly 47 tools registered initially
+		if len(list) != 47 {
+			t.Errorf("expected 47 initial tools, got %d", len(list))
 		}
 
 		expectedNames := []string{
@@ -153,7 +153,9 @@ func TestRegistry_Unit(t *testing.T) {
 			"query_graph",
 			"recommend_reviewers",
 			"remember",
+			"reuse_check",
 			"review",
+			"ship_check",
 			"suggest_questions",
 			"trace_contributor",
 			"trace_decision",
@@ -188,10 +190,10 @@ func TestRegistry_Unit(t *testing.T) {
 			t.Errorf("expected description %q, got %q", tool.Description, got.Description)
 		}
 
-		// Verify listing has 46 tools (45 defaults + 1 custom) sorted alphabetically
+		// Verify listing has 48 tools (47 defaults + 1 custom) sorted alphabetically
 		list := r.List()
-		if len(list) != 46 {
-			t.Errorf("expected 46 tools after registration, got %d", len(list))
+		if len(list) != 48 {
+			t.Errorf("expected 48 tools after registration, got %d", len(list))
 		}
 	})
 
@@ -357,6 +359,8 @@ func TestService_Integration(t *testing.T) {
 		"forget":                 true,
 		"query_graph":            true,
 		"remember":               true,
+		"reuse_check":            true,
+		"ship_check":             true,
 		"suggest_questions":      true,
 		"generate_learning_path": true,
 		"generate_change_plan":   true,

@@ -13,7 +13,7 @@ func isDevelopmentTool(name string) bool {
 	switch name {
 	case "ask", "explain", "explain_file", "explain_function", "explain_struct",
 		"explain_interface", "explain_type", "plan", "review", "analyze_topic_impact", "onboard",
-		"list_features", "explain_feature":
+		"list_features", "explain_feature", "reuse_check", "ship_check":
 		return true
 	default:
 		return false
@@ -206,6 +206,41 @@ func (s *Server) handleDevelopmentTool(
 			return true
 		}
 		s.sendDevelopmentResult(id, development.FormatOnboarding(out), out, outOpts)
+
+	case "reuse_check":
+		intent, err := getArg("intent", false)
+		if strings.TrimSpace(intent) == "" {
+			intent, err = getArg("topic", true)
+		}
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return true
+		}
+		out, err := dev.ReuseCheck(ctx, development.DevelopmentRequest{
+			RepositoryID: repoID,
+			Topic:        intent,
+		})
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("reuse_check failed: %v", err))
+			return true
+		}
+		s.sendDevelopmentResult(id, development.FormatReuseCheck(out), out, outOpts)
+
+	case "ship_check":
+		topic, err := getArg("topic", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return true
+		}
+		out, err := dev.ShipCheck(ctx, development.DevelopmentRequest{
+			RepositoryID: repoID,
+			Topic:        topic,
+		})
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("ship_check failed: %v", err))
+			return true
+		}
+		s.sendDevelopmentResult(id, development.FormatShipCheck(out), out, outOpts)
 
 	case "list_features":
 		out, err := dev.ListFeatures(ctx, repoID)

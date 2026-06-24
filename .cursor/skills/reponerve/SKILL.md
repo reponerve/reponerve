@@ -68,7 +68,7 @@ Installed on `reponerve init` (`.cursor/rules/development-discipline.mdc` + `cod
 | Feature / pasted ticket | `plan --json` |
 | Ship / merge / PR | `review --json` |
 | Breaking change | `impact --json` |
-| New code in an area | `ask` for existing implementations (future: `reuse-check`) |
+| New code in an area | `reuse-check --json` |
 
 Skip extra discipline on informational `ask` / `explain-*` only.
 

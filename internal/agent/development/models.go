@@ -156,6 +156,46 @@ type DevelopmentExplanation struct {
 	SourceServices      []string                `json:"source_services"`
 }
 
+// ReuseCandidate is an existing symbol or knowledge artifact to prefer before new code.
+type ReuseCandidate struct {
+	QualifiedName string `json:"qualified_name"`
+	EntityType    string `json:"entity_type"`
+	DefinedIn     string `json:"defined_in,omitempty"`
+	Role          string `json:"role,omitempty"`
+	Rank          int    `json:"rank"`
+}
+
+// ReuseCheckResult is the structured Reuse Protocol output contract.
+type ReuseCheckResult struct {
+	Intent               string           `json:"intent"`
+	ReuseCandidates      []ReuseCandidate `json:"reuse_candidates"`
+	RelatedDecisions     []EntityRef      `json:"related_decisions"`
+	RecommendedNextTools []string         `json:"recommended_next_tools"`
+	Evidence             []EvidenceItem   `json:"evidence"`
+	SourceServices       []string         `json:"source_services"`
+}
+
+// ShipCheckItem is one ship readiness finding.
+type ShipCheckItem struct {
+	Severity string      `json:"severity"`
+	Category string      `json:"category"`
+	Message  string      `json:"message"`
+	Related  []EntityRef `json:"related,omitempty"`
+}
+
+// ShipCheckResult is the structured Ship Readiness output contract.
+type ShipCheckResult struct {
+	Topic                string          `json:"topic"`
+	ImpactedAreas        []EntityRef     `json:"impacted_areas"`
+	RelatedKnowledge     []EntityRef     `json:"related_knowledge"`
+	RecommendedReviewers []EntityRef     `json:"recommended_reviewers"`
+	ShipBlockers         []ShipCheckItem `json:"ship_blockers"`
+	Advisories           []ShipCheckItem `json:"advisories"`
+	RecommendedNextTools []string        `json:"recommended_next_tools"`
+	Evidence             []EvidenceItem  `json:"evidence"`
+	SourceServices       []string        `json:"source_services"`
+}
+
 // ResolvedTopic is the result of topic resolution across authorities.
 type ResolvedTopic struct {
 	Input               string

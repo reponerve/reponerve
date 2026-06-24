@@ -16,9 +16,9 @@ Full spec: `docs/rfc/RFC-003-native-development-discipline.md` (in the RepoNerve
 | User intent | Action |
 | --- | --- |
 | New feature, epic, pasted ticket | `reponerve plan "<task>" --json` before coding |
-| Ship, merge, PR, release | `reponerve review "<topic>" --json` (Ship Readiness — Phase C adds `ship-check`) |
+| Before adding code in an area | `reponerve reuse-check "<intent>" --json` |
+| Ship, merge, PR, release | `reponerve ship-check "<topic>" --json` and `reponerve review "<topic>" --json` |
 | Rename, breaking change, "what breaks?" | `reponerve impact "<subject>" --json` |
-| Before adding code in an area | `reponerve ask "what already implements X?" --json` (Phase B adds `reuse-check`) |
 | Verify one symbol or file | `explain-function` / `explain-file` with `--package` — narrow tools only |
 
 ## Skip discipline overhead
@@ -29,21 +29,21 @@ Answer normally (no extra review framing) when the user:
 - Requests `explain`, `explain-*`, or `ask` for understanding only
 - Requests a small direct edit with clear scope and no ship/review ask
 
-## Reuse Protocol (habit until `reuse-check` ships)
+## Reuse Protocol
 
 Before writing new functions, services, or modules:
 
-1. Run `reponerve plan` or `reponerve ask` for the intent.
-2. Prefer extending existing symbols surfaced in `structured` (entity briefings, plan starting points).
-3. Only add new code when reuse candidates are ruled out with evidence from the envelope.
+1. Run `reponerve reuse-check "<intent>" --json`.
+2. Prefer extending symbols in `reuse_candidates` (check `defined_in`).
+3. Only add new code when reuse candidates are ruled out with envelope evidence.
 
-## Ship Readiness (habit until `ship-check` ships)
+## Ship Readiness
 
 Before recommending merge or deploy:
 
-1. Run `reponerve review` for the change topic.
-2. Surface risks from `structured` evidence — tests, migrations, ADRs, ownership.
-3. State rollback or verification steps when the review pack implies risk.
+1. Run `reponerve ship-check "<topic>" --json`.
+2. Resolve all `ship_blockers`; address `advisories` or document why they do not apply.
+3. Run `reponerve review` when reviewers or ADR context is needed.
 
 ## Non-negotiables
 

@@ -248,7 +248,7 @@ Token Intelligence — Complete
 Evidence Graph & Session Memory — Complete
 Multi-Language Code Intelligence — Complete
 Software Understanding — Delivered
-v1.0.0 — Released (2026-06-18); latest v1.1.0
+v1.0.0 — Released (2026-06-18); latest v1.2.0
 ```
 
 Completed Milestones:
@@ -421,8 +421,9 @@ See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 4
 | **v1.0.0** | — | ✅ Tagged 2026-06-18 |
 | **v1.0.1** | — | ✅ Patch — scan reliability |
 | **v1.1.0** | — | ✅ Bounded DE, feature intelligence, native discipline |
+| **v1.2.0** | — | ✅ Reuse Protocol + Ship Readiness |
 
-See `docs/releases/v1.1.0.md` and `docs/releases/versioning.md` for post-1.0 semver policy.
+See `docs/releases/v1.2.0.md` and `docs/releases/versioning.md` for post-1.0 semver policy.
 
 ---
 

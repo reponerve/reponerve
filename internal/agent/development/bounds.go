@@ -8,6 +8,8 @@ const (
 	MaxPlanStartingPoints   = 8
 	MaxImpactedAreas        = 15
 	MaxRepositoryCodeLinks  = 12
+	MaxReuseCandidates      = 15
+	MaxShipCheckItems       = 10
 )
 
 // EffectiveTokenBudget returns the budget to apply (default when unset).

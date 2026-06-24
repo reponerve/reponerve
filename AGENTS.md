@@ -71,7 +71,7 @@ RepoNerve is consumed in Cursor through **both** an Agent Skill and MCP — not 
 | --- | --- | --- |
 | **Skill** | `.cursor/skills/reponerve/SKILL.md` | Always — context-first workflow, pasted tasks, onboarding, anti-hallucination |
 | **Rule** | `.cursor/rules/reponerve.mdc` | Reminds agents to load the skill before explaining or editing |
-| **MCP** | `.cursor/mcp.json` → `reponerve mcp` | When connected — 45 tools (`ask`, `explain`, `explain_feature`, `list_features`, `plan`, `onboard`, …) |
+| **MCP** | `.cursor/mcp.json` → `reponerve mcp` | When connected — 47 tools (`ask`, `explain`, `reuse_check`, `ship_check`, …) |
 
 **Workflow:** Read the skill → call MCP tools when available → otherwise run matching `reponerve` CLI commands (see `.cursor/skills/reponerve/reference.md`). Do not grep the repo before RepoNerve context is loaded.
 
@@ -101,7 +101,7 @@ RepoNerve is designed for **direct chat** in any major IDE — not only Cursor. 
 
 Post-v1.0 — semver releases on `main` (see `docs/releases/versioning.md`).
 
-`v1.0.0` shipped 2026-06-18. Latest tag: `v1.1.0`. Post-v1.0 work is RFC-gated (`docs/roadmap/v1.x-backlog.md`).
+`v1.0.0` shipped 2026-06-18. Latest tag: `v1.2.0`. Post-v1.0 work is RFC-gated (`docs/roadmap/v1.x-backlog.md`).
 
 ---
 

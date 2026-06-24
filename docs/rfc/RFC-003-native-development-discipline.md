@@ -1,6 +1,6 @@
 # RFC-003: Native Development Discipline
 
-Status: Accepted (Phase A)  
+Status: Accepted (Phase A–C baseline)  
 Date: 2026-06-24
 
 Related:
@@ -63,7 +63,7 @@ Skip discipline framing for informational `ask`, `explain-*`, and narrow verific
 
 ---
 
-## Phase B — Reuse Protocol (v1.2.0)
+## Phase B — Reuse Protocol (shipped)
 
 New command and MCP tool: `reuse_check` / `reponerve reuse-check`
 
@@ -77,7 +77,7 @@ Replaces generic "search the codebase first" prompts with structured reuse candi
 
 ---
 
-## Phase C — Ship Readiness (v1.2.0)
+## Phase C — Ship Readiness (shipped)
 
 New command and MCP tool: `ship_check` / `reponerve ship-check`
 

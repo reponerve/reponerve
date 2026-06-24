@@ -27,8 +27,8 @@ Bundled on `reponerve init` — no separate discipline skills required.
 | Intent | MCP / CLI |
 | --- | --- |
 | Feature / ticket | `plan` |
-| Ship / merge / PR | `review` (Ship Readiness; `ship_check` in v1.2) |
-| Reuse before new code | `ask` (Reuse Protocol; `reuse_check` in v1.2) |
+| Ship / merge / PR | `ship_check`, `review` |
+| Reuse before new code | `reuse_check` |
 
 Rules: `.cursor/rules/development-discipline.mdc`, `coding-guidelines.mdc`
 
