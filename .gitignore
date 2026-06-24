@@ -12,6 +12,8 @@
 *.out
 
 bin/
+!npm/reponerve/bin/
+!npm/reponerve/bin/**
 dist/
 build/
 

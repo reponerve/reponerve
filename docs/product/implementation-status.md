@@ -70,6 +70,7 @@ New work follows semver and RFC policy in `docs/releases/versioning.md`. Out-of-
 | Team Delivery Intelligence (RFC-004) | ✅ v1.3.0 |
 | Configurable document paths (RFC-005) | ✅ v1.3.0 |
 | Binary-first install (docs + script) | ✅ v1.3.1 |
+| npm distribution (RFC-006) | ✅ v1.3.2 |
 
 ---
 

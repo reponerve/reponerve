@@ -1,0 +1,42 @@
+{
+  "name": "reponerve",
+  "version": "1.3.1",
+  "description": "RepoNerve CLI — local-first software understanding for developers and AI agents",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reponerve/reponerve.git",
+    "directory": "npm/reponerve"
+  },
+  "homepage": "https://github.com/reponerve/reponerve#readme",
+  "bugs": {
+    "url": "https://github.com/reponerve/reponerve/issues"
+  },
+  "keywords": [
+    "reponerve",
+    "mcp",
+    "cli",
+    "code-intelligence",
+    "ai",
+    "developer-tools"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "reponerve": "bin/reponerve.js"
+  },
+  "scripts": {
+    "postinstall": "node postinstall.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "postinstall.js",
+    "README.md"
+  ],
+  "reponerve": {
+    "version": "1.3.1",
+    "repo": "reponerve/reponerve"
+  }
+}

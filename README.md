@@ -283,7 +283,15 @@ See `docs/releases/v1.0.0-checklist.md` and `docs/audits/v1.0-release-review.md`
 
 **Full guide:** [`docs/install.md`](docs/install.md)
 
-## No Go required (recommended)
+## npm (Node 18+)
+
+```bash
+npm install -g reponerve
+# or per project:
+npm install -D reponerve && npx reponerve init
+```
+
+## No Go required (shell)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | bash

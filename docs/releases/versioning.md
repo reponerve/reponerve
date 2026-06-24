@@ -37,8 +37,9 @@ RepoNerve uses **two eras** of version tags:
 | `v1.2.0` | 2026-06-24 | Reuse Protocol + Ship Readiness (RFC-003 B/C) |
 | `v1.3.0` | 2026-06-24 | Discipline policy + Team Delivery + document paths (RFC-003 D, RFC-004, RFC-005) |
 | `v1.3.1` | 2026-06-24 | Binary-first install script + release archives |
+| `v1.3.2` | 2026-06-24 | npm distribution (RFC-006) |
 
-Latest tagged release: **`v1.3.1`**.
+Latest tagged release: **`v1.3.2`**.
 
 ---
 
@@ -86,6 +87,7 @@ After `v1.0.0`, follow [Semantic Versioning](https://semver.org/):
 | Discipline policy + Evidence Review + PR Context | `v1.3.0` (RFC-003 D, RFC-004) |
 | Configurable ADR/document paths | `v1.3.0` (RFC-005) |
 | Binary-first install | `v1.3.1` |
+| npm distribution (RFC-006) | `v1.3.2` |
 | Docs-only / council / stale-doc fixes without behavior change | Include in nearest release or `v1.0.2` |
 | Breaking envelope or storage migration | `v2.0.0` (RFC) |
 
@@ -110,6 +112,7 @@ After `v1.0.0`, follow [Semantic Versioning](https://semver.org/):
 4. `git tag vX.Y.Z` on the release commit and `git push origin vX.Y.Z`
 5. **Let GoReleaser publish** — do not run `gh release create` before binaries upload
 6. Verify release archives on GitHub (6 platforms + checksums)
+7. `NPM_TOKEN` set → npm package published from `npm/reponerve` on tag
 
 ---
 

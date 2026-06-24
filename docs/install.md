@@ -6,7 +6,43 @@ No Go toolchain required for the recommended install path. You only need the `re
 
 ---
 
-## Recommended: install script (macOS / Linux)
+## npm (Node.js users)
+
+If you already use Node 18+:
+
+```bash
+npm install -g reponerve
+```
+
+Per project (recommended for JS/TS repos):
+
+```bash
+npm install -D reponerve
+npx reponerve init
+npx reponerve scan
+```
+
+`package.json` scripts example:
+
+```json
+{
+  "scripts": {
+    "reponerve:scan": "reponerve scan",
+    "reponerve:init": "reponerve init"
+  },
+  "devDependencies": {
+    "reponerve": "^1.3.1"
+  }
+}
+```
+
+The npm package downloads the same prebuilt binary as GitHub Releases during `postinstall`. See `docs/rfc/RFC-006-npm-distribution.md`.
+
+Skip download (e.g. CI): `REPONERVE_SKIP_POSTINSTALL=1 npm install`
+
+---
+
+## Install script (macOS / Linux)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | bash

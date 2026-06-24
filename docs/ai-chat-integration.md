@@ -30,13 +30,17 @@ The assistant should invoke `onboard`, `ask`, `plan`, `explain_file`, `analyze_t
 
 ### Prerequisites (once per repository)
 
-Install RepoNerve (no Go required):
+Install RepoNerve (pick one):
 
 ```bash
+# npm (Node 18+)
+npm install -g reponerve
+
+# shell (no Node)
 curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | bash
 ```
 
-See **`docs/install.md`** for manual downloads, Windows, and version pins.
+See **`docs/install.md`** for manual downloads, Windows, per-project `devDependencies`, and version pins.
 
 Then in your repository:
 
