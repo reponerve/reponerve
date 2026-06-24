@@ -14,13 +14,14 @@ BUILD_DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 
 LDFLAGS := -s -w -X main.Version=$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(BUILD_DATE)
 
-.PHONY: help setup tidy verify fmt vet lint test test-race test-integration build install run clean check module-check release-check release-dry scan context mcp
+.PHONY: help setup setup-hooks tidy verify fmt vet lint test test-race test-integration build install run clean check module-check release-check release-dry scan context mcp
 
 help:
 	@echo "RepoNerve Make Targets"
 	@echo ""
 	@echo "Required commands"
 	@echo "  make setup           - download and verify dependencies"
+	@echo "  make setup-hooks     - install commit-msg hook (blocks Co-authored-by)"
 	@echo "  make test            - run full test suite"
 	@echo "  make lint            - run vet and format check"
 	@echo "  make build           - build ./bin/reponerve binary"
@@ -41,6 +42,11 @@ help:
 setup: tidy
 	$(GO) mod download
 	$(GO) mod verify
+
+setup-hooks:
+	git config core.hooksPath .githooks
+	chmod +x .githooks/commit-msg .githooks/prepare-commit-msg
+	@echo "hooksPath set to .githooks (strips and rejects Co-authored-by trailers)"
 
 tidy:
 	$(GO) mod tidy

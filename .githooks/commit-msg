@@ -1,0 +1,7 @@
+#!/bin/sh
+# Reject agent attribution trailers (see AGENTS.md commit policy).
+if grep -qE '^Co-authored-by:' "$1"; then
+  echo "error: Co-authored-by trailers are not allowed in this repository" >&2
+  echo "see AGENTS.md — remove the trailer and commit again" >&2
+  exit 1
+fi

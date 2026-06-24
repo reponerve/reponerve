@@ -1,0 +1,7 @@
+#!/bin/sh
+# Strip agent attribution trailers before commit-msg runs (see AGENTS.md).
+MSG_FILE="$1"
+[ -f "$MSG_FILE" ] || exit 0
+tmp=$(mktemp)
+grep -vE '^Co-authored-by:' "$MSG_FILE" > "$tmp"
+mv "$tmp" "$MSG_FILE"
