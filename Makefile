@@ -14,7 +14,7 @@ BUILD_DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 
 LDFLAGS := -s -w -X main.Version=$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(BUILD_DATE)
 
-.PHONY: help setup tidy verify fmt vet lint test test-race test-integration build run clean check module-check release-check release-dry scan context mcp
+.PHONY: help setup tidy verify fmt vet lint test test-race test-integration build install run clean check module-check release-check release-dry scan context mcp
 
 help:
 	@echo "RepoNerve Make Targets"
@@ -23,7 +23,8 @@ help:
 	@echo "  make setup           - download and verify dependencies"
 	@echo "  make test            - run full test suite"
 	@echo "  make lint            - run vet and format check"
-	@echo "  make build           - build ./reponerve binary"
+	@echo "  make build           - build ./bin/reponerve binary"
+	@echo "  make install         - install reponerve to \$$(go env GOPATH)/bin"
 	@echo ""
 	@echo "Common commands"
 	@echo "  make run             - run CLI from source"
@@ -69,6 +70,9 @@ test-integration:
 
 build:
 	$(GO) build -ldflags "$(LDFLAGS)" -o $(BIN) $(MAIN)
+
+install:
+	$(GO) install -ldflags "$(LDFLAGS)" $(MODULE)/cmd/reponerve
 
 run:
 	$(GO) run $(MAIN)

@@ -30,11 +30,22 @@ The assistant should invoke `onboard`, `ask`, `plan`, `explain_file`, `analyze_t
 
 ### Prerequisites (once per repository)
 
+Install RepoNerve (no Go required):
+
 ```bash
-go install github.com/reponerve/reponerve/cmd/reponerve@latest   # or go install ./cmd/reponerve
+curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | bash
+```
+
+See **`docs/install.md`** for manual downloads, Windows, and version pins.
+
+Then in your repository:
+
+```bash
 reponerve init    # workspace + skill + MCP + Native Development Discipline rules
 reponerve scan
 ```
+
+Go developers may use `make install` or `go install github.com/reponerve/reponerve/cmd/reponerve@v1.3.0` instead.
 
 `reponerve init` writes project integration files (`.cursor/`, `.vscode/mcp.json`, `.continue/`), Native Development Discipline rules (`coding-guidelines.mdc`, `development-discipline.mdc`), and installs the global Cursor skill to `~/.cursor/skills/reponerve/`. See `docs/rfc/RFC-003-native-development-discipline.md`. Re-run `reponerve integrate` to refresh, or `reponerve integrate --force` to overwrite skill files.
 
@@ -46,8 +57,6 @@ reponerve hook status
 ```
 
 Works in any git repo (Cursor, Claude Code, VS Code, terminal agents). `reponerve hook uninstall` removes the RepoNerve block without deleting other hook content.
-
-Install the binary: `go install ./cmd/reponerve` (from this repo) or your release artifact.
 
 ---
 

@@ -41,7 +41,7 @@ Follow these steps in order. **Do not skip RepoNerve and grep the repo.**
 test -f .reponerve/memory.db || (reponerve init && reponerve scan)
 ```
 
-If `reponerve` is not found, tell the user to run `go install ./cmd/reponerve` or install the release binary.
+If `reponerve` is not found, tell the user to run the install script (`curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | bash`) or see `docs/install.md`.
 
 ### Step 2 — Run the matching CLI command with `--json`
 

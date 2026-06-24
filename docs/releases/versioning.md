@@ -104,10 +104,10 @@ After `v1.0.0`, follow [Semantic Versioning](https://semver.org/):
 
 1. RFC approved (MINOR/MAJOR) or trivial fix justified (PATCH)
 2. `go test ./...` passes
-3. `docs/releases/vX.Y.Z.md` written
-4. Stale "latest version" references updated (`README.md`, `AGENTS.md`, `implementation-status.md`)
-5. `git tag vX.Y.Z` on the release commit
-6. GitHub release published from release notes (optional but recommended)
+3. `docs/releases/vX.Y.Z.md` written; stale "latest version" references updated
+4. `git tag vX.Y.Z` on the release commit and `git push origin vX.Y.Z`
+5. **Let GoReleaser publish** — do not run `gh release create` before binaries upload
+6. Verify release archives on GitHub (6 platforms + checksums)
 
 ---
 
@@ -118,6 +118,7 @@ When creating a git tag, update these files if they mention release status:
 * `README.md`
 * `AGENTS.md`
 * `docs/product/implementation-status.md`
+* `docs/install.md` (if install paths changed)
 * `docs/releases/versioning.md` (current release line table)
 
 Historical audit documents (e.g. `docs/audits/v1.0-release-review.md`) may keep their original approval date; add a one-line note that the tag was created rather than rewriting the audit verdict.

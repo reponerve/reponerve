@@ -281,21 +281,25 @@ See `docs/releases/v1.0.0-checklist.md` and `docs/audits/v1.0-release-review.md`
 
 # Installation
 
-## Option 1: Install From Release Artifacts
+**Full guide:** [`docs/install.md`](docs/install.md)
 
-Download the archive for your OS and architecture from GitHub Releases, then place the `reponerve` binary on your `PATH`.
-
-## Option 2: Build From Source
+## No Go required (recommended)
 
 ```bash
-git clone https://github.com/reponerve/reponerve.git
-cd reponerve
-make build
+curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | bash
 ```
 
-The binary is produced at the repository root as `./reponerve`.
+Or download an archive for your OS from [GitHub Releases](https://github.com/reponerve/reponerve/releases) and put `reponerve` on your `PATH`.
 
-## Option 3: Homebrew (After Tap Is Published)
+## Go developers
+
+```bash
+go install github.com/reponerve/reponerve/cmd/reponerve@v1.3.0
+# or from a clone:
+make install
+```
+
+## Homebrew (planned)
 
 ```bash
 brew tap reponerve/reponerve

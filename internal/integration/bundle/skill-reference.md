@@ -53,7 +53,12 @@ Rules: `.cursor/rules/development-discipline.mdc`, `coding-guidelines.mdc`
 
 ## Install this skill in other repos
 
-`reponerve init` installs project and global skill files automatically. To refresh:
+`reponerve init` installs project and global skill files automatically. Install the CLI first — see **`docs/install.md`** (no Go required).
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | bash
+reponerve init && reponerve scan
+```
 
 ```bash
 reponerve integrate          # merge MCP configs, skip existing skill files
