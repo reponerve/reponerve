@@ -35,9 +35,9 @@ RepoNerve uses **two eras** of version tags:
 | `v1.0.1` | 2026-06-19 | Patch — scan reliability on real repositories |
 | `v1.1.0` | 2026-06-24 | Bounded DE, feature intelligence v2, native discipline on init |
 | `v1.2.0` | 2026-06-24 | Reuse Protocol + Ship Readiness (RFC-003 B/C) |
-| `v1.3.0` | 2026-06-24 | Discipline policy + Team Delivery + document paths (RFC-003 D, RFC-004, RFC-005) — planned |
+| `v1.3.0` | 2026-06-24 | Discipline policy + Team Delivery + document paths (RFC-003 D, RFC-004, RFC-005) |
 
-Latest tagged release: **`v1.2.0`** (v1.3.0 in progress).
+Latest tagged release: **`v1.3.0`**.
 
 ---
 
