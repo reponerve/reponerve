@@ -60,6 +60,10 @@ Install the binary: `go install ./cmd/reponerve` (from this repo) or your releas
 | **CLI** | Any IDE terminal | Same semantics; agent runs commands for you |
 | **Export / paste** | Web LLMs (ChatGPT, Gemini, Claude.ai) | `reponerve context export` or MCP `export_context` |
 
+### Software Development Council
+
+For multi-perspective review (architecture, security, shipping, product), Cursor loads `.cursor/rules/software-development-council.mdc`. Ask normally — the agent auto-routes to relevant council members. Full spec: `docs/council/software-development-council.md`.
+
 ---
 
 ## IDE setup (quick reference)
