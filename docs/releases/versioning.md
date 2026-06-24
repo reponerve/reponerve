@@ -33,8 +33,9 @@ RepoNerve uses **two eras** of version tags:
 | --- | --- | --- |
 | `v1.0.0` | 2026-06-18 | First product release — complete v1.0 scope |
 | `v1.0.1` | 2026-06-19 | Patch — scan reliability on real repositories |
+| `v1.1.0` | 2026-06-24 | Bounded DE, feature intelligence v2, native discipline on init |
 
-Latest tagged release: **`v1.0.1`**.
+Latest tagged release: **`v1.1.0`**.
 
 ---
 

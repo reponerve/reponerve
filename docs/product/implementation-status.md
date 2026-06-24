@@ -62,9 +62,9 @@ New work follows semver and RFC policy in `docs/releases/versioning.md`. Out-of-
 
 | Item | Status |
 | --- | --- |
-| Bounded agent responses (RFC-001) | In progress |
-| Feature Intelligence v2 (RFC-002) | In progress |
-| Native Development Discipline Phase A (RFC-003) | ✅ Bundled on `init` |
+| Bounded agent responses (RFC-001) | ✅ v1.1.0 |
+| Feature Intelligence v2 (RFC-002) | ✅ v1.1.0 |
+| Native Development Discipline Phase A (RFC-003) | ✅ v1.1.0 |
 | Reuse Protocol + Ship Readiness (RFC-003 B/C) | Planned v1.2 |
 
 ---
