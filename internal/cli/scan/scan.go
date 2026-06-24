@@ -7,6 +7,7 @@ import (
 
 	codelinker "github.com/reponerve/reponerve/internal/code/linker"
 	"github.com/reponerve/reponerve/internal/code/indexer"
+	"github.com/reponerve/reponerve/internal/agent/discipline"
 	"github.com/reponerve/reponerve/internal/config"
 	"github.com/reponerve/reponerve/internal/ingestion"
 	"github.com/reponerve/reponerve/internal/memory/searchindex"
@@ -71,7 +72,7 @@ func NewCommand() *cobra.Command {
 
 			reg := ingestion.NewRegistry()
 			reg.Register("git", git.NewScanner(scanStateStore))
-			reg.Register("adr", adr.NewScanner())
+			reg.Register("adr", adr.NewScanner(cfg.Ingestion.DocumentPaths...))
 
 			pipeline := ingestion.NewPipeline(reg)
 			coord := ingestion.NewCoordinator(
@@ -117,6 +118,21 @@ func NewCommand() *cobra.Command {
 				return fmt.Errorf("failed to rebuild search index: %w", err)
 			}
 
+			codeEntities, err := storage.NewSQLiteCodeEntityReader(db).ListByRepository(cmd.Context(), result.RepositoryID)
+			if err != nil {
+				return fmt.Errorf("failed to list code entities for discipline policy: %w", err)
+			}
+			policy := discipline.Derive(cmd.Context(), discipline.DeriveInput{
+				RepositoryID:   result.RepositoryID,
+				RepositoryPath: cfg.Repository.Path,
+				ADRsIndexed:    result.ADRsIndexed,
+				CodeEntities:   codeEntities,
+				DocumentPaths:  cfg.ResolvedDocumentPaths(),
+			})
+			if err := discipline.WritePolicy(workspaceDir, policy); err != nil {
+				return fmt.Errorf("failed to write discipline policy: %w", err)
+			}
+
 			// 3. Print results
 			cmd.Println("✓ Repository discovered")
 			cmd.Printf("✓ %d commits indexed\n", result.CommitsIndexed)
@@ -124,6 +140,7 @@ func NewCommand() *cobra.Command {
 			cmd.Println("✓ Code intelligence indexed")
 			cmd.Println("✓ Repository-code links updated")
 			cmd.Println("✓ Search index rebuilt")
+			cmd.Println("✓ Discipline policy updated")
 			cmd.Println("Scan completed.")
 
 			return nil

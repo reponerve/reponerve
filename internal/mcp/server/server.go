@@ -1498,6 +1498,21 @@ func getInputSchema(toolName string) InputSchema {
 			"description": "Optional repository filter",
 		}
 
+	case "pr_context":
+		schema.Properties["changed_files"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Comma-separated changed file paths from the pull request diff",
+		}
+		schema.Required = []string{"changed_files"}
+		schema.Properties["topic"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional topic override (defaults to path-derived scope)",
+		}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
 	case "discover_surprises", "suggest_questions":
 		schema.Properties["repository_id"] = map[string]interface{}{
 			"type":        "string",

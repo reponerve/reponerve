@@ -94,6 +94,8 @@ type DevelopmentReviewGuide struct {
 	RequiredExpertise    []EntityRef             `json:"required_expertise"`
 	AffectedAreas        []EntityRef             `json:"affected_areas"`
 	RelatedKnowledge     []EntityRef             `json:"related_knowledge"`
+	DisciplineChecks     []DisciplineCheck       `json:"discipline_checks,omitempty"`
+	RecommendedNextTools []string                `json:"recommended_next_tools,omitempty"`
 	SuggestedWorkflow    string                  `json:"suggested_workflow"`
 	RepositoryCodeLinks  []RepositoryCodeLinkRef `json:"repository_code_links"`
 	Evidence             []EvidenceItem          `json:"evidence"`

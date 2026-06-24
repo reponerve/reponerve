@@ -1,5 +1,9 @@
 package development
 
+import (
+	"github.com/reponerve/reponerve/internal/agent/discipline"
+)
+
 // Agent context completeness levels for MCP responses.
 const (
 	CompletenessFull          = "full"
@@ -19,14 +23,15 @@ var guidanceTokenDiscipline = []string{
 
 // AgentContextMeta tells AI consumers how to use a Development Experience payload.
 type AgentContextMeta struct {
-	Kind                 string   `json:"kind"`
-	Completeness         string   `json:"completeness"`
-	MustUseBeforeEdit    bool     `json:"must_use_before_edit"`
-	Truncated            bool     `json:"truncated,omitempty"`
-	TruncatedFields      []string `json:"truncated_fields,omitempty"`
-	PreferNarrowTools    []string `json:"prefer_narrow_tools,omitempty"`
-	GuidanceForAgent     []string `json:"guidance_for_agent"`
-	RecommendedNextTools []string `json:"recommended_next_tools,omitempty"`
+	Kind                 string                   `json:"kind"`
+	Completeness         string                   `json:"completeness"`
+	MustUseBeforeEdit    bool                     `json:"must_use_before_edit"`
+	Truncated            bool                     `json:"truncated,omitempty"`
+	TruncatedFields      []string                 `json:"truncated_fields,omitempty"`
+	PreferNarrowTools    []string                 `json:"prefer_narrow_tools,omitempty"`
+	GuidanceForAgent     []string                 `json:"guidance_for_agent"`
+	RecommendedNextTools []string                 `json:"recommended_next_tools,omitempty"`
+	DisciplinePolicy     *discipline.AgentSummary `json:"discipline_policy,omitempty"`
 }
 
 // BuildAgentContextMeta derives agent instructions from a structured DE payload.
@@ -64,6 +69,10 @@ func BuildAgentContextMeta(structured any) AgentContextMeta {
 		return metaFromShipCheck(v)
 	case ShipCheckResult:
 		return metaFromShipCheck(&v)
+	case *PRContextResult:
+		return metaFromPRContext(v)
+	case PRContextResult:
+		return metaFromPRContext(&v)
 	default:
 		return AgentContextMeta{
 			Kind:             "unknown",
@@ -285,15 +294,49 @@ func metaFromReview(g *DevelopmentReviewGuide) AgentContextMeta {
 		return AgentContextMeta{Kind: "review", Completeness: CompletenessPartial}
 	}
 
-	return AgentContextMeta{
-		Kind:         "review",
-		Completeness: CompletenessFull,
+	meta := AgentContextMeta{
+		Kind:              "review",
+		Completeness:      CompletenessFull,
 		MustUseBeforeEdit: false,
+		RecommendedNextTools: g.RecommendedNextTools,
 		GuidanceForAgent: []string{
 			"Verify affected_areas and related_knowledge before merge.",
 			"Involve recommended_reviewers when expertise is required.",
 		},
 	}
+	if len(g.DisciplineChecks) > 0 {
+		meta.GuidanceForAgent = append(meta.GuidanceForAgent,
+			"Apply discipline_checks from repository policy before merge.",
+		)
+	}
+	return meta
+}
+
+func metaFromPRContext(r *PRContextResult) AgentContextMeta {
+	if r == nil {
+		return AgentContextMeta{Kind: "pr_context", Completeness: CompletenessPartial}
+	}
+	meta := AgentContextMeta{
+		Kind:         "pr_context",
+		Completeness: CompletenessFull,
+		GuidanceForAgent: []string{
+			"Use pr_comment_markdown for PR comments; cite only nested review and ship_check evidence.",
+			"Do not grep changed_files — use recommended_next_tools for specifics.",
+		},
+		RecommendedNextTools: []string{"review", "ship_check", "analyze_topic_impact"},
+	}
+	if r.Review != nil && len(r.Review.DisciplineChecks) > 0 {
+		meta.GuidanceForAgent = append(meta.GuidanceForAgent,
+			"Apply discipline_checks before approving the pull request.",
+		)
+	}
+	if r.ShipCheck != nil && len(r.ShipCheck.ShipBlockers) > 0 {
+		meta.MustUseBeforeEdit = true
+		meta.GuidanceForAgent = append(meta.GuidanceForAgent,
+			"Resolve ship_blockers before merge.",
+		)
+	}
+	return meta
 }
 
 func metaFromReuseCheck(r *ReuseCheckResult) AgentContextMeta {

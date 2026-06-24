@@ -148,3 +148,24 @@ func RunShipCheck(
 
 	return WriteDEResult(cmd, development.FormatShipCheck(out), out)
 }
+
+// RunPRContext executes the PR Context workflow for CLI commands.
+func RunPRContext(
+	cmd *cobra.Command,
+	topic string,
+	files []string,
+	run func(context.Context, *Handle, string, []string) (*development.PRContextResult, error),
+) error {
+	session, err := Open(cmd.Context(), config.GetWorkspaceDir())
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	out, err := run(cmd.Context(), session, topic, files)
+	if err != nil {
+		return err
+	}
+
+	return WriteDEResult(cmd, development.FormatPRContext(out), out)
+}

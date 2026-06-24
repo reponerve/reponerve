@@ -200,6 +200,10 @@ func NewRegistry() *Registry {
 		Description: "Assess ship readiness with blockers and advisories from repository evidence",
 	})
 	_ = r.Register(ToolDefinition{
+		Name:        "pr_context",
+		Description: "Assemble PR evidence from changed files (review + ship readiness + comment markdown)",
+	})
+	_ = r.Register(ToolDefinition{
 		Name:        "remember",
 		Description: "Store session knowledge as an evidence-backed fact with provenance",
 	})

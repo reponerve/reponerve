@@ -15,11 +15,20 @@ import (
 
 // Scanner provides functionality to discover and parse Architecture Decision Records (ADRs).
 type Scanner struct {
+	documentPaths []DocumentPath
 }
 
-// NewScanner creates a new Scanner instance.
-func NewScanner() *Scanner {
-	return &Scanner{}
+// NewScanner creates a scanner using default and configured document paths.
+func NewScanner(documentPaths ...DocumentPath) *Scanner {
+	return &Scanner{documentPaths: ResolveDocumentPaths(documentPaths)}
+}
+
+// DocumentPaths returns the resolved scan paths for this scanner.
+func (s *Scanner) DocumentPaths() []DocumentPath {
+	if s == nil {
+		return DefaultDocumentPaths()
+	}
+	return s.documentPaths
 }
 
 // ParseADR parses the raw markdown content to extract the main title and status.
@@ -68,26 +77,17 @@ type scanTarget struct {
 	idPrefix   string
 }
 
-// Scan discovers ADR and architecture markdown files under supported directories.
+// Scan discovers ADR and architecture markdown files under configured directories.
 func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.Source, error) {
 	var sources []*models.Source
-
-	targets := []scanTarget{
-		{dir: filepath.Join(repo.Path, "docs", "adr"), sourceType: "adr", idPrefix: "adr_"},
-		{dir: filepath.Join(repo.Path, "docs", "adrs"), sourceType: "adr", idPrefix: "adr_"},
-		{dir: filepath.Join(repo.Path, "adr"), sourceType: "adr", idPrefix: "adr_"},
-		{dir: filepath.Join(repo.Path, "adrs"), sourceType: "adr", idPrefix: "adr_"},
-		{dir: filepath.Join(repo.Path, "docs", "architecture"), sourceType: "architecture_doc", idPrefix: "archdoc_"},
-	}
-
-	for _, target := range targets {
+	for _, docPath := range s.documentPaths {
+		target := docPath.scanTarget(repo.Path)
 		batch, err := s.scanDirectory(ctx, repo, target)
 		if err != nil {
 			return nil, err
 		}
 		sources = append(sources, batch...)
 	}
-
 	return sources, nil
 }
 

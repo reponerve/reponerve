@@ -47,6 +47,7 @@ func NewMCPResultWithFormat(formatted string, structured any, opts OutputOptions
 	display := ApplyOutputFormat(formatted, opts)
 	meta := BuildAgentContextMeta(pruned)
 	ApplyPruneReport(&meta, report)
+	applyDisciplinePolicy(&meta)
 	return MCPResult{
 		Formatted:  display,
 		Structured: pruned,

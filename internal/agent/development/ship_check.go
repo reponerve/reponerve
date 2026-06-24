@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/reponerve/reponerve/internal/agent/discipline"
+	"github.com/reponerve/reponerve/internal/config"
 )
 
 // ShipCheck assembles pre-ship blockers and advisories from review and impact evidence.
@@ -46,7 +49,30 @@ func (s *Service) ShipCheck(ctx context.Context, req DevelopmentRequest) (*ShipC
 		"advisory_count": strconv.Itoa(len(out.Advisories)),
 	})
 
+	appendPolicyAdvisories(out)
+
 	return out, nil
+}
+
+func appendPolicyAdvisories(out *ShipCheckResult) {
+	policy, err := discipline.LoadPolicy(config.GetWorkspaceDir())
+	if err != nil || policy == nil {
+		return
+	}
+	for _, hint := range policy.ShipCheckHints {
+		out.Advisories = append(out.Advisories, ShipCheckItem{
+			Severity: "advisory",
+			Category: "repository_policy",
+			Message:  hint,
+		})
+	}
+	if policy.RequireADROnArchitecture && policy.ADRDirectory != "" {
+		out.Advisories = append(out.Advisories, ShipCheckItem{
+			Severity: "advisory",
+			Category: "adr",
+			Message:  "Repository uses ADRs in " + policy.ADRDirectory + " — confirm architecture changes are recorded",
+		})
+	}
 }
 
 func shipBlockersFromEvidence(

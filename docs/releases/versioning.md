@@ -35,8 +35,9 @@ RepoNerve uses **two eras** of version tags:
 | `v1.0.1` | 2026-06-19 | Patch — scan reliability on real repositories |
 | `v1.1.0` | 2026-06-24 | Bounded DE, feature intelligence v2, native discipline on init |
 | `v1.2.0` | 2026-06-24 | Reuse Protocol + Ship Readiness (RFC-003 B/C) |
+| `v1.3.0` | 2026-06-24 | Discipline policy + Team Delivery + document paths (RFC-003 D, RFC-004, RFC-005) — planned |
 
-Latest tagged release: **`v1.2.0`**.
+Latest tagged release: **`v1.2.0`** (v1.3.0 in progress).
 
 ---
 
@@ -81,6 +82,8 @@ After `v1.0.0`, follow [Semantic Versioning](https://semver.org/):
 | --- | --- |
 | Bounded agent responses + Feature Intelligence v2 + MCP tool additions | `v1.1.0` |
 | Reuse Protocol (`reuse-check`) + Ship Readiness (`ship-check`) | `v1.2.0` (RFC-003 B/C) |
+| Discipline policy + Evidence Review + PR Context | `v1.3.0` (RFC-003 D, RFC-004) |
+| Configurable ADR/document paths | `v1.3.0` (RFC-005) |
 | Docs-only / council / stale-doc fixes without behavior change | Include in nearest release or `v1.0.2` |
 | Breaking envelope or storage migration | `v2.0.0` (RFC) |
 

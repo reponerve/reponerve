@@ -13,7 +13,7 @@ func isDevelopmentTool(name string) bool {
 	switch name {
 	case "ask", "explain", "explain_file", "explain_function", "explain_struct",
 		"explain_interface", "explain_type", "plan", "review", "analyze_topic_impact", "onboard",
-		"list_features", "explain_feature", "reuse_check", "ship_check":
+		"list_features", "explain_feature", "reuse_check", "ship_check", "pr_context":
 		return true
 	default:
 		return false
@@ -242,6 +242,24 @@ func (s *Server) handleDevelopmentTool(
 		}
 		s.sendDevelopmentResult(id, development.FormatShipCheck(out), out, outOpts)
 
+	case "pr_context":
+		filesRaw, err := getArg("changed_files", true)
+		if err != nil {
+			s.sendToolError(id, err.Error())
+			return true
+		}
+		topic, _ := getArg("topic", false)
+		out, err := dev.PreparePRContext(ctx, development.PRContextRequest{
+			RepositoryID: repoID,
+			Topic:        topic,
+			ChangedFiles: splitChangedFiles(filesRaw),
+		})
+		if err != nil {
+			s.sendToolError(id, fmt.Sprintf("pr_context failed: %v", err))
+			return true
+		}
+		s.sendDevelopmentResult(id, development.FormatPRContext(out), out, outOpts)
+
 	case "list_features":
 		out, err := dev.ListFeatures(ctx, repoID)
 		if err != nil {
@@ -269,6 +287,18 @@ func (s *Server) handleDevelopmentTool(
 	}
 
 	return true
+}
+
+func splitChangedFiles(raw string) []string {
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 func (s *Server) sendDevelopmentResult(id *json.RawMessage, formatted string, structured any, opts development.OutputOptions) {

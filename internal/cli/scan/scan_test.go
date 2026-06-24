@@ -115,6 +115,8 @@ func TestScanCommand_Success(t *testing.T) {
 		"✓ Repository discovered",
 		"✓ 1 commits indexed",
 		"✓ 0 ADRs indexed",
+		"✓ Search index rebuilt",
+		"✓ Discipline policy updated",
 		"Scan completed.",
 	}
 	for _, sub := range expectedSubstrings {

@@ -47,6 +47,7 @@ func Install(opts Options) (Result, error) {
 		{"rule-reponerve.mdc", ".cursor/rules/reponerve.mdc", nil},
 		{"rule-coding-guidelines.mdc", ".cursor/rules/coding-guidelines.mdc", nil},
 		{"rule-development-discipline.mdc", ".cursor/rules/development-discipline.mdc", nil},
+		{"github-workflow-reponerve-pr.yml", ".github/workflows/reponerve-pr.yml.example", nil},
 	}
 
 	for _, file := range projectFiles {

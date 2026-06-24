@@ -36,7 +36,7 @@ Related:
 | Graph intelligence | ✅ | Traversal, impact, communities, discovery |
 | Development Experience CLI | ✅ | ask, explain, explain-feature, list-features, plan, impact, review, onboard, … |
 | Session memory | ✅ | remember, forget, handoff |
-| MCP server | ✅ | 47 tools |
+| MCP server | ✅ | 48 tools |
 | Agent hooks | ✅ | `reponerve hook install` |
 | CI | ✅ | `.github/workflows/test.yml` |
 
@@ -66,6 +66,9 @@ New work follows semver and RFC policy in `docs/releases/versioning.md`. Out-of-
 | Feature Intelligence v2 (RFC-002) | ✅ v1.1.0 |
 | Native Development Discipline Phase A (RFC-003) | ✅ v1.1.0 |
 | Reuse Protocol + Ship Readiness (RFC-003 B/C) | ✅ v1.2.0 |
+| Repo-adaptive discipline policy (RFC-003 D) | ✅ v1.3.0 (planned) |
+| Team Delivery Intelligence (RFC-004) | ✅ Implemented (pending v1.3.0 tag) |
+| Configurable document paths (RFC-005) | ✅ Implemented (pending v1.3.0 tag) |
 
 ---
 

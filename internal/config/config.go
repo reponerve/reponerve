@@ -5,12 +5,18 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/reponerve/reponerve/internal/scanner/adr"
 	"github.com/spf13/viper"
 )
 
 // RepositoryConfig defines configuration for the repository settings.
 type RepositoryConfig struct {
 	Path string `mapstructure:"path"`
+}
+
+// IngestionConfig defines optional scan ingestion overrides.
+type IngestionConfig struct {
+	DocumentPaths []adr.DocumentPath `mapstructure:"document_paths"`
 }
 
 // StorageConfig defines configuration for SQLite storage path.
@@ -26,8 +32,17 @@ type AIConfig struct {
 // Config represents the complete application configuration structure.
 type Config struct {
 	Repository RepositoryConfig `mapstructure:"repository"`
+	Ingestion  IngestionConfig  `mapstructure:"ingestion"`
 	Storage    StorageConfig    `mapstructure:"storage"`
 	AI         AIConfig         `mapstructure:"ai"`
+}
+
+// ResolvedDocumentPaths returns merged ingestion document paths for scan and discipline.
+func (c *Config) ResolvedDocumentPaths() []adr.DocumentPath {
+	if c == nil {
+		return adr.ResolveDocumentPaths(nil)
+	}
+	return adr.ResolveDocumentPaths(c.Ingestion.DocumentPaths)
 }
 
 // DefaultConfig returns a Config with default values.

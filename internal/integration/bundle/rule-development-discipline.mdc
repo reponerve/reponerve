@@ -17,7 +17,7 @@ Full spec: `docs/rfc/RFC-003-native-development-discipline.md` (in the RepoNerve
 | --- | --- |
 | New feature, epic, pasted ticket | `reponerve plan "<task>" --json` before coding |
 | Before adding code in an area | `reponerve reuse-check "<intent>" --json` |
-| Ship, merge, PR, release | `reponerve ship-check "<topic>" --json` and `reponerve review "<topic>" --json` |
+| Ship, merge, PR, release | `reponerve ship-check`, `reponerve review`, `reponerve pr-context` on changed files |
 | Rename, breaking change, "what breaks?" | `reponerve impact "<subject>" --json` |
 | Verify one symbol or file | `explain-function` / `explain-file` with `--package` — narrow tools only |
 
@@ -44,6 +44,7 @@ Before recommending merge or deploy:
 1. Run `reponerve ship-check "<topic>" --json`.
 2. Resolve all `ship_blockers`; address `advisories` or document why they do not apply.
 3. Run `reponerve review` when reviewers or ADR context is needed.
+4. For pull requests, use `reponerve pr-context` on changed files (or enable `.github/workflows/reponerve-pr.yml.example` from `reponerve integrate`).
 
 ## Non-negotiables
 

@@ -382,6 +382,22 @@ func FormatReviewGuide(out *DevelopmentReviewGuide) string {
 	writeEntitySection(&b, "Affected Areas", out.AffectedAreas)
 	writeEntitySection(&b, "Related Knowledge", out.RelatedKnowledge)
 
+	if len(out.DisciplineChecks) > 0 {
+		b.WriteString("Discipline Checks:\n")
+		for _, check := range out.DisciplineChecks {
+			fmt.Fprintf(&b, "  - [%s/%s] %s\n", check.Category, check.Severity, check.Message)
+		}
+		b.WriteString("\n")
+	}
+
+	if len(out.RecommendedNextTools) > 0 {
+		b.WriteString("Recommended Next Tools:\n")
+		for _, tool := range out.RecommendedNextTools {
+			fmt.Fprintf(&b, "  - %s\n", tool)
+		}
+		b.WriteString("\n")
+	}
+
 	if out.SuggestedWorkflow != "" {
 		fmt.Fprintf(&b, "Suggested Workflow: %s\n\n", out.SuggestedWorkflow)
 	}

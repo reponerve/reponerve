@@ -16,6 +16,8 @@ Use **MCP tools** when connected; otherwise use **CLI** (same semantics).
 | Type alias | `explain_type` | `reponerve explain-type "Name" --json` |
 | Topic impact | `analyze_topic_impact` | `reponerve impact "subject" --json` |
 | Review prep | `review` | `reponerve review "topic" --json` |
+| PR / CI context | `pr_context` | `reponerve pr-context path/to/file.go --json` |
+| Discipline policy | — | `reponerve discipline-policy --json` |
 | Day-one orientation | `onboard` | `reponerve onboard --json` |
 
 ## Native Development Discipline
@@ -25,8 +27,9 @@ Bundled on `reponerve init` — no separate discipline skills required.
 | Intent | MCP / CLI |
 | --- | --- |
 | Feature / ticket | `plan` |
-| Ship / merge / PR | `ship_check`, `review` |
+| Ship / merge / PR | `ship_check`, `review`, `pr_context` |
 | Reuse before new code | `reuse_check` |
+| Repo discipline policy | `discipline-policy` (after `scan`) |
 
 Rules: `.cursor/rules/development-discipline.mdc`, `coding-guidelines.mdc`
 

@@ -9,9 +9,11 @@ type MCPResult struct {
 
 // NewMCPResult builds the agent context envelope for MCP and JSON consumers.
 func NewMCPResult(formatted string, structured any) MCPResult {
+	meta := BuildAgentContextMeta(structured)
+	applyDisciplinePolicy(&meta)
 	return MCPResult{
 		Formatted:  formatted,
 		Structured: structured,
-		Agent:      BuildAgentContextMeta(structured),
+		Agent:      meta,
 	}
 }

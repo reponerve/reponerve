@@ -141,5 +141,6 @@ func (s *Service) PrepareReview(ctx context.Context, req DevelopmentRequest) (*D
 	sortEntityRefs(out.RelatedKnowledge)
 	sortEvidence(out.Evidence)
 	sortRepositoryCodeLinks(out.RepositoryCodeLinks)
+	appendReviewDiscipline(out)
 	return out, nil
 }

@@ -100,6 +100,44 @@ func PruneStructured(structured any) (any, PruneReport) {
 	case ShipCheckResult:
 		out, r := PruneStructured(&v)
 		return *out.(*ShipCheckResult), r
+	case *DevelopmentReviewGuide:
+		if v == nil {
+			return structured, report
+		}
+		c := *v
+		c.DisciplineChecks, report = pruneDisciplineChecks(c.DisciplineChecks, report)
+		c.Evidence, report = pruneEvidence(c.Evidence, report)
+		c.AffectedAreas, report = pruneImpacted(c.AffectedAreas, report)
+		return &c, report
+	case DevelopmentReviewGuide:
+		out, r := PruneStructured(&v)
+		return *out.(*DevelopmentReviewGuide), r
+	case *PRContextResult:
+		if v == nil {
+			return structured, report
+		}
+		c := *v
+		if c.Review != nil {
+			r, pr := PruneStructured(c.Review)
+			c.Review = r.(*DevelopmentReviewGuide)
+			report = mergePruneReport(report, pr)
+		}
+		if c.ShipCheck != nil {
+			s, pr := PruneStructured(c.ShipCheck)
+			c.ShipCheck = s.(*ShipCheckResult)
+			report = mergePruneReport(report, pr)
+		}
+		c.Evidence, report = pruneEvidence(c.Evidence, report)
+		if len(c.ChangedFiles) > MaxChangedFilesPR {
+			report.Truncated = true
+			report.TruncatedFields = append(report.TruncatedFields, "changed_files")
+			report.OmittedCounts["changed_files"] = len(c.ChangedFiles) - MaxChangedFilesPR
+			c.ChangedFiles = c.ChangedFiles[:MaxChangedFilesPR]
+		}
+		return &c, report
+	case PRContextResult:
+		out, r := PruneStructured(&v)
+		return *out.(*PRContextResult), r
 	default:
 		return structured, report
 	}
@@ -183,6 +221,16 @@ func pruneShipItems(items []ShipCheckItem, field string, report PruneReport) ([]
 	report.TruncatedFields = append(report.TruncatedFields, field)
 	report.OmittedCounts[field] = len(items) - MaxShipCheckItems
 	return items[:MaxShipCheckItems], report
+}
+
+func pruneDisciplineChecks(checks []DisciplineCheck, report PruneReport) ([]DisciplineCheck, PruneReport) {
+	if len(checks) <= MaxDisciplineChecks {
+		return checks, report
+	}
+	report.Truncated = true
+	report.TruncatedFields = append(report.TruncatedFields, "discipline_checks")
+	report.OmittedCounts["discipline_checks"] = len(checks) - MaxDisciplineChecks
+	return checks[:MaxDisciplineChecks], report
 }
 
 func mergePruneReport(base, add PruneReport) PruneReport {

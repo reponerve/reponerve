@@ -24,6 +24,8 @@ import (
 	reviewcmd "github.com/reponerve/reponerve/internal/cli/reviewcmd"
 	reusecheckcmd "github.com/reponerve/reponerve/internal/cli/reusecheck"
 	shipcheckcmd "github.com/reponerve/reponerve/internal/cli/shipcheck"
+	disciplinepolicycmd "github.com/reponerve/reponerve/internal/cli/disciplinepolicy"
+	prcontextcmd "github.com/reponerve/reponerve/internal/cli/prcontext"
 	hookcmd "github.com/reponerve/reponerve/internal/cli/hook"
 	initcmd "github.com/reponerve/reponerve/internal/cli/init"
 	integratecmd "github.com/reponerve/reponerve/internal/cli/integrate"
@@ -66,6 +68,8 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(reviewcmd.NewCommand())
 	rootCmd.AddCommand(reusecheckcmd.NewCommand())
 	rootCmd.AddCommand(shipcheckcmd.NewCommand())
+	rootCmd.AddCommand(disciplinepolicycmd.NewCommand())
+	rootCmd.AddCommand(prcontextcmd.NewCommand())
 	rootCmd.AddCommand(impactcmd.NewCommand())
 	rootCmd.AddCommand(memorycmd.NewCommand())
 	rootCmd.AddCommand(contextcmd.NewCommand())

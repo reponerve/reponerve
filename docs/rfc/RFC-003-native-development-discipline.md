@@ -1,6 +1,6 @@
 # RFC-003: Native Development Discipline
 
-Status: Accepted (Phase A–C baseline)  
+Status: Accepted (Phase A–D)  
 Date: 2026-06-24
 
 Related:
@@ -32,7 +32,7 @@ RepoNerve ships **Native Development Discipline** by default on `reponerve init`
 | Umbrella | **Development Discipline** | Bundled Cursor rules + agent envelope guidance |
 | Reuse existing code first | **Reuse Protocol** | `reuse_check` CLI/MCP (Phase B) |
 | Pre-merge / pre-ship validation | **Ship Readiness** | `ship_check` CLI/MCP (Phase C) |
-| Structured critique of a change | **Evidence Review** | Enhanced `review` output + discipline packs |
+| Structured critique of a change | **Evidence Review** | Enhanced `review` output + discipline packs — see RFC-004 |
 
 Do not reference external discipline products in docs, rules, or code comments.
 
@@ -92,13 +92,15 @@ Output:
 
 ---
 
-## Phase D — Repo-adaptive policy (future)
+## Phase D — Repo-adaptive policy (shipped)
 
-After `scan`, generate `.reponerve/discipline-policy.json`:
+After `scan`, writes `.reponerve/discipline-policy.json`:
 
-- Detected ADR directory → offer ADR on architecture changes
-- CI workflow files → link ship checks to pipeline
-- Dominant language / layout → layer conventions in agent envelope
+- Detected ADR directory → `require_adr_on_architecture` + ship hints
+- CI workflow files → linked in `ship_check` advisories
+- Dominant language + layout → `layer_conventions` in `agent.discipline_policy`
+
+CLI: `reponerve discipline-policy --json`
 
 ---
 
@@ -117,3 +119,4 @@ After `scan`, generate `.reponerve/discipline-policy.json`:
 | A | Fresh `reponerve init` writes three rules; skill references discipline workflow |
 | B | `reuse_check "add OAuth"` returns symbol candidates with `defined_in` and evidence |
 | C | `ship_check` returns structured blockers for a scoped change topic |
+| D | `scan` writes `discipline-policy.json`; DE envelopes include `agent.discipline_policy` |

@@ -10,6 +10,8 @@ const (
 	MaxRepositoryCodeLinks  = 12
 	MaxReuseCandidates      = 15
 	MaxShipCheckItems       = 10
+	MaxDisciplineChecks     = 12
+	MaxChangedFilesPR       = 30
 )
 
 // EffectiveTokenBudget returns the budget to apply (default when unset).
