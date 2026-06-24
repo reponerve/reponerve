@@ -101,7 +101,7 @@ RepoNerve is designed for **direct chat** in any major IDE — not only Cursor. 
 
 Post-v1.0 — semver releases on `main` (see `docs/releases/versioning.md`).
 
-`v1.0.0` shipped 2026-06-18. Latest tag: `v1.3.0`. Post-v1.0 work is RFC-gated (`docs/roadmap/v1.x-backlog.md`).
+`v1.0.0` shipped 2026-06-18. Latest tag: `v1.3.1`. Post-v1.0 work is RFC-gated (`docs/roadmap/v1.x-backlog.md`).
 
 ---
 

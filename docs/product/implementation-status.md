@@ -69,6 +69,7 @@ New work follows semver and RFC policy in `docs/releases/versioning.md`. Out-of-
 | Repo-adaptive discipline policy (RFC-003 D) | ✅ v1.3.0 |
 | Team Delivery Intelligence (RFC-004) | ✅ v1.3.0 |
 | Configurable document paths (RFC-005) | ✅ v1.3.0 |
+| Binary-first install (docs + script) | ✅ v1.3.1 |
 
 ---
 

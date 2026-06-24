@@ -45,7 +45,7 @@ reponerve init    # workspace + skill + MCP + Native Development Discipline rule
 reponerve scan
 ```
 
-Go developers may use `make install` or `go install github.com/reponerve/reponerve/cmd/reponerve@v1.3.0` instead.
+Go developers may use `make install` or `go install github.com/reponerve/reponerve/cmd/reponerve@v1.3.1` instead.
 
 `reponerve init` writes project integration files (`.cursor/`, `.vscode/mcp.json`, `.continue/`), Native Development Discipline rules (`coding-guidelines.mdc`, `development-discipline.mdc`), and installs the global Cursor skill to `~/.cursor/skills/reponerve/`. See `docs/rfc/RFC-003-native-development-discipline.md`. Re-run `reponerve integrate` to refresh, or `reponerve integrate --force` to overwrite skill files.
 

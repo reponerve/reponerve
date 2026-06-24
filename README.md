@@ -248,7 +248,7 @@ Token Intelligence — Complete
 Evidence Graph & Session Memory — Complete
 Multi-Language Code Intelligence — Complete
 Software Understanding — Delivered
-v1.0.0 — Released (2026-06-18); latest v1.3.0
+v1.0.0 — Released (2026-06-18); latest v1.3.1
 ```
 
 Completed Milestones:
@@ -294,7 +294,7 @@ Or download an archive for your OS from [GitHub Releases](https://github.com/rep
 ## Go developers
 
 ```bash
-go install github.com/reponerve/reponerve/cmd/reponerve@v1.3.0
+go install github.com/reponerve/reponerve/cmd/reponerve@v1.3.1
 # or from a clone:
 make install
 ```
@@ -427,8 +427,9 @@ See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 4
 | **v1.1.0** | — | ✅ Bounded DE, feature intelligence, native discipline |
 | **v1.2.0** | — | ✅ Reuse Protocol + Ship Readiness |
 | **v1.3.0** | — | ✅ Discipline policy, PR context, document paths |
+| **v1.3.1** | — | ✅ Install script + release binaries |
 
-See `docs/releases/v1.3.0.md` and `docs/releases/versioning.md` for post-1.0 semver policy.
+See `docs/releases/v1.3.1.md` and `docs/releases/versioning.md` for post-1.0 semver policy.
 
 ---
 

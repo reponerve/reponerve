@@ -16,7 +16,7 @@ Options:
 
 ```bash
 # Install a specific version
-curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | REPONERVE_VERSION=v1.3.0 bash
+curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | REPONERVE_VERSION=v1.3.1 bash
 
 # Custom install directory (default: ~/.local/bin)
 curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | REPONERVE_INSTALL_DIR=/usr/local/bin bash
@@ -55,7 +55,7 @@ Pick the archive for your platform from [Releases](https://github.com/reponerve/
 ### macOS / Linux
 
 ```bash
-VERSION=v1.3.0
+VERSION=v1.3.1
 curl -fsSL -o /tmp/reponerve.tgz \
   "https://github.com/reponerve/reponerve/releases/download/${VERSION}/reponerve_${VERSION}_darwin_arm64.tar.gz"
 tar -xzf /tmp/reponerve.tgz -C /tmp
@@ -111,7 +111,7 @@ If you already have Go 1.26+:
 make install
 
 # Or without cloning
-go install github.com/reponerve/reponerve/cmd/reponerve@v1.3.0
+go install github.com/reponerve/reponerve/cmd/reponerve@v1.3.1
 ```
 
 Contributors typically use `make build` or `make install` from a local clone.

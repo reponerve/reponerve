@@ -2,7 +2,7 @@
 # Install reponerve from GitHub Releases (no Go required).
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | bash
-#   REPONERVE_VERSION=v1.3.0 REPONERVE_VERIFY=1 bash scripts/install.sh
+#   REPONERVE_VERSION=v1.3.1 REPONERVE_VERIFY=1 bash scripts/install.sh
 
 set -eu
 
