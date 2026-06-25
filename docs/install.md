@@ -70,7 +70,8 @@ export PATH="$HOME/.local/bin:$PATH"
 Verify:
 
 ```bash
-reponerve --help
+reponerve --version
+# or: reponerve version
 ```
 
 ---

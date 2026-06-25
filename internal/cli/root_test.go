@@ -57,6 +57,24 @@ func executeCommand(args ...string) (string, error) {
 	return buf.String(), err
 }
 
+func TestRootCommandVersion(t *testing.T) {
+	output, err := executeCommand("--version")
+	if err != nil {
+		t.Fatalf("unexpected error executing --version: %v", err)
+	}
+	if !strings.Contains(output, "dev") {
+		t.Errorf("expected version output to contain dev, got %q", output)
+	}
+
+	output, err = executeCommand("version")
+	if err != nil {
+		t.Fatalf("unexpected error executing version: %v", err)
+	}
+	if strings.TrimSpace(output) == "" {
+		t.Fatal("expected non-empty version command output")
+	}
+}
+
 func TestRootCommandHelp(t *testing.T) {
 	output, err := executeCommand("--help")
 	if err != nil {

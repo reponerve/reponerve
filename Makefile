@@ -12,7 +12,7 @@ VERSION ?= dev
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
 BUILD_DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 
-LDFLAGS := -s -w -X main.Version=$(VERSION) -X main.Commit=$(COMMIT) -X main.Date=$(BUILD_DATE)
+LDFLAGS := -s -w -X github.com/reponerve/reponerve/internal/version.Version=$(VERSION) -X github.com/reponerve/reponerve/internal/version.Commit=$(COMMIT) -X github.com/reponerve/reponerve/internal/version.Date=$(BUILD_DATE)
 
 .PHONY: help setup setup-hooks generate tidy verify fmt vet lint test test-race test-integration build install run clean check module-check release-check release-dry scan context mcp
 

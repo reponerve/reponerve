@@ -34,6 +34,8 @@ import (
 	mcpcmd "github.com/reponerve/reponerve/internal/cli/mcp"
 	memorycmd "github.com/reponerve/reponerve/internal/cli/memory"
 	scancmd "github.com/reponerve/reponerve/internal/cli/scan"
+	versioncmd "github.com/reponerve/reponerve/internal/cli/versioncmd"
+	"github.com/reponerve/reponerve/internal/version"
 )
 
 // NewRootCmd creates the root command for the reponerve CLI.
@@ -42,6 +44,7 @@ func NewRootCmd() *cobra.Command {
 		Use:   "reponerve",
 		Short: "RepoNerve is a memory and context engine for software repositories",
 		Long:  `RepoNerve is an open-source memory and context engine that preserves repository knowledge and generates optimized context.`,
+		Version: version.String(),
 	}
 
 	// Register subcommands
@@ -76,6 +79,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(memorycmd.NewCommand())
 	rootCmd.AddCommand(contextcmd.NewCommand())
 	rootCmd.AddCommand(mcpcmd.NewCommand())
+	rootCmd.AddCommand(versioncmd.NewCommand())
 
 	return rootCmd
 }

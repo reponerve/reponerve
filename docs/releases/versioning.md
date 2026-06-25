@@ -40,8 +40,9 @@ RepoNerve uses **two eras** of version tags:
 | `v1.3.2` | 2026-06-24 | npm distribution (RFC-006) |
 | `v1.4.0` | 2026-06-24 | Doctor + scoped monorepo scan + Homebrew (RFC-007, RFC-008) |
 | `v1.5.0` | 2026-06-24 | Local Explore UI (RFC-009) |
+| `v1.5.1` | 2026-06-24 | CLI `--version` / `version` command |
 
-Latest tagged release: **`v1.5.0`**.
+Latest tagged release: **`v1.5.1`**.
 
 ---
 
