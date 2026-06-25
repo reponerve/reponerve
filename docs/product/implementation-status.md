@@ -4,7 +4,7 @@ Version: 1.0
 
 Status: Current
 
-Updated: 2026-06-24
+Updated: 2026-06-25
 
 Related:
 
@@ -17,7 +17,7 @@ Related:
 
 # Summary
 
-**v1.0.0 shipped** (`v1.0.0` tagged 2026-06-18; latest patch `v1.0.1`). ISSUE-057 through ISSUE-062 completed via `v0.10.0-alpha` through documented `v0.15.0-alpha` milestones (see `docs/releases/versioning.md` for tag history).
+**v1.0.0 shipped** (`v1.0.0` tagged 2026-06-18). **Latest release:** `v1.5.1`. ISSUE-057 through ISSUE-062 completed via `v0.10.0-alpha` through documented `v0.15.0-alpha` milestones (see `docs/releases/versioning.md` for tag history).
 
 ---
 
@@ -75,6 +75,7 @@ New work follows semver and RFC policy in `docs/releases/versioning.md`. Out-of-
 | Scoped monorepo scan (RFC-008) | ✅ v1.4.0 |
 | Homebrew formula | ✅ v1.4.0 (tap optional) |
 | Local Explore UI (RFC-009) | ✅ v1.5.0 |
+| CLI version command | ✅ v1.5.1 |
 
 ---
 

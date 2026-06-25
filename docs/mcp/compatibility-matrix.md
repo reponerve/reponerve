@@ -1,6 +1,6 @@
 # RepoNerve MCP Compatibility Matrix
 
-RepoNerve exposes **43 MCP tools** over **STDIO** (`reponerve mcp`). Any MCP-capable client can use RepoNerve in **AI chat** with **any underlying LLM** the client provides.
+RepoNerve exposes **49 MCP tools** over **STDIO** (`reponerve mcp`). Any MCP-capable client can use RepoNerve in **AI chat** with **any underlying LLM** the client provides.
 
 **Transport:** STDIO JSON-RPC  
 **Launch:** `reponerve mcp`  
@@ -46,7 +46,7 @@ RepoNerve does not depend on a specific model. These LLMs are commonly used **th
 
 ---
 
-## Tool surface (38)
+## Tool surface (49)
 
 All MCP clients receive the full registry from `internal/mcp/registry.go`:
 
@@ -55,7 +55,7 @@ All MCP clients receive the full registry from `internal/mcp/registry.go`:
 | Repository memory | 14 | `list_decisions`, `trace_decision`, `generate_context` |
 | Ownership & intelligence | 8 | `recommend_reviewers`, `discover_knowledge` |
 | Knowledge graph | 5 | `trace_graph`, `analyze_impact` |
-| Development Experience | 11 | `ask`, `explain`, `plan`, `review`, `onboard`, `analyze_topic_impact` |
+| Development Experience | 22 | `ask`, `explain`, `plan`, `review`, `reuse_check`, `ship_check`, `doctor`, `onboard` |
 
 CLI equivalents: `docs/mcp/configuration-examples.md` and `.cursor/skills/reponerve/reference.md`.
 
@@ -115,7 +115,7 @@ reponerve init && reponerve scan
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | REPONERVE_WORKSPACE="$(pwd)/.reponerve" reponerve mcp
 ```
 
-Expect JSON listing **38** tools.
+Expect JSON listing **49** tools.
 
 ---
 

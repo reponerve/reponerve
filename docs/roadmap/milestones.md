@@ -2,11 +2,13 @@
 
 Version: 1.0
 
-Status: Draft
+Status: Historical (pre-1.0 milestone plan)
 
 Authors: RepoNerve Contributors
 
 Last Updated: 2026-06-11
+
+> **Superseded for current status.** v1.0.0 shipped 2026-06-18; latest release **v1.5.1**. Post-1.0 planning: `docs/roadmap/v1.x-backlog.md`.
 
 ---
 

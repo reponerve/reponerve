@@ -2,9 +2,11 @@
 
 Version: v1.0
 
-Status: Draft
+Status: Historical (superseded — v1.0.0 shipped 2026-06-18; latest **v1.5.1**)
 
 Codename: Development Experience
+
+> **Superseded for current status.** See `docs/product/implementation-status.md` and `docs/README.md`.
 
 Issues:
 
@@ -18,7 +20,7 @@ RepoNerve is the intelligence layer for software understanding.
 
 Repository Intelligence (complete) serves Knowledge Preservation. ISSUE-057 delivers Code Intelligence, Repository-Code Linking, Feature Understanding, and Development Experience required for Software Understanding.
 
-v1.0.0 release remains blocked until ISSUE-057 is complete.
+v1.0.0 shipped 2026-06-18 (ISSUE-057 complete). See `docs/product/implementation-status.md`.
 
 ---
 

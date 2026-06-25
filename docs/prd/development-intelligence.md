@@ -2,9 +2,11 @@
 
 Version: v1.0
 
-Status: Draft
+Status: Historical (superseded — v1.0.0 shipped 2026-06-18; latest **v1.5.1**)
 
 Issue: ISSUE-057
+
+> **Superseded for current status.** See `docs/product/implementation-status.md` and `docs/README.md`.
 
 See also:
 

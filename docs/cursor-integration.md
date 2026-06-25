@@ -123,7 +123,7 @@ Example prompts:
 - "Plan where to add a new MCP tool" → `plan` with scope and impacted files
 - "What breaks if we change the MCP registry?" → `analyze_topic_impact` / `reponerve impact`
 
-## Available MCP tools (38)
+## Available MCP tools (49)
 
 See `docs/copilot-chat-integration.md` for the full tool list. Highlights:
 
@@ -132,7 +132,7 @@ See `docs/copilot-chat-integration.md` for the full tool list. Highlights:
 | Memory | `list_decisions`, `get_decision`, `trace_decision`, `list_facts`, … |
 | Graph | `trace_graph`, `analyze_impact`, `find_dependencies`, … |
 | Intelligence | `discover_knowledge`, `recommend_reviewers`, `generate_learning_path` |
-| Development Experience | `ask`, `explain`, `explain_file`, `plan`, `review`, `analyze_topic_impact`, `onboard` |
+| Development Experience | `ask`, `explain`, `explain_file`, `plan`, `review`, `analyze_topic_impact`, `onboard`, `reuse_check`, `ship_check`, `doctor`, … |
 
 **Impact tools:** `analyze_impact` takes a graph entity ID (`node_id` + `node_type`). `analyze_topic_impact` takes a natural-language `subject` (same as `reponerve impact "subject"`).
 
@@ -148,7 +148,7 @@ See `docs/copilot-chat-integration.md` for the full tool list. Highlights:
 echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | REPONERVE_WORKSPACE="$(pwd)/.reponerve" reponerve mcp
 ```
 
-You should receive JSON with 45 tools. Any non-JSON output on stdout breaks MCP.
+You should receive JSON with 49 tools. Any non-JSON output on stdout breaks MCP.
 
 ### Empty or stale results
 

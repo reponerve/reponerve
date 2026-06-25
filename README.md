@@ -41,6 +41,9 @@ reponerve ask "Who owns authentication?"
 reponerve impact "user-service"
 reponerve review "metadata panel"
 reponerve plan "Add OAuth login"
+reponerve reuse-check "add OAuth middleware"
+reponerve ship-check "OAuth login"
+reponerve doctor
 ```
 
 ---
@@ -94,6 +97,7 @@ Deterministic code structure extraction and analysis.
 * File, package, type, and function indexing
 * Symbol resolution
 * Call graph and dependency analysis
+* Go + 19 Tree-sitter languages
 
 ## Memory Engine
 
@@ -139,11 +143,10 @@ reponerve context export
 
 Development-facing workflows that orchestrate Code Intelligence and Repository Intelligence.
 
-v1.0 commands (ISSUE-057):
-
 ```bash
 reponerve ask "Who created metadata panel?"
 reponerve explain "metadata panel"
+reponerve explain-feature "Authentication"
 reponerve explain-file "metadata-panel.tsx"
 reponerve explain-function "BuildMetadataPanel"
 reponerve explain-struct "MetadataPanel"
@@ -152,6 +155,19 @@ reponerve explain-type "HandlerFunc"
 reponerve plan "Add OAuth login"
 reponerve impact "user-service"
 reponerve review "metadata panel"
+reponerve reuse-check "add rate limiter"
+reponerve ship-check "metadata panel"
+reponerve onboard
+reponerve doctor
+```
+
+## Local Explore UI
+
+Browse repository knowledge as an interactive graph:
+
+```bash
+reponerve explore --serve    # http://127.0.0.1:8765/
+reponerve explore -o reponerve-graph.html
 ```
 
 ## MCP Server
@@ -164,13 +180,7 @@ Start the server:
 reponerve mcp
 ```
 
-Supported MCP capabilities:
-
-* Memory Queries, Trace, and Explain
-* Repository Context Generation and Export
-* Ownership and Contributor Queries
-* Repository Intelligence
-* Knowledge Graph Traversal and Impact Analysis
+**49 MCP tools** across memory, ownership, graph, and Development Experience.
 
 Compatible with:
 
@@ -181,6 +191,8 @@ Compatible with:
 * Roo
 * Codex
 * GitHub Copilot Chat
+
+Works in **AI chat without MCP** — run `reponerve ask --json` in the terminal; same evidence envelope as MCP.
 
 ---
 
@@ -235,7 +247,7 @@ See `docs/product/greenfield-guide.md`.
 
 # Current Status
 
-Release Status:
+**Latest release:** `v1.5.1` (2026-06-24)
 
 ```text
 Knowledge Preservation — Core Platform Capability
@@ -247,35 +259,17 @@ Development Experience — Complete
 Token Intelligence — Complete
 Evidence Graph & Session Memory — Complete
 Multi-Language Code Intelligence — Complete
+Native Development Discipline — Complete
+Reuse Protocol + Ship Readiness — Complete
+Local Explore UI — Complete
 Software Understanding — Delivered
-v1.0.0 — Released (2026-06-18); latest v1.3.1
+v1.0.0 — Released (2026-06-18)
+Post-1.0 — Semver on main (v1.5.1)
 ```
 
-Completed Milestones:
+**Post-1.0 focus:** RFC-gated capabilities from `docs/roadmap/v1.x-backlog.md`.
 
-```text
-v0.1.0-alpha  ✓ Ingestion Engine
-v0.2.0-alpha  ✓ Memory Engine
-v0.3.0-alpha  ✓ Query Engine
-v0.4.0-alpha  ✓ Context Engine
-v0.5.0-alpha  ✓ MCP Server
-v0.7.0-alpha  ✓ Ownership Intelligence
-v0.8.0-alpha  ✓ Knowledge Graph Intelligence
-v0.9.0-alpha  ✓ Repository Intelligence
-v0.10.0-alpha ✓ Foundation Fixes (ISSUE-059)
-v0.12.0-alpha ✓ Code Intelligence + DE (ISSUE-057)
-v0.13.0-alpha ✓ Token Intelligence (ISSUE-060)
-v0.14.0-alpha ✓ Graph + Session Memory (ISSUE-061)
-v0.15.0-alpha ✓ Multi-Language (ISSUE-062)
-```
-
-Current Focus:
-
-```text
-v1.0.0 release — git tag and publish release notes
-```
-
-See `docs/releases/v1.0.0-checklist.md` and `docs/audits/v1.0-release-review.md`.
+See `docs/product/implementation-status.md` and `docs/releases/versioning.md`.
 
 ---
 
@@ -302,17 +296,19 @@ Or download an archive for your OS from [GitHub Releases](https://github.com/rep
 ## Go developers
 
 ```bash
-go install github.com/reponerve/reponerve/cmd/reponerve@v1.3.1
+go install github.com/reponerve/reponerve/cmd/reponerve@v1.5.1
 # or from a clone:
 make install
 ```
 
-## Homebrew (planned)
+## Homebrew
 
 ```bash
-brew tap reponerve/reponerve
+brew tap reponerve/tap
 brew install reponerve
 ```
+
+Until the tap is published, use the install script or release archives. See `docs/install.md`.
 
 ---
 
@@ -332,19 +328,25 @@ reponerve init
 reponerve scan
 ```
 
-3. Inspect extracted decisions:
+3. Verify memory health:
+
+```bash
+reponerve doctor
+```
+
+4. Inspect extracted decisions:
 
 ```bash
 reponerve memory list decisions
 ```
 
-4. Generate repository context:
+5. Generate repository context:
 
 ```bash
 reponerve context generate
 ```
 
-5. Start MCP server for agent integrations:
+6. Start MCP server for agent integrations:
 
 ```bash
 reponerve mcp
@@ -376,15 +378,19 @@ See `docs/copilot-chat-integration.md`. Open `.vscode/mcp.json` → Start → Co
 
 ### Cursor
 
-See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 43 MCP tools.
+See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 49 MCP tools.
 
 ---
 
 # Documentation
 
+**Documentation index:** [`docs/README.md`](docs/README.md)
+
 ## Start Here
 
 * Product Overview: `README.md`
+* Install: `docs/install.md`
+* AI chat in any IDE: `docs/ai-chat-integration.md`
 * Contributor Setup: `docs/governance/contribution-guide.md`
 * MCP Troubleshooting: `docs/mcp/troubleshooting.md`
 
@@ -397,47 +403,32 @@ See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 4
 * Greenfield / build-from-scratch workflows: `docs/product/greenfield-guide.md`
 * Honest code vs docs status: `docs/product/implementation-status.md`
 * Understand architecture: `docs/architecture/`
-* Track planned work: `docs/roadmap/`
-* v0.x → v1.0 iteration plan: `docs/roadmap/v1.0-iteration-plan.md`
+* Post-1.0 planned work: `docs/roadmap/v1.x-backlog.md`
+* Release history: `docs/releases/versioning.md`
 * Review quality and release readiness: `docs/audits/`
-* Follow release process: `docs/releases/v1.0.0-checklist.md` and `docs/releases/v1.0.0.md`
 
 ---
 
 # Roadmap
 
-## Completed
+## Shipped (v1.0 + post-1.0)
 
-* Ingestion Engine
-* Memory Engine
-* Query Engine
-* Context Engine
-* MCP Server
-* Ownership Intelligence
-* Knowledge Graph Intelligence
-* Repository Intelligence
-* Agent Context Builder
-* Repository Search
-* Agent Session Intelligence
-* Workflow Intelligence
+| Release | Highlights |
+| --- | --- |
+| **v1.0.0** | First product release — complete v1.0 scope (2026-06-18) |
+| **v1.0.1** | Scan reliability patch |
+| **v1.1.0** | Bounded DE, feature intelligence v2, native discipline (RFC-001–003) |
+| **v1.2.0** | Reuse Protocol + Ship Readiness (RFC-003 B/C) |
+| **v1.3.0** | Discipline policy, PR context, document paths (RFC-003 D, RFC-004, RFC-005) |
+| **v1.3.1** | Binary-first install script + release archives |
+| **v1.3.2** | npm distribution (RFC-006) |
+| **v1.4.0** | Doctor, scoped monorepo scan, Homebrew (RFC-007, RFC-008) |
+| **v1.5.0** | Local Explore UI (RFC-009) |
+| **v1.5.1** | CLI `--version` / `version` command |
 
-## v1.0.0 Release (shipped)
+See `docs/releases/v1.5.1.md` and `docs/releases/versioning.md` for semver policy.
 
-| Iteration | Issue | Status |
-| --- | --- | --- |
-| v0.10.0-alpha | ISSUE-059 | ✅ Foundation fixes |
-| v0.11–v0.12.0-alpha | ISSUE-057 | ✅ Code Intelligence + Development Experience |
-| v0.13.0-alpha | ISSUE-060 | ✅ Token Intelligence (in v1.0.0) |
-| v0.14.0-alpha | ISSUE-061 | ✅ Evidence Graph + Session Memory (in v1.0.0) |
-| v0.15.0-alpha | ISSUE-062 | ✅ Multi-language code intelligence (in v1.0.0) |
-| **v1.0.0** | — | ✅ Tagged 2026-06-18 |
-| **v1.0.1** | — | ✅ Patch — scan reliability |
-| **v1.1.0** | — | ✅ Bounded DE, feature intelligence, native discipline |
-| **v1.2.0** | — | ✅ Reuse Protocol + Ship Readiness |
-| **v1.3.0** | — | ✅ Discipline policy, PR context, document paths |
-| **v1.3.1** | — | ✅ Install script + release binaries |
-
-See `docs/releases/v1.3.1.md` and `docs/releases/versioning.md` for post-1.0 semver policy.
+**Next:** capabilities in `docs/roadmap/v1.x-backlog.md` (RFC-gated).
 
 ---
 

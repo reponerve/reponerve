@@ -63,7 +63,7 @@ This repository includes `.vscode/mcp.json`:
 
 ## Available Tools
 
-When connected, Copilot Chat can use **38** RepoNerve MCP tools.
+When connected, Copilot Chat can use **49** RepoNerve MCP tools.
 
 ### Repository Memory
 
@@ -118,6 +118,14 @@ These tools mirror the `reponerve` CLI Development Experience commands. They com
 | `review` | `review` | `topic` |
 | `analyze_topic_impact` | `impact` | `subject` |
 | `onboard` | `onboard` | optional `topic` |
+| `list_features` | `list-features` | optional filters |
+| `explain_feature` | `explain-feature` | `feature` |
+| `reuse_check` | `reuse-check` | `intent` |
+| `ship_check` | `ship-check` | `topic` |
+| `pr_context` | `pr-context` | `topic` |
+| `doctor` | `doctor` | — |
+| `remember` | `remember` | `note` |
+| `forget` | `forget` | `id` |
 
 All Development Experience tools accept an optional `repository_id`. When omitted, RepoNerve resolves the active workspace repository.
 

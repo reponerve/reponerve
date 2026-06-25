@@ -87,7 +87,7 @@ Development Experience and MCP expose **evidence-backed context packs**:
 
 ## Layer 4: MCP as Surgical Interface
 
-43 MCP tools return bounded, structured responses instead of raw file dumps. Fewer tool calls, smaller responses.
+49 MCP tools return bounded, structured responses instead of raw file dumps. Fewer tool calls, smaller responses.
 
 ## Layer 5: Durable Understanding Across Sessions
 

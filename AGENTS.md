@@ -38,7 +38,7 @@ Development Experience (`ask`, `explain`, `explain-file`, `explain-function`, `e
 
 Software Understanding is what they receive.
 
-v1.0.0 scope shipped (`v1.0.0` tagged 2026-06-18; latest patch `v1.0.1`). See `docs/roadmap/v1.0-prd.md`, `docs/vision/vision.md`, and `docs/releases/versioning.md`.
+v1.0.0 scope shipped (`v1.0.0` tagged 2026-06-18). **Latest release:** `v1.5.1`. See `docs/roadmap/v1.0-prd.md`, `docs/vision/vision.md`, and `docs/releases/versioning.md`.
 
 **Implementation status:** All v1.0 capabilities shipped. See `docs/product/implementation-status.md` and `docs/audits/v1.0-release-review.md`.
 

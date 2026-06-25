@@ -31,7 +31,7 @@ npx reponerve scan
     "reponerve:init": "reponerve init"
   },
   "devDependencies": {
-    "reponerve": "^1.4.0"
+    "reponerve": "^1.5.1"
   }
 }
 ```
@@ -52,7 +52,7 @@ Options:
 
 ```bash
 # Install a specific version
-curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | REPONERVE_VERSION=v1.3.1 bash
+curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | REPONERVE_VERSION=v1.5.1 bash
 
 # Custom install directory (default: ~/.local/bin)
 curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | REPONERVE_INSTALL_DIR=/usr/local/bin bash
@@ -92,7 +92,7 @@ Pick the archive for your platform from [Releases](https://github.com/reponerve/
 ### macOS / Linux
 
 ```bash
-VERSION=v1.3.1
+VERSION=v1.5.1
 curl -fsSL -o /tmp/reponerve.tgz \
   "https://github.com/reponerve/reponerve/releases/download/${VERSION}/reponerve_${VERSION}_darwin_arm64.tar.gz"
 tar -xzf /tmp/reponerve.tgz -C /tmp
@@ -148,7 +148,7 @@ If you already have Go 1.26+:
 make install
 
 # Or without cloning
-go install github.com/reponerve/reponerve/cmd/reponerve@v1.4.0
+go install github.com/reponerve/reponerve/cmd/reponerve@v1.5.1
 ```
 
 Contributors typically use `make build` or `make install` from a local clone.
@@ -179,7 +179,7 @@ See `docs/rfc/RFC-009-local-explore-ui.md`.
 Create a tap repository (e.g. `github.com/reponerve/homebrew-tap`) and copy `packaging/homebrew/reponerve.rb` to `Formula/reponerve.rb`. After each release, update checksums:
 
 ```bash
-./scripts/homebrew-sha256.sh v1.4.0
+./scripts/homebrew-sha256.sh v1.5.1
 ```
 
 Then:
@@ -198,7 +198,7 @@ Until the tap is published, use the install script or release archives.
 | Problem | Fix |
 | --- | --- |
 | `reponerve: command not found` | Add install dir to `PATH`; open a new shell |
-| Download 404 | Set `REPONERVE_VERSION` to a release that lists archives on GitHub (e.g. `v1.2.0`) |
+| Download 404 | Set `REPONERVE_VERSION` to a tagged release (e.g. `v1.5.1`) |
 | MCP does not start | Run `reponerve init` in the project; set `REPONERVE_WORKSPACE` in MCP config |
 | Old binary | Re-run install script with a newer `REPONERVE_VERSION` |
 

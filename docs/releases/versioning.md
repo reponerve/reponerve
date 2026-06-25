@@ -4,7 +4,7 @@ Version: 1.0
 
 Status: Current
 
-Updated: 2026-06-24
+Updated: 2026-06-25
 
 Related:
 
@@ -83,17 +83,13 @@ After `v1.0.0`, follow [Semantic Versioning](https://semver.org/):
 
 ### Suggested next releases
 
+All RFC-001 through RFC-009 capabilities through v1.5.1 are **shipped**. Future work starts from `docs/roadmap/v1.x-backlog.md`:
+
 | Work | Suggested tag |
 | --- | --- |
-| Bounded agent responses + Feature Intelligence v2 + MCP tool additions | `v1.1.0` |
-| Reuse Protocol (`reuse-check`) + Ship Readiness (`ship-check`) | `v1.2.0` (RFC-003 B/C) |
-| Discipline policy + Evidence Review + PR Context | `v1.3.0` (RFC-003 D, RFC-004) |
-| Configurable ADR/document paths | `v1.3.0` (RFC-005) |
-| Binary-first install | `v1.3.1` |
-| npm distribution (RFC-006) | `v1.3.2` |
-| Doctor + scoped scan + Homebrew | `v1.4.0` (RFC-007, RFC-008) |
-| Local Explore UI | `v1.5.0` (RFC-009) |
-| Docs-only / council / stale-doc fixes without behavior change | Include in nearest release or `v1.0.2` |
+| Semantic / hybrid search | `v2.0.0` or new RFC + MINOR |
+| Cross-repo federation | Major RFC |
+| Docs-only corrections | PATCH on nearest release |
 | Breaking envelope or storage migration | `v2.0.0` (RFC) |
 
 ---

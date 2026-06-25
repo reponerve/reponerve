@@ -13,7 +13,7 @@ You (natural language in chat)
         ↓
 IDE AI assistant (any LLM)
         ↓
-RepoNerve MCP tools (38)  OR  reponerve CLI (terminal)
+RepoNerve MCP tools (49)  OR  reponerve CLI (terminal)
         ↓
 Evidence-backed answer / plan / review
 ```
@@ -49,7 +49,7 @@ reponerve init    # workspace + skill + MCP + Native Development Discipline rule
 reponerve scan
 ```
 
-Go developers may use `make install` or `go install github.com/reponerve/reponerve/cmd/reponerve@v1.4.0` instead.
+Go developers may use `make install` or `go install github.com/reponerve/reponerve/cmd/reponerve@v1.5.1` instead.
 
 `reponerve init` writes project integration files (`.cursor/`, `.vscode/mcp.json`, `.continue/`), Native Development Discipline rules (`coding-guidelines.mdc`, `development-discipline.mdc`), and installs the global Cursor skill to `~/.cursor/skills/reponerve/`. See `docs/rfc/RFC-003-native-development-discipline.md`. Re-run `reponerve integrate` to refresh, or `reponerve integrate --force` to overwrite skill files.
 
