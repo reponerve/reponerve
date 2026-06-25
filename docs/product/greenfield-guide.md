@@ -1,10 +1,10 @@
 # RepoNerve Greenfield Guide
 
-Version: 1.0
+Version: 1.1
 
-Status: Draft
+Status: Current
 
-Updated: 2026-06-11
+Updated: 2026-06-25
 
 Related:
 
@@ -41,12 +41,12 @@ Brownfield maximizes value by **excavating** lost context. Greenfield maximizes 
 
 ```text
 1. Idea           → Human/agent: scope, stack, sketch (any build tool)
-2. reponerve init → Local memory workspace
+2. reponerve init → Local memory workspace + skill + MCP + discipline rules
 3. ADR-0001..N    → Record decisions WITH or BEFORE first code
 4. Scaffold       → Agent generates structure (Cursor, Claude Code, etc.)
 5. reponerve scan → After each meaningful milestone
 6. reponerve mcp  → Agent builds with persistent understanding
-7. plan/impact/review → Per feature, not per incident
+7. plan → reuse-check → implement → ship-check / review / pr-context → per feature
 ```
 
 ---
@@ -57,8 +57,11 @@ Brownfield maximizes value by **excavating** lost context. Greenfield maximizes 
 | --- | --- |
 | Generate code from idea | LLM + IDE agent (Cursor, Claude Code, Copilot) |
 | Preserve why, who, what breaks | RepoNerve |
+| Reuse-before-write + pre-ship habits | RepoNerve Native Development Discipline (on `init`) |
 | Compress shell noise | RTK (optional, adjacent) |
 | Cross-session chat memory | Supermemory/ICM (optional, adjacent) |
+
+No separate Ponytail-style discipline skills or council persona packs are required — `reponerve init` bundles evidence-backed habits. Optional narrative council: `docs/council/software-development-council.md`.
 
 RepoNerve is the **brain that makes greenfield projects stay intelligible** — not the layer that invents them.
 
@@ -83,7 +86,9 @@ RepoNerve is the **brain that makes greenfield projects stay intelligible** — 
 | Workspace setup | `reponerve init` | 0 |
 | Capture history | `reponerve scan` | 0 |
 | Repo overview | `reponerve context generate` | 0 |
-| Feature guidance | `reponerve plan "Add OAuth"` | 0 for analysis (v1.0) |
+| Feature guidance | `reponerve plan "Add OAuth"` | 0 for analysis |
+| Reuse existing code | `reponerve reuse-check "add OAuth"` | 0 |
+| Pre-ship validation | `reponerve ship-check "OAuth"` | 0 |
 | Agent integration | `reponerve mcp` | Per-query, bounded |
 
 ---
@@ -96,13 +101,14 @@ RepoNerve is the **brain that makes greenfield projects stay intelligible** — 
 
 ---
 
-# v1.0 Enhancements
+# Shipped Enhancements
 
-Delivered as part of v1.0 via `docs/roadmap/v1.0-iteration-plan.md`:
+Delivered in v1.0 and post-1.0 releases (see `docs/product/implementation-status.md`):
 
-* `reponerve remember` / `reponerve forget` — ISSUE-061
-* Incremental scan on commit via hooks — ISSUE-060
-* `reponerve hook install` — ISSUE-060
+* `reponerve remember` / `reponerve forget` — session memory
+* Incremental scan on commit via hooks — `reponerve hook install`
+* Native Development Discipline on `init` — reuse, ship readiness, review habits (RFC-003)
+* Team PR workflow — `reponerve pr-context`, CI template (RFC-004)
 
 ---
 

@@ -157,7 +157,7 @@ Do not ask the LLM to re-read the repository when RepoNerve already indexed it. 
 | Structured/compact output format | ✅ v0.13.0-alpha |
 | Incremental scan on commit | ✅ `reponerve hook install` + scan state |
 | Graph discovery + session memory | ✅ v0.14.0-alpha |
-| Multi-language code intelligence | ✅ v0.15.0-alpha |
+| Multi-language code intelligence | ✅ Shipped (v1.0.0 / ISSUE-062; 20 languages) |
 
 See `docs/product/implementation-status.md` for full gap analysis.
 

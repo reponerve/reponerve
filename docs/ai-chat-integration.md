@@ -73,9 +73,40 @@ Works in any git repo (Cursor, Claude Code, VS Code, terminal agents). `reponerv
 | **CLI** | Any IDE terminal | Same semantics; agent runs commands for you |
 | **Export / paste** | Web LLMs (ChatGPT, Gemini, Claude.ai) | `reponerve context export` or MCP `export_context` |
 
-### Software Development Council
+### Native Development Discipline (default on `reponerve init`)
 
-For multi-perspective review (architecture, security, shipping, product), Cursor loads `.cursor/rules/software-development-council.mdc`. Ask normally — the agent auto-routes to relevant council members. Full spec: `docs/council/software-development-council.md`.
+Every initialized repository gets **evidence-backed development habits** — no separate Ponytail-style skills or council persona packs required. `reponerve init` installs:
+
+| File | Purpose |
+| --- | --- |
+| `.cursor/rules/development-discipline.mdc` | When to run `plan`, `reuse-check`, `review`, `ship-check`, `pr-context` |
+| `.cursor/rules/coding-guidelines.mdc` | Surgical changes, simplicity, verifiable goals |
+| `.cursor/skills/reponerve/` | Context-first workflow (MCP or CLI) |
+
+After `scan`, RepoNerve writes `.reponerve/discipline-policy.json` (ADR paths, CI hints, layer conventions) so discipline adapts to **your** repository.
+
+**Agent workflow:**
+
+```text
+New feature / ticket     → plan
+Before new code          → reuse-check
+Ship / merge / PR        → ship-check + review (+ pr-context for PRs)
+Verify one symbol        → explain_function / explain_file
+```
+
+Answer from the JSON envelope (`structured` → `agent` → `formatted`), not repo-wide grep. Full spec: `docs/rfc/RFC-003-native-development-discipline.md`, team PR flow: `docs/rfc/RFC-004-team-delivery-intelligence.md`.
+
+### Software Development Council (optional)
+
+The **Software Development Council** is optional team documentation for narrative multi-perspective review (architecture, security, product personas). It is **not** installed by `reponerve init`.
+
+| | Native Development Discipline | Software Development Council |
+| --- | --- | --- |
+| Ships on `init` | Yes | No |
+| Style | Structured evidence (`ship_blockers`, `discipline_checks`) | LLM persona roleplay |
+| Repo-specific | Yes — from scan and policy | No — same personas everywhere |
+
+Teams that want the council add `.cursor/rules/software-development-council.mdc` manually and point it at `docs/council/software-development-council.md`. The RepoNerve project dogfoods this rule locally; consumers get discipline by default.
 
 ---
 
@@ -173,7 +204,10 @@ Paste into the chat with: "Answer only from this RepoNerve evidence."
 | "What ADRs mention authentication?" | `list_decisions`, `ask` |
 | "What features exist?" | `list_features` / `reponerve list-features --json` |
 | "Explain authentication feature" | `explain_feature` / `reponerve explain-feature "Authentication" --json` |
-| "Review my OAuth change" | `review` |
+| "Review my OAuth change" | `review` / `reponerve review "..." --json` |
+| "Can we ship this?" / pre-merge | `ship_check` / `reponerve ship-check "..." --json` |
+| "What existing code can I reuse for OAuth?" | `reuse_check` / `reponerve reuse-check "..." --json` |
+| PR on changed files | `pr_context` / `reponerve pr-context --file ... --json` |
 | "Impact of renaming Config struct" | `analyze_topic_impact` |
 
 ---
@@ -206,7 +240,10 @@ See `docs/mcp/troubleshooting.md`.
 
 ## Further reading
 
+- Native development discipline: `docs/rfc/RFC-003-native-development-discipline.md`
+- Team delivery / PR context: `docs/rfc/RFC-004-team-delivery-intelligence.md`
 - Universal understanding: `docs/product/universal-understanding.md`
 - Agent context contract: `docs/architecture/agent-context-contract.md`
+- Optional council framework: `docs/council/software-development-council.md`
 - MCP configuration examples: `docs/mcp/configuration-examples.md`
 - MCP compatibility matrix: `docs/mcp/compatibility-matrix.md`

@@ -1,10 +1,10 @@
 # RepoNerve Vision
 
-Version: 1.3
+Version: 1.4
 
-Status: Draft
+Status: Current
 
-Updated: 2026-06-11
+Updated: 2026-06-25
 
 Related: `tasks/ARCH-001.md`, `docs/architecture/architecture-overview.md`
 
@@ -174,17 +174,15 @@ Examples: Authentication, Billing, Metadata Management, Notifications, Search.
 
 Feature understanding is a **v1.0** capability. Humans think in features; RepoNerve v1.0 must support feature-level questions through Development Experience (e.g. `reponerve explain "authentication"` resolving Feature → Code → Ownership → Decisions → Impact).
 
-Delivered as part of ISSUE-057 and the v1.0 release. There is no separate post-v1.0 product release for this capability.
+Delivered in v1.0 (ISSUE-057). Feature intelligence v2 enhancements shipped in v1.1.0 (RFC-002).
 
 ---
 
-## v1.0 Scope
+## v1.0 Scope (shipped)
 
-RepoNerve has **one product release: v1.0.0**. All product capabilities ship together. There is no v1.x product roadmap.
+RepoNerve **v1.0.0 shipped** 2026-06-18. **Latest release: v1.5.1** (see `docs/releases/versioning.md`). Post-1.0 capabilities ship via semver with RFC approval — not new `v0.x-alpha` tags.
 
-Capabilities are delivered through **v0.x.0-alpha engineering iterations** (see `docs/roadmap/v1.0-iteration-plan.md`).
-
-v1.0 includes:
+Pre-1.0 engineering used **v0.x.0-alpha checkpoints** (see `docs/roadmap/v1.0-iteration-plan.md`). All v1.0 scope below is **complete**.
 
 **Foundation (complete)**
 
@@ -217,19 +215,27 @@ v1.0 includes:
 
 **ISSUE-062 — Multi-Language Code Intelligence**
 
-- Tree-sitter: TypeScript, Python, Rust
+- Tree-sitter: 19 languages beyond Go (TypeScript, Python, Rust, …)
+
+**Post-1.0 (v1.1.0–v1.5.1, RFC-gated)**
+
+- Bounded agent responses and feature intelligence v2 (RFC-001, RFC-002)
+- Native Development Discipline on `init` — reuse, ship readiness, repo-adaptive policy (RFC-003)
+- Team Delivery Intelligence — evidence review, `pr-context`, CI template (RFC-004)
+- Configurable document paths (RFC-005), npm distribution (RFC-006)
+- Freshness doctor and scoped monorepo scan (RFC-007, RFC-008)
+- Local Explore UI (RFC-009)
 
 **Outcomes**
 
 - Software Understanding (complete product outcome)
 - Knowledge Transfer
 - Token-efficient MCP and CLI delivery
+- Evidence-backed development discipline without separate agent skill packs
 
-RepoNerve v1.0.0 is **not tagged** until all issues above are complete and acceptance criteria pass.
+### Explicit Non-Goals (current release line)
 
-### Explicit v1.0 Non-Goals
-
-The following are **agreed out of scope** for v1.0.0. They require a post-release RFC to reconsider:
+The following remain **out of scope**. Reconsideration requires a new RFC (`docs/roadmap/v1.x-backlog.md`):
 
 - Semantic or hybrid embedding search
 - User-defined workflow composition
@@ -286,7 +292,7 @@ Many tools provide `Code Graph → Retrieval → LLM Context`. RepoNerve provide
 RepoNerve composes with adjacent tools:
 
 - **RTK** — compresses shell output; RepoNerve compresses understanding
-- **Graph discovery** — communities and surprises (ISSUE-061, v1.0)
+- **Graph discovery** — communities and surprises (`reponerve explore`, v1.5.0)
 - **Agent memory tools** — remember conversations; RepoNerve remembers the repository
 
 See `docs/product/market-positioning.md`.
@@ -319,13 +325,13 @@ Deliver    CLI, MCP, structured formats (ISSUE-060)
 Learn      Session writeback, remember/forget (ISSUE-061)
 ```
 
-Iteration plan: `docs/roadmap/v1.0-iteration-plan.md`.
+Iteration plan (historical): `docs/roadmap/v1.0-iteration-plan.md`. Current release line: `docs/releases/versioning.md`.
 
 ---
 
 ## Implementation Status
 
-Repository Intelligence is complete. Code Intelligence and Development Experience (ISSUE-057) are the v1.0 blocker.
+**v1.0.0 shipped** 2026-06-18. **Latest: v1.5.1.** All ISSUE-057 through ISSUE-062 capabilities are complete. Post-1.0 RFCs 001–009 are shipped.
 
 Honest code-vs-documentation snapshot: `docs/product/implementation-status.md`.
 
@@ -355,15 +361,16 @@ Software Understanding          (outcome)
 
 The **Understanding Engine** retrieves and assembles context across all intelligence sources. It evolved from the earlier Query Engine as the platform grew beyond repository memory.
 
-| Pillar | Role | v1.0 Status |
+| Pillar | Role | Status (v1.5.1) |
 | --- | --- | --- |
-| Knowledge Preservation | Core platform foundation — all layers depend on it | Core Platform Capability |
-| Repository Intelligence | Why software exists — decisions, facts, events, ownership | Complete |
-| Code Intelligence | How code works — symbols, graphs, dependencies | ISSUE-057 |
-| Repository-Code Linking | Connect repository entities to code entities | ISSUE-057 |
-| Feature Understanding | Feature → Code → Ownership → Decisions → Impact | ISSUE-057 |
-| Development Experience | ask, explain, explain-file, explain-function, explain-struct, explain-interface, explain-type, plan, impact, review | ISSUE-057 |
-| Software Understanding | Complete product outcome | Blocked |
+| Knowledge Preservation | Core platform foundation — all layers depend on it | ✅ Shipped |
+| Repository Intelligence | Why software exists — decisions, facts, events, ownership | ✅ Shipped |
+| Code Intelligence | How code works — symbols, graphs, dependencies | ✅ Shipped (Go + 19 Tree-sitter languages) |
+| Repository-Code Linking | Connect repository entities to code entities | ✅ Shipped |
+| Feature Understanding | Feature → Code → Ownership → Decisions → Impact | ✅ Shipped |
+| Development Experience | ask, explain, plan, impact, review, reuse-check, ship-check, pr-context, … | ✅ Shipped |
+| Native Development Discipline | Evidence-backed habits on `init`; repo-adaptive policy | ✅ Shipped (RFC-003, RFC-004) |
+| Software Understanding | Complete product outcome | ✅ Shipped |
 
 ---
 
@@ -405,19 +412,19 @@ Durable organizational knowledge that survives contributor turnover and architec
 
 Answers why repository knowledge exists. One capability — not the whole product.
 
-Status: Implemented.
+Status: ✅ Implemented.
 
 ### Code Intelligence
 
 Answers how code works. One capability — not the whole product.
 
-Status: Required for v1.0 — ISSUE-057.
+Status: ✅ Shipped (ISSUE-057).
 
 ### Repository-Code Linking
 
 Connects repository entities (decisions, facts, events) to code entities (files, symbols). Required for unified explain output.
 
-Status: Required for v1.0 — ISSUE-057.
+Status: ✅ Shipped (ISSUE-057).
 
 ### Feature Understanding
 
@@ -427,7 +434,7 @@ First-class v1.0 goal. Humans think in features, not files.
 Feature → Code → Ownership → Decisions → Impact
 ```
 
-Status: Required for v1.0 — ISSUE-057.
+Status: ✅ Shipped (ISSUE-057).
 
 ### Development Experience
 
@@ -438,11 +445,14 @@ reponerve ask "Who owns billing?"
 reponerve explain "authentication"
 reponerve explain-file "internal/auth/oauth.go"
 reponerve plan "Add OAuth login"
+reponerve reuse-check "add OAuth middleware"
+reponerve ship-check "OAuth login"
 reponerve impact user-service
 reponerve review "metadata panel"
+reponerve pr-context --file internal/auth/oauth.go
 ```
 
-Status: Required for v1.0 — ISSUE-057.
+Status: ✅ Shipped. Extended by Native Development Discipline (RFC-003) and Team Delivery Intelligence (RFC-004).
 
 ### Knowledge Transfer
 
@@ -515,19 +525,10 @@ RepoNerve prioritizes deterministic understanding and evidence-backed intelligen
 
 ## Release State
 
-RepoNerve has one product release target: **v1.0**. Everything in the product vision ships in v1.0.
-
-| Capability | Role | v1.0 Status |
+| Milestone | Date | Notes |
 | --- | --- | --- |
-| Knowledge Preservation | Core platform foundation | Core Platform Capability |
-| Repository Intelligence | Capability | Complete |
-| Code Intelligence | Capability | ISSUE-057 |
-| Repository-Code Linking | Cross-authority subsystem | ISSUE-057 |
-| Feature Understanding | First-class v1.0 goal | ISSUE-057 |
-| Knowledge Transfer | Mission outcome via Development Experience | ISSUE-057 |
-| Development Experience | Product surface | ISSUE-057 |
-| Software Understanding | Outcome | Blocked until ISSUE-057 complete |
+| v1.0.0 | 2026-06-18 | First product release — complete v1.0 scope |
+| v1.1.0–v1.5.1 | 2026-06-24+ | Post-1.0 RFC-gated capabilities (see `docs/releases/versioning.md`) |
+| **Latest** | **v1.5.1** | Explore UI, doctor, scoped scan, npm, native discipline, team PR workflow |
 
-**RepoNerve v1.0** is not released until ISSUE-057 is complete and all v1.0 scope items above are delivered.
-
-There is no v1.1, v1.x, or partial product release.
+New capabilities require an RFC and a row in `docs/releases/versioning.md` before tagging. Out-of-scope items: `docs/roadmap/v1.x-backlog.md`.

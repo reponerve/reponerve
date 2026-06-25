@@ -8,11 +8,11 @@ Index of product strategy and problem definition documents. **Parent index:** [`
 
 | Document | Purpose |
 | --- | --- |
-| [market-positioning.md](market-positioning.md) | Category, competitors, differentiation, GTM |
+| [market-positioning.md](market-positioning.md) | Category, competitors, differentiation, GTM (v1.5.1) |
 | [token-economics.md](token-economics.md) | AI cost optimization, exploration tax, optimization stack |
-| [greenfield-guide.md](greenfield-guide.md) | Building from scratch with RepoNerve |
+| [greenfield-guide.md](greenfield-guide.md) | Building from scratch with RepoNerve (v1.5.1) |
 | [implementation-status.md](implementation-status.md) | Honest code vs documentation snapshot (latest: v1.5.1) |
-| [universal-understanding.md](universal-understanding.md) | North-star outcome definition |
+| [universal-understanding.md](universal-understanding.md) | North-star outcome definition (updated 2026-06-25) |
 
 ---
 

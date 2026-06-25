@@ -5,6 +5,8 @@
 >
 > Compatible with: Claude Projects, Cursor, Windsurf, Continue, Copilot Workspace, any AI IDE supporting system prompts.
 
+> **Not bundled on `reponerve init`.** Consumers get **Native Development Discipline** by default (`reuse-check`, `ship-check`, `review`, bundled Cursor rules — see `docs/rfc/RFC-003-native-development-discipline.md`). This council spec is **optional** narrative multi-perspective review for teams that add `.cursor/rules/software-development-council.mdc` manually. The RepoNerve project dogfoods that rule locally.
+
 ---
 
 ## How the Council Works

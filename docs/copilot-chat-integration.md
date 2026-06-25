@@ -19,9 +19,11 @@ Works with whatever LLM Copilot uses (OpenAI models today; model choice is host-
 In the repository you want to analyze:
 
 ```bash
-reponerve init    # workspace + automatic IDE integration (skill + MCP)
+reponerve init    # workspace + automatic IDE integration (skill + MCP + discipline rules)
 reponerve scan
 ```
+
+`init` installs Native Development Discipline rules (`development-discipline.mdc`, `coding-guidelines.mdc`) — see `docs/rfc/RFC-003-native-development-discipline.md`.
 
 ### Step 2: Configure MCP Server
 

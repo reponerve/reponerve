@@ -10,6 +10,7 @@ Central index for RepoNerve documentation. **Latest release:** `v1.5.1` — see 
 | --- | --- |
 | [../README.md](../README.md) | Product overview and quick start |
 | [install.md](install.md) | Install paths (npm, shell, Go, Homebrew) |
+| [assets/README.md](assets/README.md) | README demo GIF recording guide |
 | [ai-chat-integration.md](ai-chat-integration.md) | Use RepoNerve in any IDE or LLM chat |
 | [product/implementation-status.md](product/implementation-status.md) | Honest shipped vs planned snapshot |
 
@@ -36,7 +37,7 @@ Central index for RepoNerve documentation. **Latest release:** `v1.5.1` — see 
 | [product/token-economics.md](product/token-economics.md) | AI cost optimization |
 | [product/greenfield-guide.md](product/greenfield-guide.md) | New projects with RepoNerve |
 | [product/use-cases.md](product/use-cases.md) | Primary workflows |
-| [vision/vision.md](vision/vision.md) | Product vision |
+| [vision/vision.md](vision/vision.md) | Product vision (current through v1.5.1) |
 
 ---
 
@@ -69,7 +70,7 @@ Central index for RepoNerve documentation. **Latest release:** `v1.5.1` — see 
 | --- | --- |
 | [governance/contribution-guide.md](governance/contribution-guide.md) | Contributor setup |
 | [governance/rfc-process.md](governance/rfc-process.md) | RFC workflow |
-| [council/software-development-council.md](council/software-development-council.md) | Multi-perspective review framework |
+| [council/software-development-council.md](council/software-development-council.md) | Optional multi-perspective review (not bundled on `init`; see RFC-003) |
 | [adr/](adr/) | Architecture Decision Records |
 
 ---

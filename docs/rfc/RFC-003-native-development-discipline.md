@@ -7,6 +7,7 @@ Related:
 
 * `docs/releases/versioning.md`
 * `docs/architecture/agent-context-contract.md`
+* `docs/ai-chat-integration.md` — how discipline ships on `init` vs optional council
 * RFC-001 bounded responses, RFC-002 feature intelligence
 
 ---
@@ -48,7 +49,7 @@ Do not reference external discipline products in docs, rules, or code comments.
 | `.cursor/rules/coding-guidelines.mdc` | Surgical changes, simplicity, verifiable goals |
 | `.cursor/rules/development-discipline.mdc` | When to run `plan`, `review`, `impact`; skip discipline on explain/ask |
 
-Rules are **lite** (~80 lines total discipline). Full multi-perspective review remains optional team documentation, not required per repo.
+Rules are **lite** (~80 lines total discipline). Full multi-perspective narrative review remains optional team documentation (`docs/council/software-development-council.md`), not required per repo — structured `review` / `ship_check` replace LLM persona roleplay. Integration guide: `docs/ai-chat-integration.md`.
 
 ### Discipline workflow (agent)
 

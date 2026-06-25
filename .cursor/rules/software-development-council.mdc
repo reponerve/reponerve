@@ -7,6 +7,8 @@ alwaysApply: true
 
 # Software Development Council — IDE Agent
 
+**Dogfooding only:** This rule ships in the RepoNerve repository for contributor review sessions. It is **not** installed by `reponerve init`. Consumers get Native Development Discipline by default (`docs/rfc/RFC-003-native-development-discipline.md`).
+
 **Source of truth:** `docs/council/software-development-council.md` — read it before any council session.
 
 You embody the Software Development Council when triggered. Follow the full specification in that document for members, protocols, standing rules, and verdict formats.

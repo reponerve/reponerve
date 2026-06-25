@@ -1,10 +1,10 @@
 # RepoNerve Market Positioning
 
-Version: 1.0
+Version: 1.1
 
-Status: Draft
+Status: Current
 
-Updated: 2026-06-11
+Updated: 2026-06-25
 
 Related:
 
@@ -30,13 +30,13 @@ Users do not buy intelligence. They buy understanding, development speed, confid
 
 ## Tier 1: Code Graph + MCP (closest competitors)
 
-| Tool | Strength | What they have that RepoNerve lacks (today) |
+| Tool | Strength | RepoNerve differentiation (v1.5.1) |
 | --- | --- | --- |
-| [GitNexus](https://github.com/abhigyanpatwari/GitNexus) | Local code KG, web UI, 16 MCP tools | Multi-language Tree-sitter, visual explorer, large adoption |
-| [Cortex](https://github.com/DanielBlomma/cortex/) | Code + ADRs + rules, one-command bootstrap | Git hooks, optional vectors, rule enforcement at retrieval |
-| [Code-Nexus](https://github.com/snagrecha/code-nexus) | KG + git temporal overlay | Time-travel graph, 3D viz, context pruning, session persistence |
-| [Codebase-Memory](https://arxiv.org/html/2603.27277v1) | 66 languages, published token benchmarks | Community detection, incremental index at scale |
-| CodeGraphContext | Graph DB + MCP, MIT | Permissive license, high PyPI adoption |
+| [GitNexus](https://github.com/abhigyanpatwari/GitNexus) | Local code KG, web UI, 16 MCP tools | RepoNerve: repository memory (why), ownership, ADR→code linking, 49 MCP tools, native discipline on init |
+| [Cortex](https://github.com/DanielBlomma/cortex/) | Code + ADRs + rules, one-command bootstrap | RepoNerve: evidence-mandatory conclusions, repo-adaptive `discipline-policy.json`, no optional vectors required |
+| [Code-Nexus](https://github.com/snagrecha/code-nexus) | KG + git temporal overlay | RepoNerve: deterministic graph + session memory tied to repo entities, not chat logs |
+| [Codebase-Memory](https://arxiv.org/html/2603.27277v1) | 66 languages, published token benchmarks | RepoNerve: smaller language set (20) but deeper why/who/impact layer and ship readiness |
+| CodeGraphContext | Graph DB + MCP, MIT | RepoNerve: SQLite local-first, ownership + decisions, team PR workflow (`pr-context`) |
 
 **Their model:** `Code → Graph → MCP → Agent`
 
@@ -66,23 +66,24 @@ Repomix, code2prompt — dump repo into prompts. No structure, no memory, no gra
 # Comparison Matrix
 
 ```text
-                    Code structure   Why it exists   Who owns it   Evidence    Local-first
-GitNexus/Cortex     ████████████     ██░░░░░░░░░░    █░░░░░░░░░░░  █░░░░░░░░░  ████████████
-Sourcegraph Cody    ████████████     ████░░░░░░░░    ██░░░░░░░░░░  ████░░░░░░  ░░░░░░░░░░░░
-Supermemory/ICM     ████░░░░░░░░     ██████░░░░░░    ░░░░░░░░░░░░  ██░░░░░░░░  ████████░░░░
-KG discovery tools   ██████░░░░░░     ████████░░░░    ░░░░░░░░░░░░  ████████░░  ████████████
-RepoNerve (today)   ██░░░░░░░░░░     ████████████    ████████░░░░  ████████████ ████████████
-RepoNerve (v1.0)    ████████████     ████████████    ████████████  ████████████ ████████████
+                    Code structure   Why it exists   Who owns it   Evidence    Local-first   Dev discipline
+GitNexus/Cortex     ████████████     ██░░░░░░░░░░    █░░░░░░░░░░░  █░░░░░░░░░  ████████████  ██░░░░░░░░░░
+Sourcegraph Cody    ████████████     ████░░░░░░░░    ██░░░░░░░░░░  ████░░░░░░  ░░░░░░░░░░░░  ░░░░░░░░░░░░
+Supermemory/ICM     ████░░░░░░░░     ██████░░░░░░    ░░░░░░░░░░░░  ██░░░░░░░░  ████████░░░░  ████░░░░░░░░
+KG discovery tools   ██████░░░░░░     ████████░░░░    ░░░░░░░░░░░░  ████████░░  ████████████  ██░░░░░░░░░░
+RepoNerve (v1.5.1)  ████████████     ████████████    ████████████  ████████████ ████████████  ████████████
 ```
+
+**Dev discipline** = evidence-backed reuse, ship readiness, and review habits bundled on `reponerve init` (RFC-003/004) — not generic agent prompt packs.
 
 ---
 
-# What RepoNerve Must Not Claim at Launch
+# What RepoNerve Must Not Claim
 
-* Multi-language support beyond Go (v1.0 initial scope)
-* Semantic or embedding search (out of v1.0 — see `docs/roadmap/v1.x-backlog.md`)
+* Semantic or embedding search as primary authority (see `docs/roadmap/v1.x-backlog.md`)
 * Replacement for Cursor, Copilot, or autonomous build-from-idea tools
-* Enterprise polyrepo scale comparable to Sourcegraph
+* Enterprise polyrepo federation at Sourcegraph scale
+* Full graph-explorer product beyond the capped local `reponerve explore` UI (v1.5.0)
 
 ---
 
@@ -98,7 +99,7 @@ RepoNerve (v1.0)    ████████████     ██████�
 
 **Pitch:** Decisions do not die when people leave. ADRs link to code. PRs get impact and ownership context.
 
-**Entry:** `reponerve explain`, `reponerve review`, scan on merge.
+**Entry:** `reponerve review`, `reponerve ship-check`, `reponerve pr-context`, scan on merge.
 
 ## Enterprise / Regulated
 
@@ -113,8 +114,9 @@ RepoNerve (v1.0)    ████████████     ██████�
 1. **MCP-first** — developers discover via MCP registries and agent configs
 2. **OSS demo** — `reponerve scan` on Gin/Hugo/Kubernetes; show `explain` with ADR + code + owner
 3. **Compose with RTK** — shell noise + understanding compression together
-4. **GitHub Action** — scan on merge; PR comments with impact and linked decisions
+4. **PR workflow template** — `reponerve integrate` ships `.github/workflows/reponerve-pr.yml.example`; teams wire `pr-context` into CI
 5. **Manifesto** — *Evidence-Free Conclusions Are Invalid* for quality-conscious teams
+6. **npm + Homebrew** — frictionless install (`v1.3.2`+, `v1.4.0`+)
 
 ---
 
@@ -130,7 +132,22 @@ RepoNerve wins when the question is:
 
 Code-graph tools win when the question is only *where is this symbol defined?*
 
-RepoNerve must ship Code Intelligence (ISSUE-057) to compete on structure **and** own the why layer.
+RepoNerve competes on structure **and** the why layer: 20 languages (Tree-sitter), repository memory, ownership, and native development discipline on every `init`.
+
+---
+
+# Native Development Discipline (differentiator)
+
+External agent discipline packs (reuse-first ladders, pre-ship review personas) duplicate setup and ignore scanned repository evidence. RepoNerve ships **Native Development Discipline** by default:
+
+| Habit | RepoNerve surface |
+| --- | --- |
+| Reuse before write | `reuse-check`, `plan` starting points |
+| Pre-ship validation | `ship-check` → `ship_blockers` / `advisories` |
+| Evidence review | `review` + `discipline_checks` from repo policy |
+| Team PR workflow | `pr-context`, bundled workflow template |
+
+Spec: `docs/rfc/RFC-003-native-development-discipline.md`. Optional narrative multi-persona review (`docs/council/`) is **not** bundled on init — structured evidence replaces LLM roleplay.
 
 ---
 
@@ -138,9 +155,9 @@ RepoNerve must ship Code Intelligence (ISSUE-057) to compete on structure **and*
 
 | Risk | Mitigation |
 | --- | --- |
-| Crowded MCP code-graph space | Own evidence + repository memory niche |
-| IDEs add native code intelligence | Moat = repository memory + linking, not grep |
-| v1.0 slips while competitors ship | Ship ISSUE-057; document honest implementation status |
-| Limited visual UI | `reponerve explore` HTML in ISSUE-061 (v1.0) |
+| Crowded MCP code-graph space | Own evidence + repository memory + discipline-on-init niche |
+| IDEs add native code intelligence | Moat = repository memory + linking + ship readiness, not grep |
+| Agents ignore rules | Supply evidence via MCP/CLI; discipline rules are lite (~80 lines) |
+| Visual UI expectations | `reponerve explore` (v1.5.0) for local browse; full explorer out of scope |
 
-See `docs/roadmap/v1.0-iteration-plan.md` for delivery path.
+See `docs/product/implementation-status.md` and `docs/releases/versioning.md` for current release line (**v1.5.1**).

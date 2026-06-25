@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="RepoNerve demo placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="48" y="48" width="1184" height="624" rx="16" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="12 8"/>
+  <text x="640" y="300" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="42" font-weight="600" text-anchor="middle">RepoNerve  60s demo</text>
+  <text x="640" y="360" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="24" text-anchor="middle">Replace with docs/assets/reponerve-demo.gif</text>
+  <text x="640" y="410" fill="#64748b" font-family="ui-monospace, monospace" font-size="18" text-anchor="middle">init ’ scan ’ onboard ’ plan ’ explain</text>
+  <text x="640" y="480" fill="#475569" font-family="system-ui, sans-serif" font-size="16" text-anchor="middle">Recommended: 1280×720, under 5 MB · see docs/assets/README.md</text>
+</svg>

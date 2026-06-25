@@ -342,7 +342,7 @@ All execute successfully with evidence-backed, deterministic output.
 | Development Experience | ✅ |
 | Software Understanding | ✅ |
 
-There is no v1.x product release. v1.0.0 is the only release, delivered via v0.10–v0.15 alpha iterations.
+**Release status:** v1.0.0 shipped 2026-06-18 (via v0.10–v0.15 alpha iterations). Post-1.0 capabilities (v1.1.0–v1.5.1) follow semver and RFC policy — see `docs/releases/versioning.md` and `docs/product/implementation-status.md`.
 
 ---
 

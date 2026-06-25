@@ -1,439 +1,309 @@
 # RepoNerve
 
-> The intelligence layer for software understanding.
+[![Release](https://img.shields.io/github/v/release/reponerve/reponerve?label=release)](https://github.com/reponerve/reponerve/releases)
+[![npm](https://img.shields.io/npm/v/reponerve?label=npm)](https://www.npmjs.com/package/reponerve)
+[![License](https://img.shields.io/github/license/reponerve/reponerve)](LICENSE)
+[![CI](https://github.com/reponerve/reponerve/actions/workflows/test.yml/badge.svg)](https://github.com/reponerve/reponerve/actions/workflows/test.yml)
+[![MCP tools](https://img.shields.io/badge/MCP-49_tools-blue)](docs/mcp/compatibility-matrix.md)
+[![Local-first](https://img.shields.io/badge/cloud-none-local--first-22c55e)]()
 
-RepoNerve preserves, organizes, and transfers software knowledge so that understanding survives beyond individual contributors and remains accessible to both humans and AI systems.
+> **Local-first software understanding** — tell agents and developers not just *where* code is, but *why* it exists, *who* owns it, and *what breaks* if you change it. Every answer is backed by repository evidence.
 
-Software remembers code.
+**Latest release:** [`v1.5.1`](docs/releases/v1.5.1.md) · [Documentation](docs/README.md) · [Install guide](docs/install.md)
 
-Software forgets context.
+### Explain it to your team (30 seconds)
 
-RepoNerve prevents knowledge loss and reduces the cost of software understanding.
-
----
-
-# Vision
-
-RepoNerve reduces the time, effort, and token consumption required for humans and AI systems to understand and evolve software.
-
-Every repository should be self-explaining — how it works, why it exists, who owns it, and how to change it safely.
+> **RepoNerve** scans our repository once — git, ADRs, and code structure — and builds local **software memory**. Developers and AI agents query that memory for *why* something exists, *who* owns it, and *what breaks* if we change it, instead of grepping the repo every session. Run `reponerve init` and `reponerve scan` in any project; it plugs into **Cursor**, **Copilot**, and other MCP hosts. No cloud required. No separate discipline skill packs — reuse, review, and ship-check habits ship with `init`.
 
 ---
 
-# What Problems Does RepoNerve Solve?
+## Demo
 
-RepoNerve answers the questions developers and AI agents ask every day:
+![RepoNerve setup and use — install, init, scan, understand, plan, reuse-check, review](docs/assets/reponerve-demo.gif)
 
-* **Explain this code** — Which files, packages, functions, and APIs are involved? What is the call graph?
-* **Explain this feature** — Why does it exist? What decisions shaped it?
-* **Who owns this area?** — Who created it? Who has expertise?
-* **What breaks if I change this?** — What depends on it? What is impacted?
-* **Who should review this?** — Which reviewers have the required expertise?
-* **Add OAuth login** — What areas are affected? Where should I start?
+The recording follows the **exact steps below** on a real repository. Regenerate: `vhs docs/assets/demo.tape` · Guide: [`docs/assets/README.md`](docs/assets/README.md)
 
-Examples:
+---
+
+## Setup and use (exact steps)
+
+Do this **once per git repository**. Total time: about 2 minutes.
+
+### Step 1 — Install RepoNerve
+
+Pick one install path, then verify the binary:
 
 ```bash
-reponerve explain "metadata panel"
-reponerve explain-file "metadata-panel.tsx"
-reponerve explain-function "BuildMetadataPanel"
-reponerve ask "Who owns authentication?"
-reponerve impact "user-service"
-reponerve review "metadata panel"
-reponerve plan "Add OAuth login"
-reponerve reuse-check "add OAuth middleware"
-reponerve ship-check "OAuth login"
-reponerve doctor
-```
-
----
-
-# What RepoNerve Does
-
-RepoNerve delivers **Software Understanding** through knowledge preservation, software memory, intelligence capabilities, and Development Experience.
-
-```text
-Knowledge Preservation          (Core Platform Capability)
-    ↓
-Software Memory
-    ↓
-Repository Intelligence + Code Intelligence
-    ↓
-Repository-Code Linking
-    ↓
-Feature Understanding
-    ↓
-Development Experience
-    ↓
-Software Understanding
-    ↓
-CLI / MCP
-    ↓
-Developers and AI Agents
-```
-
-**Knowledge Preservation** — core platform foundation. Stores memory, ownership, context, code entities, and repository-code links. All intelligence layers depend on it.
-
-**Software Memory** — durable organizational knowledge that survives contributor turnover and architectural evolution.
-
-**Repository Intelligence** — why the software exists (memory, context, ownership, graph, discovery, reviewers, change planning).
-
-**Code Intelligence** — how the software works (modules, packages, symbols, call graphs).
-
-**Repository-Code Linking** — deterministic connections between repository entities (decisions, facts, events) and code entities (files, symbols). Required for unified explain output.
-
-**Feature Understanding** — feature-level resolution: Feature → Code → Ownership → Decisions → Impact.
-
-**Development Experience** — how users consume RepoNerve (`ask`, `explain`, `plan`, `impact`, `review`, and symbol-level explain commands).
-
----
-
-# Core Capabilities
-
-## Code Intelligence
-
-Deterministic code structure extraction and analysis.
-
-* File, package, type, and function indexing
-* Symbol resolution
-* Call graph and dependency analysis
-* Go + 19 Tree-sitter languages
-
-## Memory Engine
-
-Build a repository memory graph from:
-
-* Git history
-* ADRs
-* Repository metadata
-
-Extract:
-
-* Events
-* Decisions
-* Intents
-* Facts
-* Relationships
-
-## Query Engine
-
-Explore repository knowledge. Part of the **Understanding Engine** — the retrieval layer spanning repository memory, code intelligence, and repository-code links.
-
-Commands:
-
-```bash
-reponerve memory list decisions
-reponerve memory get decision <id>
-reponerve memory trace decision <id>
-reponerve memory explain decision <id>
-```
-
-## Context Engine
-
-Generate repository context.
-
-Commands:
-
-```bash
-reponerve context generate
-reponerve context export
-```
-
-## Development Experience
-
-Development-facing workflows that orchestrate Code Intelligence and Repository Intelligence.
-
-```bash
-reponerve ask "Who created metadata panel?"
-reponerve explain "metadata panel"
-reponerve explain-feature "Authentication"
-reponerve explain-file "metadata-panel.tsx"
-reponerve explain-function "BuildMetadataPanel"
-reponerve explain-struct "MetadataPanel"
-reponerve explain-interface "Searcher"
-reponerve explain-type "HandlerFunc"
-reponerve plan "Add OAuth login"
-reponerve impact "user-service"
-reponerve review "metadata panel"
-reponerve reuse-check "add rate limiter"
-reponerve ship-check "metadata panel"
-reponerve onboard
-reponerve doctor
-```
-
-## Local Explore UI
-
-Browse repository knowledge as an interactive graph:
-
-```bash
-reponerve explore --serve    # http://127.0.0.1:8765/
-reponerve explore -o reponerve-graph.html
-```
-
-## MCP Server
-
-Expose intelligence directly to AI coding agents.
-
-Start the server:
-
-```bash
-reponerve mcp
-```
-
-**49 MCP tools** across memory, ownership, graph, and Development Experience.
-
-Compatible with:
-
-* Claude Code
-* Cursor
-* Windsurf
-* Cline
-* Roo
-* Codex
-* GitHub Copilot Chat
-
-Works in **AI chat without MCP** — run `reponerve ask --json` in the terminal; same evidence envelope as MCP.
-
----
-
-# Philosophy
-
-Understanding first.
-
-Evidence second.
-
-AI third.
-
-Software Understanding is the outcome. Development Experience is the product surface.
-
----
-
-# Why RepoNerve (Token Economics)
-
-Premium LLM models are expensive and getting costlier. Most agent cost is not generation — it is **re-exploring the repository** every session (file reads, greps, summaries).
-
-RepoNerve inverts that:
-
-```text
-EXPENSIVE:  LLM reads repo → LLM understands → LLM acts
-CHEAP:      reponerve scan (0 LLM tokens) → MCP context pack → LLM acts
-```
-
-* **Scan once** — deterministic extraction, no LLM required
-* **Query cheaply** — structured MCP tools return bounded evidence
-* **Persist understanding** — session 50 does not re-pay the exploration tax
-
-See `docs/product/token-economics.md`.
-
----
-
-# Market Position
-
-RepoNerve is **Software Understanding Infrastructure** — not another code graph, not generic chat memory, not an autonomous coding agent.
-
-Code-graph tools answer *where*. RepoNerve answers *why*, *who*, and *what breaks* — with mandatory evidence.
-
-See `docs/product/market-positioning.md`.
-
----
-
-# Greenfield Projects
-
-RepoNerve does not build a repository from an idea. It ensures a repository built from an idea **stays understandable** — capture ADRs and scan from the first commit so agents never accumulate amnesia.
-
-See `docs/product/greenfield-guide.md`.
-
----
-
-# Current Status
-
-**Latest release:** `v1.5.1` (2026-06-24)
-
-```text
-Knowledge Preservation — Core Platform Capability
-Repository Intelligence — Complete
-Code Intelligence — Complete (Go + 19 languages)
-Repository-Code Linking — Complete
-Feature Understanding — Complete
-Development Experience — Complete
-Token Intelligence — Complete
-Evidence Graph & Session Memory — Complete
-Multi-Language Code Intelligence — Complete
-Native Development Discipline — Complete
-Reuse Protocol + Ship Readiness — Complete
-Local Explore UI — Complete
-Software Understanding — Delivered
-v1.0.0 — Released (2026-06-18)
-Post-1.0 — Semver on main (v1.5.1)
-```
-
-**Post-1.0 focus:** RFC-gated capabilities from `docs/roadmap/v1.x-backlog.md`.
-
-See `docs/product/implementation-status.md` and `docs/releases/versioning.md`.
-
----
-
-# Installation
-
-**Full guide:** [`docs/install.md`](docs/install.md)
-
-## npm (Node 18+)
-
-```bash
+# npm (Node 18+)
 npm install -g reponerve
-# or per project:
-npm install -D reponerve && npx reponerve init
-```
 
-## No Go required (shell)
-
-```bash
+# macOS / Linux — no Node required
 curl -fsSL https://raw.githubusercontent.com/reponerve/reponerve/main/scripts/install.sh | bash
-```
 
-Or download an archive for your OS from [GitHub Releases](https://github.com/reponerve/reponerve/releases) and put `reponerve` on your `PATH`.
-
-## Go developers
-
-```bash
+# Go developers
 go install github.com/reponerve/reponerve/cmd/reponerve@v1.5.1
-# or from a clone:
-make install
 ```
 
-## Homebrew
-
 ```bash
-brew tap reponerve/tap
-brew install reponerve
+reponerve --version
 ```
 
-Until the tap is published, use the install script or release archives. See `docs/install.md`.
+More install options (Homebrew, Windows, pinned versions): [`docs/install.md`](docs/install.md)
 
----
+### Step 2 — Set up your repository
 
-# Quick Start
-
-From the root of the repository you want to analyze:
-
-1. Initialize workspace metadata and database:
+From the **root** of the project you want to understand:
 
 ```bash
+cd /path/to/your-repo
 reponerve init
-```
-
-2. Ingest repository signals (commits, ADRs, metadata):
-
-```bash
 reponerve scan
 ```
 
-3. Verify memory health:
+| Command | What it does |
+| --- | --- |
+| `init` | Creates `.reponerve/`, SQLite memory, MCP config (Cursor / VS Code / Continue), agent skill, and discipline rules |
+| `scan` | Ingests git history, ADRs, and code into memory — **no LLM required** |
+
+Optional — re-scan automatically after each commit:
+
+```bash
+reponerve hook install
+```
+
+### Step 3 — Verify setup
 
 ```bash
 reponerve doctor
 ```
 
-4. Inspect extracted decisions:
+Fix anything marked `warn` or `fail` (usually run `reponerve scan` again).
+
+### Step 4 — Understand the repository
+
+Use these before editing code or pasting a ticket into your agent:
 
 ```bash
-reponerve memory list decisions
+# Day-one orientation (decisions + repo map)
+reponerve onboard
+
+# Or ask a specific question
+reponerve ask "What does this repository do?"
+
+# Explain a feature, file, or symbol
+reponerve explain "authentication"
+reponerve explain-file "internal/auth/handler.go"
+reponerve explain-function "HandleLogin" --package auth
 ```
 
-5. Generate repository context:
+Add `--format compact --token-budget 1500` for shorter output in scripts or agents.
+
+### Step 5 — Plan and ship a change
+
+When you have a task or are preparing a PR:
 
 ```bash
-reponerve context generate
+# 1. Scope the work (starting files + steps)
+reponerve plan "Add OAuth login"
+
+# 2. Reuse existing code before writing new code
+reponerve reuse-check "add OAuth middleware"
+
+# 3. Check impact of risky changes
+reponerve impact "OAuth login"
+
+# 4. Pre-merge review + discipline checks
+reponerve review "OAuth login"
+
+# 5. Ship readiness (blockers + advisories)
+reponerve ship-check "OAuth login"
+
+# 6. PR evidence pack (changed files)
+reponerve pr-context --file internal/auth/oauth.go
 ```
 
-6. Start MCP server for agent integrations:
+Agents should use `--json` (same envelope as MCP): read `structured` → `agent` → `formatted`.
 
-```bash
-reponerve mcp
-```
+### Step 6 — Use with AI chat
 
-## AI Chat Integration
+After `init`, **restart MCP** in your IDE (Cursor → Settings → Tools & MCP).
 
-RepoNerve is built for **direct conversation in AI chat** — in Cursor, VS Code Copilot, JetBrains, Windsurf, Continue, Claude, and other MCP hosts. Type natural language; the assistant calls RepoNerve tools and answers from evidence. **Any LLM** the IDE provides works (GPT, Claude, Gemini, Llama, …) — RepoNerve does not require its own API keys.
-
-```bash
-reponerve init && reponerve scan   # once per repository; init installs skill + MCP
-```
-
-**Full guide:** `docs/ai-chat-integration.md`  
-**IDE matrix:** `docs/mcp/compatibility-matrix.md`  
-**Refresh IDE files:** `reponerve integrate` (or `reponerve integrate --force`)
-
-| IDE / client | Config in this repo |
+| Mode | How |
 | --- | --- |
-| Cursor | `.cursor/mcp.json` + `.cursor/skills/reponerve/` |
-| VS Code + Copilot | `.vscode/mcp.json` |
-| Continue | `.continue/mcpServers/reponerve.json` |
+| **MCP on** | Ask in natural language — the agent calls RepoNerve tools automatically |
+| **MCP off** | Agent runs `reponerve ask "..." --json` in the terminal (same evidence) |
 
-Example prompts in chat: "Onboard me", paste a ticket → "Where do I start?", "Why do we use SQLite?", "Explain internal/mcp/server/server.go".
+Example prompts:
 
-### GitHub Copilot Chat (VS Code)
+- "Onboard me to this repo"
+- Paste a ticket → "Where should I start?"
+- "Why do we use SQLite?"
+- "What can I reuse for rate limiting?"
+- "Review my OAuth change"
 
-See `docs/copilot-chat-integration.md`. Open `.vscode/mcp.json` → Start → Copilot Chat → **Agent** mode.
-
-### Cursor
-
-See `docs/cursor-integration.md`. **Skill + MCP:** context-first workflow plus 49 MCP tools.
-
----
-
-# Documentation
-
-**Documentation index:** [`docs/README.md`](docs/README.md)
-
-## Start Here
-
-* Product Overview: `README.md`
-* Install: `docs/install.md`
-* AI chat in any IDE: `docs/ai-chat-integration.md`
-* Contributor Setup: `docs/governance/contribution-guide.md`
-* MCP Troubleshooting: `docs/mcp/troubleshooting.md`
-
-## By Goal
-
-* **AI chat in any IDE or LLM:** `docs/ai-chat-integration.md`
-* Understand product direction: `docs/vision/`
-* Market positioning and competitors: `docs/product/market-positioning.md`
-* Token economics and AI cost optimization: `docs/product/token-economics.md`
-* Greenfield / build-from-scratch workflows: `docs/product/greenfield-guide.md`
-* Honest code vs docs status: `docs/product/implementation-status.md`
-* Understand architecture: `docs/architecture/`
-* Post-1.0 planned work: `docs/roadmap/v1.x-backlog.md`
-* Release history: `docs/releases/versioning.md`
-* Review quality and release readiness: `docs/audits/`
-
----
-
-# Roadmap
-
-## Shipped (v1.0 + post-1.0)
-
-| Release | Highlights |
+| IDE | Guide |
 | --- | --- |
-| **v1.0.0** | First product release — complete v1.0 scope (2026-06-18) |
-| **v1.0.1** | Scan reliability patch |
-| **v1.1.0** | Bounded DE, feature intelligence v2, native discipline (RFC-001–003) |
-| **v1.2.0** | Reuse Protocol + Ship Readiness (RFC-003 B/C) |
-| **v1.3.0** | Discipline policy, PR context, document paths (RFC-003 D, RFC-004, RFC-005) |
-| **v1.3.1** | Binary-first install script + release archives |
-| **v1.3.2** | npm distribution (RFC-006) |
-| **v1.4.0** | Doctor, scoped monorepo scan, Homebrew (RFC-007, RFC-008) |
-| **v1.5.0** | Local Explore UI (RFC-009) |
-| **v1.5.1** | CLI `--version` / `version` command |
+| Any IDE / LLM | [`docs/ai-chat-integration.md`](docs/ai-chat-integration.md) |
+| Cursor | [`docs/cursor-integration.md`](docs/cursor-integration.md) |
+| VS Code + Copilot | [`docs/copilot-chat-integration.md`](docs/copilot-chat-integration.md) |
 
-See `docs/releases/v1.5.1.md` and `docs/releases/versioning.md` for semver policy.
-
-**Next:** capabilities in `docs/roadmap/v1.x-backlog.md` (RFC-gated).
+Refresh IDE files later: `reponerve integrate`
 
 ---
 
-# License
+## Copy-paste demo script
 
-RepoNerve is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+Run in order on any git repository (matches the GIF above):
 
-Copyright (c) 2026 RepoNerve Contributors
+```bash
+# Step 1 — Install (verify)
+reponerve --version
+
+# Step 2 — Set up repository
+reponerve init
+reponerve scan
+
+# Step 3 — Verify
+reponerve doctor
+
+# Step 4 — Understand
+reponerve onboard --format compact --token-budget 400
+
+# Step 5 — Plan and ship a change
+reponerve plan "Add webhook notifications" --format compact --token-budget 320
+reponerve reuse-check "add webhook" --format compact --token-budget 320
+reponerve review "webhook notifications" --format compact --token-budget 280
+```
+
+---
+
+RepoNerve scans your repository once (git history, ADRs, code structure) and builds **software memory** — a local SQLite knowledge base your team and AI agents query instead of re-reading the whole codebase every session.
+
+It is **not** an autonomous coding agent. It is the **understanding layer** that sits under Cursor, Copilot, Claude, or any terminal workflow.
+
+```text
+You or your AI agent asks a question
+        ↓
+RepoNerve returns evidence (decisions, symbols, owners, impact)
+        ↓
+Implement with confidence — less grep, fewer wrong edits, lower token cost
+```
+
+**Philosophy:** Understanding first. Evidence second. AI third.
+
+---
+
+## What questions does it answer?
+
+| You ask… | RepoNerve helps with… |
+| --- | --- |
+| "What does this repo do?" | Orientation, decisions, architecture |
+| "Explain this feature / file / function" | Code + why + linked ADRs |
+| "Who owns authentication?" | Contributors and expertise |
+| "What breaks if I change X?" | Impact and dependencies |
+| "Where do I start for this ticket?" | Scoped `plan` with starting points |
+| "Can we ship this?" | `ship-check` blockers and advisories |
+| "What can I reuse?" | `reuse-check` before writing new code |
+
+---
+
+## What is RepoNerve?
+
+## Command cheat sheet
+
+| Goal | Command |
+| --- | --- |
+| Orientation | `reponerve onboard` |
+| Question | `reponerve ask "..."` |
+| Feature / topic | `reponerve explain "metadata panel"` |
+| File | `reponerve explain-file path/to/file.go` |
+| Symbol | `reponerve explain-function Name --package pkg` |
+| Task planning | `reponerve plan "Add OAuth"` |
+| Impact | `reponerve impact "user-service"` |
+| Pre-merge review | `reponerve review "topic"` |
+| Ship readiness | `reponerve ship-check "topic"` |
+| Reuse existing code | `reponerve reuse-check "intent"` |
+| Browse graph (local UI) | `reponerve explore --serve` |
+| MCP for agents | `reponerve mcp` |
+
+**49 MCP tools** mirror these commands. Full CLI reference: [`docs/architecture/cli-reference-v1.md`](docs/architecture/cli-reference-v1.md)
+
+---
+
+## How it works
+
+```text
+Repository (git, ADRs, source)
+        ↓ scan (deterministic)
+Software memory (.reponerve/memory.db)
+        ↓ query
+Development Experience (ask, explain, plan, review, …)
+        ↓
+CLI · MCP · Explore UI
+        ↓
+Developers and AI agents
+```
+
+**Layers:**
+
+- **Repository Intelligence** — why (decisions, facts, events, ownership)
+- **Code Intelligence** — how (symbols, call graphs; Go + 19 Tree-sitter languages)
+- **Repository–code linking** — ADRs and events tied to real files and symbols
+- **Development Experience** — the commands and MCP tools you use daily
+
+Details: [`docs/architecture/architecture-overview.md`](docs/architecture/architecture-overview.md)
+
+---
+
+## Why RepoNerve?
+
+| Problem | RepoNerve approach |
+| --- | --- |
+| Agents re-grep every session | Scan once, query cheaply |
+| "Why does this exist?" lost when people leave | ADRs + git → durable memory |
+| Generic agent rules ignore your repo | Repo-adaptive discipline policy after `scan` |
+| Premium LLM tokens wasted on exploration | Bounded evidence packs (RFC-001) |
+
+Compared to code-graph-only tools: RepoNerve owns the **why**, **who**, and **what breaks** layer with mandatory evidence.
+
+See [`docs/product/market-positioning.md`](docs/product/market-positioning.md) and [`docs/product/token-economics.md`](docs/product/token-economics.md).
+
+---
+
+## Current status
+
+**v1.0.0** shipped 2026-06-18. **Latest:** **v1.5.1**.
+
+| Area | Status |
+| --- | --- |
+| Memory, graph, ownership | ✅ Shipped |
+| Code intelligence (20 languages) | ✅ Shipped |
+| Development Experience + 49 MCP tools | ✅ Shipped |
+| Native discipline, reuse, ship-check, PR context | ✅ Shipped |
+| Doctor, scoped scan, npm, explore UI | ✅ Shipped |
+
+Honest snapshot: [`docs/product/implementation-status.md`](docs/product/implementation-status.md)  
+Release line: [`docs/releases/versioning.md`](docs/releases/versioning.md)  
+Post-1.0 scope: RFC-gated — [`docs/roadmap/v1.x-backlog.md`](docs/roadmap/v1.x-backlog.md)
+
+---
+
+## Documentation
+
+| Start here | |
+| --- | --- |
+| [Docs index](docs/README.md) | Full documentation map |
+| [AI chat integration](docs/ai-chat-integration.md) | Any IDE or LLM |
+| [Install](docs/install.md) | All install paths |
+| [Vision](docs/vision/vision.md) | Product direction |
+| [Greenfield guide](docs/product/greenfield-guide.md) | New projects from day one |
+| [Demo assets](docs/assets/README.md) | Record and add the README demo GIF |
+| [Contributing](docs/governance/contribution-guide.md) | Developer setup |
+
+---
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE).
+
+Copyright © 2026 RepoNerve Contributors

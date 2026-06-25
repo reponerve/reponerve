@@ -105,9 +105,11 @@ In each target repo: `reponerve init && reponerve scan`. Optionally add `.cursor
 `reponerve init` also installs **Native Development Discipline** rules:
 
 * `.cursor/rules/coding-guidelines.mdc` — surgical changes, simplicity, verifiable goals
-* `.cursor/rules/development-discipline.mdc` — when to run `plan`, `review`, `impact` (evidence-backed habits)
+* `.cursor/rules/development-discipline.mdc` — when to run `plan`, `reuse-check`, `review`, `ship-check`, `pr-context`
 
-See `docs/rfc/RFC-003-native-development-discipline.md`. No separate discipline skills are required in target repositories.
+See `docs/rfc/RFC-003-native-development-discipline.md`. No separate discipline skills (e.g. Ponytail-style packs) are required in target repositories.
+
+**Optional:** The [Software Development Council](council/software-development-council.md) is narrative multi-persona review — **not** installed by `reponerve init`. Teams add it manually if they want LLM roleplay on top of evidence-backed discipline. See `docs/ai-chat-integration.md`.
 
 ## Using RepoNerve in Agent chat
 
@@ -122,6 +124,9 @@ Example prompts:
 - "Why do we use SQLite?" → `ask` + `list_decisions`
 - "Plan where to add a new MCP tool" → `plan` with scope and impacted files
 - "What breaks if we change the MCP registry?" → `analyze_topic_impact` / `reponerve impact`
+- "Can we ship this OAuth change?" → `ship_check` / `reponerve ship-check "..." --json`
+- "What can I reuse for OAuth?" → `reuse_check` / `reponerve reuse-check "..." --json`
+- PR review on changed files → `pr_context` / `reponerve pr-context --file ... --json`
 
 ## Available MCP tools (49)
 
@@ -163,6 +168,8 @@ You should receive JSON with 49 tools. Any non-JSON output on stdout breaks MCP.
 
 ## Further reading
 
+- Native development discipline: `docs/rfc/RFC-003-native-development-discipline.md`
+- AI chat integration (discipline vs optional council): `docs/ai-chat-integration.md`
 - Universal understanding (north star): `docs/product/universal-understanding.md`
 - Agent context contract: `docs/architecture/agent-context-contract.md`
 - Agent skill: `.cursor/skills/reponerve/SKILL.md` (CLI map: `reference.md`)

@@ -4,7 +4,7 @@ Version: 1.0
 
 Status: Active
 
-Updated: 2026-06-11
+Updated: 2026-06-25
 
 Related:
 
@@ -39,7 +39,7 @@ Human or AI (explain, plan, edit — minimal extra discovery)
 | --- | --- | --- |
 | **Day-one developer** | What does this repo do? How is it organized? | `ask`, `explain`, `list_decisions` |
 | **Assigned engineer** | Paste ticket → where to start, what breaks | `plan`, `analyze_topic_impact`, `explain_*` |
-| **Reviewer** | What to check, who knows this area | `review`, `explain` |
+| **Reviewer** | What to check, who knows this area | `review`, `ship-check`, `explain` |
 | **Weak AI model** | Pre-digested facts, not open-ended repo search | MCP `structured` + `agent` metadata; any IDE chat |
 | **Strong AI model** | Same contract — less token waste, fewer wrong edits | Same path |
 | **Any IDE chat** | Natural language → RepoNerve tools | MCP in Copilot, Cursor, JetBrains, … — see `docs/ai-chat-integration.md` |
@@ -56,21 +56,24 @@ When someone pastes a task — Jira ticket, Slack message, PRD snippet — RepoN
 ## Workflow
 
 ```text
-1. ask "<pasted task>"  → task_plan with plan, briefings, suggested_steps
-   OR plan("<pasted task>")
-2. explain_file / explain_* on starting_points only
-3. analyze_topic_impact on risky areas
-4. implement within scope
-5. review("<topic from task>")
+1. plan("<pasted task>") OR ask "<pasted task>"  → task_plan with starting_points
+2. reuse-check("<intent from task>")             → reuse_candidates before new code
+3. explain_file / explain_* on starting_points only
+4. analyze_topic_impact on risky areas
+5. implement within scope
+6. ship-check("<topic>") + review("<topic>") before merge
 ```
 
 Example:
 
 ```bash
-reponerve ask "Add Google OAuth login to the API"
+reponerve plan "Add Google OAuth login to the API"
+reponerve reuse-check "add OAuth middleware"
 reponerve onboard "Add Google OAuth login to the API"
 reponerve impact "OAuth login"
 reponerve explain-file internal/auth/handler.go
+reponerve ship-check "OAuth login"
+reponerve review "OAuth login"
 ```
 
 `ask` detects task descriptions (`add`, `implement`, `fix`, long pasted tickets) and returns `answer_type: task_plan` — weak models get a bounded package without picking the right tool.
@@ -154,7 +157,7 @@ Confusion is expensive. Wrong exploration paths burn context windows.
 
 ```text
 EXPENSIVE:  grep → read 20 files → guess → wrong file → read 10 more → fix
-CHEAP:      plan → briefings → edit 2 scoped files → review
+CHEAP:      plan → reuse-check → briefings → edit 2 scoped files → ship-check → review
 ```
 
 Rules:
@@ -172,10 +175,11 @@ See `docs/product/token-economics.md` for the full cost model.
 
 Universal understanding is achieved when:
 
-* A pasted task description → `plan` → scoped, evidence-backed starting points
+* A pasted task description → `plan` → `reuse-check` → scoped, evidence-backed starting points
 * Day-one `ask` / `explain` answers without requiring contributor access
 * Weak and strong models receive the same structured contract
 * Hallucination paths are blocked by completeness gates and evidence requirements
 * Token spend shifts from exploration to implementation
+* Ship and merge flows use `ship-check` and `review` with structured blockers, not ad-hoc judgment
 
-Implementation tracking: ISSUE-057 (Development Experience), agent context contract, entity briefings, MCP `agent` envelope.
+Implementation tracking: `docs/product/implementation-status.md` (v1.5.1), agent context contract, entity briefings, MCP `agent` envelope, Native Development Discipline (RFC-003).
