@@ -154,6 +154,25 @@ Contributors typically use `make build` or `make install` from a local clone.
 
 ---
 
+## Local graph UI
+
+After `reponerve init` and `reponerve scan`:
+
+```bash
+reponerve explore --serve
+# open http://127.0.0.1:8765/
+```
+
+Export static HTML:
+
+```bash
+reponerve explore -o reponerve-graph.html
+```
+
+See `docs/rfc/RFC-009-local-explore-ui.md`.
+
+---
+
 ## Homebrew
 
 Create a tap repository (e.g. `github.com/reponerve/homebrew-tap`) and copy `packaging/homebrew/reponerve.rb` to `Formula/reponerve.rb`. After each release, update checksums:

@@ -39,8 +39,9 @@ RepoNerve uses **two eras** of version tags:
 | `v1.3.1` | 2026-06-24 | Binary-first install script + release archives |
 | `v1.3.2` | 2026-06-24 | npm distribution (RFC-006) |
 | `v1.4.0` | 2026-06-24 | Doctor + scoped monorepo scan + Homebrew (RFC-007, RFC-008) |
+| `v1.5.0` | 2026-06-24 | Local Explore UI (RFC-009) |
 
-Latest tagged release: **`v1.4.0`**.
+Latest tagged release: **`v1.5.0`**.
 
 ---
 
@@ -90,6 +91,7 @@ After `v1.0.0`, follow [Semantic Versioning](https://semver.org/):
 | Binary-first install | `v1.3.1` |
 | npm distribution (RFC-006) | `v1.3.2` |
 | Doctor + scoped scan + Homebrew | `v1.4.0` (RFC-007, RFC-008) |
+| Local Explore UI | `v1.5.0` (RFC-009) |
 | Docs-only / council / stale-doc fixes without behavior change | Include in nearest release or `v1.0.2` |
 | Breaking envelope or storage migration | `v2.0.0` (RFC) |
 

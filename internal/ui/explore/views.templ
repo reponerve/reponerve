@@ -1,0 +1,158 @@
+package exploreui
+
+import (
+	"fmt"
+)
+
+templ layout(title string, body templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>{ title }</title>
+			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+			<script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
+			<script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+			<style>
+				:root { color-scheme: light dark; --bg: #0f1419; --panel: #1a2332; --text: #e7ecf3; --muted: #9aa7b8; --accent: #5b9fd4; --border: #2a3648; }
+				* { box-sizing: border-box; }
+				body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); }
+				a { color: var(--accent); }
+				header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+				main { display: grid; grid-template-columns: 1fr 22rem; gap: 1rem; padding: 1rem; }
+				@media (max-width: 960px) { main { grid-template-columns: 1fr; } }
+				.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+				.muted { color: var(--muted); font-size: 0.9rem; }
+				table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+				th, td { text-align: left; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--border); }
+				tr:hover { background: rgba(91, 159, 212, 0.08); cursor: pointer; }
+				.badge { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 999px; background: #243044; font-size: 0.75rem; }
+				#cy { height: 320px; border: 1px solid var(--border); border-radius: 8px; background: #111820; }
+				input, select { background: #111820; color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.55rem; }
+				pre.evidence { white-space: pre-wrap; font-size: 0.75rem; background: #111820; padding: 0.5rem; border-radius: 6px; overflow: auto; max-height: 8rem; }
+				.hint { font-size: 0.8rem; margin: 0.15rem 0; }
+			</style>
+		</head>
+		<body>
+			@body
+		</body>
+	</html>
+}
+
+templ ExplorePage(data *Payload) {
+	@layout("RepoNerve Explore", exploreBody(data))
+}
+
+templ exploreBody(data *Payload) {
+	<header>
+		<h1 style="margin:0;font-size:1.25rem">RepoNerve Explore</h1>
+		<p class="muted" style="margin:0.35rem 0 0">
+			Repository { data.RepositoryID } ·
+			Showing { fmt.Sprintf("%d", len(data.Nodes)) } / { fmt.Sprintf("%d", data.TotalNodes) } nodes ·
+			{ fmt.Sprintf("%d", len(data.Edges)) } edges (displayed) ·
+			{ fmt.Sprintf("%d", data.TotalEdges) } total ·
+			communities { fmt.Sprintf("%d", data.Stats.Communities) } ·
+			surprises { fmt.Sprintf("%d", data.Stats.Surprises) }
+		</p>
+	</header>
+	<main>
+		<section class="card">
+			<h2 style="margin-top:0;font-size:1rem">Subgraph</h2>
+			<div id="cy"></div>
+			<script>
+				(function() {
+					const nodes = {{ graphNodesJSON(data) }};
+					const edges = {{ graphEdgesJSON(data) }};
+					const elements = [];
+					nodes.forEach(n => elements.push({ data: { id: n.id, label: n.type } }));
+					edges.forEach(e => elements.push({ data: { id: e.id, source: e.from, target: e.to, label: e.type } }));
+					cytoscape({
+						container: document.getElementById('cy'),
+						elements: elements,
+						style: [
+							{ selector: 'node', style: { 'label': 'data(label)', 'font-size': 8, 'color': '#e7ecf3', 'background-color': '#5b9fd4' } },
+							{ selector: 'edge', style: { 'width': 1, 'line-color': '#4a5d73', 'target-arrow-shape': 'triangle', 'curve-style': 'bezier' } }
+						],
+						layout: { name: 'cose', animate: false }
+					});
+				})();
+			</script>
+			<h2 style="font-size:1rem">Nodes</h2>
+			<div style="display:flex;gap:0.5rem;margin-bottom:0.75rem" x-data>
+				<select name="type" hx-get="/nodes" hx-target="#node-table" hx-trigger="change" hx-include="[name='q']">
+					<option value="ALL">All types</option>
+					<option value="DECISION">DECISION</option>
+					<option value="EVENT">EVENT</option>
+					<option value="FACT">FACT</option>
+					<option value="INTENT">INTENT</option>
+					<option value="CONTRIBUTOR">CONTRIBUTOR</option>
+				</select>
+				<input name="q" type="search" placeholder="Filter…" hx-get="/nodes" hx-target="#node-table" hx-trigger="keyup changed delay:300ms" hx-include="[name='type']"/>
+			</div>
+			<div id="node-table">
+				@NodesTable(data.Nodes)
+			</div>
+		</section>
+		<aside class="card" id="detail-panel">
+			<h2 style="margin-top:0;font-size:1rem">Evidence</h2>
+			<p class="muted">Select a node to inspect edges and MCP hints.</p>
+		</aside>
+	</main>
+}
+
+templ NodesTable(nodes []NodeView) {
+	if len(nodes) == 0 {
+		<p class="muted">No nodes match this filter.</p>
+	}
+	if len(nodes) > 0 {
+		<table>
+			<thead>
+				<tr>
+					<th>Type</th>
+					<th>Entity</th>
+					<th>Degree</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, n := range nodes {
+					<tr hx-get={ "/nodes/" + n.ID } hx-target="#detail-panel" hx-swap="innerHTML">
+						<td><span class="badge">{ n.Type }</span></td>
+						<td style="max-width:18rem;overflow:hidden;text-overflow:ellipsis">{ n.EntityID }</td>
+						<td>{ fmt.Sprintf("%d", n.Degree) }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ NodeDetailPanel(d *NodeDetail) {
+	<h2 style="margin-top:0;font-size:1rem">Evidence</h2>
+	<p><span class="badge">{ d.Node.Type }</span></p>
+	<p style="word-break:break-all"><strong>Entity</strong><br/>{ d.Node.EntityID }</p>
+	<p class="muted" style="word-break:break-all">Node { d.Node.ID }</p>
+	<h3 style="font-size:0.95rem">Suggested MCP tools</h3>
+	for _, h := range d.Hints {
+		<p class="hint"><code>{ h }</code></p>
+	}
+	<h3 style="font-size:0.95rem">Outgoing ({ fmt.Sprintf("%d", len(d.Outgoing)) })</h3>
+	@edgeList(d.Outgoing)
+	<h3 style="font-size:0.95rem">Incoming ({ fmt.Sprintf("%d", len(d.Incoming)) })</h3>
+	@edgeList(d.Incoming)
+}
+
+templ edgeList(edges []EdgeView) {
+	if len(edges) == 0 {
+		<p class="muted">None</p>
+	}
+	for _, e := range edges {
+		<div style="margin-bottom:0.75rem">
+			<p style="margin:0"><code>{ e.Type }</code> <span class="muted">({ e.Category })</span></p>
+			<p class="muted" style="margin:0.15rem 0;font-size:0.8rem">{ e.From } → { e.To }</p>
+			if e.Evidence != "" {
+				<pre class="evidence">{ e.Evidence }</pre>
+			}
+		</div>
+	}
+}

@@ -74,6 +74,7 @@ New work follows semver and RFC policy in `docs/releases/versioning.md`. Out-of-
 | Freshness doctor (RFC-007) | ✅ v1.4.0 |
 | Scoped monorepo scan (RFC-008) | ✅ v1.4.0 |
 | Homebrew formula | ✅ v1.4.0 (tap optional) |
+| Local Explore UI (RFC-009) | ✅ v1.5.0 |
 
 ---
 
