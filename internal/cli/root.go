@@ -26,6 +26,7 @@ import (
 	shipcheckcmd "github.com/reponerve/reponerve/internal/cli/shipcheck"
 	disciplinepolicycmd "github.com/reponerve/reponerve/internal/cli/disciplinepolicy"
 	prcontextcmd "github.com/reponerve/reponerve/internal/cli/prcontext"
+	doctorcmd "github.com/reponerve/reponerve/internal/cli/doctor"
 	hookcmd "github.com/reponerve/reponerve/internal/cli/hook"
 	initcmd "github.com/reponerve/reponerve/internal/cli/init"
 	integratecmd "github.com/reponerve/reponerve/internal/cli/integrate"
@@ -70,6 +71,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(shipcheckcmd.NewCommand())
 	rootCmd.AddCommand(disciplinepolicycmd.NewCommand())
 	rootCmd.AddCommand(prcontextcmd.NewCommand())
+	rootCmd.AddCommand(doctorcmd.NewCommand())
 	rootCmd.AddCommand(impactcmd.NewCommand())
 	rootCmd.AddCommand(memorycmd.NewCommand())
 	rootCmd.AddCommand(contextcmd.NewCommand())

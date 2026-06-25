@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/reponerve/reponerve/internal/agent/health"
 	"github.com/reponerve/reponerve/internal/cli/devwire"
 	"github.com/reponerve/reponerve/internal/config"
 	"github.com/reponerve/reponerve/internal/context"
@@ -20,6 +21,7 @@ import (
 	"github.com/reponerve/reponerve/internal/mcp/server"
 	ownershipquery "github.com/reponerve/reponerve/internal/ownership/query"
 	"github.com/reponerve/reponerve/internal/query/storage"
+	"github.com/reponerve/reponerve/internal/scanner/repository"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 
@@ -103,6 +105,11 @@ func NewCommand() *cobra.Command {
 				return fmt.Errorf("failed to wire workflow service: %w", err)
 			}
 			svc.WorkflowService = wfSvc
+			svc.HealthChecker = health.NewChecker(
+				sqlite.NewScanStateStore(db),
+				sqlite.NewSQLiteCodeIndexStateStore(db),
+				repository.NewGitDiscovery(),
+			)
 			registry := mcp.NewRegistry()
 			srv := server.NewServer(registry, svc, cmd.InOrStdin(), cmd.OutOrStdout())
 

@@ -27,6 +27,13 @@ func WithOwnershipReaders(readers OwnershipReaders) CoordinatorOption {
 	}
 }
 
+// WithModuleScope limits code indexing to the given Go module paths.
+func WithModuleScope(modulePaths []string) CoordinatorOption {
+	return func(c *Coordinator) {
+		c.moduleScope = append([]string(nil), modulePaths...)
+	}
+}
+
 // Coordinator coordinates repository discovery and pipeline execution.
 type Coordinator struct {
 	discovery         *repository.GitDiscovery
@@ -44,6 +51,7 @@ type Coordinator struct {
 	codeLinker        CodeLinker
 	pipeline          *Pipeline
 	ownershipReaders  *OwnershipReaders
+	moduleScope       []string
 }
 
 // NewCoordinator creates a new Coordinator instance.
@@ -189,7 +197,13 @@ func (c *Coordinator) Run(ctx context.Context, path string) (*ScanResult, error)
 	}
 
 	if c.codeIndexer != nil {
-		if err := c.codeIndexer.Index(ctx, repo.ID, repo.Path); err != nil {
+		var err error
+		if len(c.moduleScope) > 0 {
+			err = c.codeIndexer.IndexModules(ctx, repo.ID, repo.Path, c.moduleScope)
+		} else {
+			err = c.codeIndexer.Index(ctx, repo.ID, repo.Path)
+		}
+		if err != nil {
 			return nil, fmt.Errorf("failed to index repository code: %w", err)
 		}
 	}

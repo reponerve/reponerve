@@ -31,7 +31,7 @@ npx reponerve scan
     "reponerve:init": "reponerve init"
   },
   "devDependencies": {
-    "reponerve": "^1.3.1"
+    "reponerve": "^1.4.0"
   }
 }
 ```
@@ -147,21 +147,29 @@ If you already have Go 1.26+:
 make install
 
 # Or without cloning
-go install github.com/reponerve/reponerve/cmd/reponerve@v1.3.1
+go install github.com/reponerve/reponerve/cmd/reponerve@v1.4.0
 ```
 
 Contributors typically use `make build` or `make install` from a local clone.
 
 ---
 
-## Homebrew (planned)
+## Homebrew
+
+Create a tap repository (e.g. `github.com/reponerve/homebrew-tap`) and copy `packaging/homebrew/reponerve.rb` to `Formula/reponerve.rb`. After each release, update checksums:
 
 ```bash
-brew tap reponerve/reponerve
+./scripts/homebrew-sha256.sh v1.4.0
+```
+
+Then:
+
+```bash
+brew tap reponerve/tap
 brew install reponerve
 ```
 
-Not published yet. Use the install script or release archives until the tap is available.
+Until the tap is published, use the install script or release archives.
 
 ---
 

@@ -2,6 +2,7 @@ package mcp
 
 import (
 	"github.com/reponerve/reponerve/internal/agent/development"
+	"github.com/reponerve/reponerve/internal/agent/health"
 	"github.com/reponerve/reponerve/internal/agent/sessionmemory"
 	"github.com/reponerve/reponerve/internal/agent/workflow"
 	"github.com/reponerve/reponerve/internal/context"
@@ -33,6 +34,7 @@ type Service struct {
 	ReviewerService      *reviewers.Service
 	ChangePlanService    *changeplan.Service
 	DevelopmentService   *development.Service
+	HealthChecker        *health.Checker
 	SessionMemoryService *sessionmemory.Service
 	WorkflowService      *workflow.Service
 }

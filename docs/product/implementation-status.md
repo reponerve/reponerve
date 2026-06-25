@@ -36,7 +36,7 @@ Related:
 | Graph intelligence | ✅ | Traversal, impact, communities, discovery |
 | Development Experience CLI | ✅ | ask, explain, explain-feature, list-features, plan, impact, review, onboard, … |
 | Session memory | ✅ | remember, forget, handoff |
-| MCP server | ✅ | 48 tools |
+| MCP server | ✅ | 49 tools |
 | Agent hooks | ✅ | `reponerve hook install` |
 | CI | ✅ | `.github/workflows/test.yml` |
 
@@ -71,6 +71,9 @@ New work follows semver and RFC policy in `docs/releases/versioning.md`. Out-of-
 | Configurable document paths (RFC-005) | ✅ v1.3.0 |
 | Binary-first install (docs + script) | ✅ v1.3.1 |
 | npm distribution (RFC-006) | ✅ v1.3.2 |
+| Freshness doctor (RFC-007) | ✅ v1.4.0 |
+| Scoped monorepo scan (RFC-008) | ✅ v1.4.0 |
+| Homebrew formula | ✅ v1.4.0 (tap optional) |
 
 ---
 

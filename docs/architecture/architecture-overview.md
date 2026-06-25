@@ -816,10 +816,10 @@ The architecture succeeds when:
 | Repository-Code Linking | ISSUE-057 |
 | Feature Understanding | ISSUE-057 |
 | Development Experience | ISSUE-057 |
-| Understanding Engine | Partial (Query Engine complete; code + link traversal pending) |
-| Software Understanding | Blocked until ISSUE-057 complete |
+| Understanding Engine | Complete (query + code + linking) |
+| Software Understanding | Released (v1.0.0+) |
 
-RepoNerve v1.0 is not released until all pillars required for Software Understanding are complete.
+RepoNerve v1.0 shipped 2026-06-18. Post-1.0 releases follow semver (`docs/releases/versioning.md`).
 
 See: `tasks/ARCH-001.md`, `tasks/ISSUE-057.md`, `docs/architecture/issue-057-architecture.md`
 

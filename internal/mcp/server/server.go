@@ -1167,6 +1167,9 @@ func (s *Server) handleCallTool(ctx context.Context, id *json.RawMessage, params
 		if s.handleSessionTool(ctx, id, params.Name, getArg, resolveRepoID) {
 			return
 		}
+		if s.handleHealthTool(ctx, id, params.Name) {
+			return
+		}
 		if s.handleDevelopmentTool(ctx, id, params.Name, getArg, resolveRepoID) {
 			return
 		}
@@ -1497,6 +1500,9 @@ func getInputSchema(toolName string) InputSchema {
 			"type":        "string",
 			"description": "Optional repository filter",
 		}
+
+	case "doctor":
+		// No required arguments — uses active workspace.
 
 	case "pr_context":
 		schema.Properties["changed_files"] = map[string]interface{}{

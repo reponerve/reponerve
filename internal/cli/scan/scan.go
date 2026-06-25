@@ -2,6 +2,7 @@ package scancmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -22,7 +23,10 @@ import (
 
 // NewCommand creates and returns the scan subcommand.
 func NewCommand() *cobra.Command {
-	return &cobra.Command{
+	var moduleFlags []string
+	var changedFlag bool
+
+	cmd := &cobra.Command{
 		Use:   "scan",
 		Short: "Scan the repository to build memory",
 		Long:  `Scan repository artifacts (git history, ADRs, and Go source) to build and update repository memory and code intelligence.`,
@@ -75,6 +79,31 @@ func NewCommand() *cobra.Command {
 			reg.Register("adr", adr.NewScanner(cfg.Ingestion.DocumentPaths...))
 
 			pipeline := ingestion.NewPipeline(reg)
+			coordOpts := []ingestion.CoordinatorOption{
+				ingestion.WithOwnershipReaders(ingestion.OwnershipReaders{
+					Sources:   storage.NewSQLiteSourceReader(db),
+					Events:    storage.NewSQLiteEventReader(db),
+					Decisions: storage.NewSQLiteDecisionReader(db),
+					Facts:     storage.NewSQLiteFactReader(db),
+				}),
+			}
+
+			moduleScope := moduleFlags
+			if changedFlag {
+				files, ferr := indexer.ChangedFiles(cfg.Repository.Path)
+				if ferr != nil {
+					return fmt.Errorf("list changed files: %w", ferr)
+				}
+				resolved, merr := indexer.ModulePathsForFiles(cfg.Repository.Path, files)
+				if merr != nil {
+					return fmt.Errorf("resolve changed modules: %w", merr)
+				}
+				moduleScope = resolved
+			}
+			if len(moduleScope) > 0 {
+				coordOpts = append(coordOpts, ingestion.WithModuleScope(moduleScope))
+			}
+
 			coord := ingestion.NewCoordinator(
 				repository.NewGitDiscovery(),
 				repoStore,
@@ -90,15 +119,13 @@ func NewCommand() *cobra.Command {
 				codeIndexer,
 				codeLinker,
 				pipeline,
-				ingestion.WithOwnershipReaders(ingestion.OwnershipReaders{
-					Sources:   storage.NewSQLiteSourceReader(db),
-					Events:    storage.NewSQLiteEventReader(db),
-					Decisions: storage.NewSQLiteDecisionReader(db),
-					Facts:     storage.NewSQLiteFactReader(db),
-				}),
+				coordOpts...,
 			)
 
 			cmd.Println("Scanning repository...")
+			if len(moduleScope) > 0 {
+				cmd.Printf("Scoped code index: %s\n", strings.Join(moduleScope, ", "))
+			}
 
 			// 2. Call coordinator.Run()
 			result, err := coord.Run(cmd.Context(), cfg.Repository.Path)
@@ -146,4 +173,7 @@ func NewCommand() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().StringSliceVar(&moduleFlags, "modules", nil, "Go module paths to index (monorepo scoped scan)")
+	cmd.Flags().BoolVar(&changedFlag, "changed", false, "Index only modules touched by git working tree changes")
+	return cmd
 }

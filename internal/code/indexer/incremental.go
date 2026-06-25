@@ -9,21 +9,6 @@ import (
 	"github.com/reponerve/reponerve/internal/storage"
 )
 
-func shouldSkipIndexing(ctx context.Context, stateStore storage.CodeIndexStateStore, repositoryID, repositoryPath string) (bool, error) {
-	if stateStore == nil {
-		return false, nil
-	}
-	state, err := stateStore.GetByRepository(ctx, repositoryID)
-	if err != nil || state == nil || state.LastIndexedAt.IsZero() {
-		return false, err
-	}
-	changed, err := repositorySourceFilesChangedSince(repositoryPath, state.LastIndexedAt)
-	if err != nil {
-		return false, err
-	}
-	return !changed, nil
-}
-
 func repositorySourceFilesChangedSince(repositoryPath string, since time.Time) (bool, error) {
 	files, err := listAllIndexableFiles(repositoryPath)
 	if err != nil {
@@ -50,4 +35,24 @@ func repositorySourceFilesChangedSince(repositoryPath string, since time.Time) (
 		}
 	}
 	return false, nil
+}
+
+func shouldSkipIndexing(ctx context.Context, stateStore storage.CodeIndexStateStore, repositoryID, repositoryPath string) (bool, error) {
+	if stateStore == nil {
+		return false, nil
+	}
+	state, err := stateStore.GetByRepository(ctx, repositoryID)
+	if err != nil || state == nil || state.LastIndexedAt.IsZero() {
+		return false, err
+	}
+	changed, err := repositorySourceFilesChangedSince(repositoryPath, state.LastIndexedAt)
+	if err != nil {
+		return false, err
+	}
+	return !changed, nil
+}
+
+// RepositorySourceFilesChangedSince reports whether indexable files changed after since.
+func RepositorySourceFilesChangedSince(repositoryPath string, since time.Time) (bool, error) {
+	return repositorySourceFilesChangedSince(repositoryPath, since)
 }

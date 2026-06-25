@@ -204,6 +204,10 @@ func NewRegistry() *Registry {
 		Description: "Assemble PR evidence from changed files (review + ship readiness + comment markdown)",
 	})
 	_ = r.Register(ToolDefinition{
+		Name:        "doctor",
+		Description: "Check workspace freshness, scan state, git HEAD, and code index health",
+	})
+	_ = r.Register(ToolDefinition{
 		Name:        "remember",
 		Description: "Store session knowledge as an evidence-backed fact with provenance",
 	})
