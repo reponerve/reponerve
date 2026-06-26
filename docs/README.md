@@ -1,6 +1,6 @@
 # RepoNerve Documentation
 
-Central index for RepoNerve documentation. **Latest release:** `v1.5.1` — see `releases/versioning.md`.
+Central index for RepoNerve documentation. **Latest release:** `v1.5.1` — see `releases/versioning.md`. **Website:** [reponerve.github.io](https://reponerve.github.io/).
 
 ---
 
@@ -8,6 +8,7 @@ Central index for RepoNerve documentation. **Latest release:** `v1.5.1` — see 
 
 | Document | Purpose |
 | --- | --- |
+| [Website](https://reponerve.github.io/) | Product site — overview, install, demos |
 | [../README.md](../README.md) | Product overview and quick start |
 | [install.md](install.md) | Install paths (npm, shell, Go, Homebrew) |
 | [assets/README.md](assets/README.md) | README demo GIF recording guide |

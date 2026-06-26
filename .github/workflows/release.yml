@@ -41,3 +41,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ secrets.GPG_FINGERPRINT }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+  notify-website:
+    needs: release
+    runs-on: ubuntu-latest
+    if: github.repository == 'reponerve/reponerve'
+    steps:
+      - name: Trigger website sync
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.WEBSITE_SYNC_TOKEN }}
+          repository: reponerve/reponerve.github.io
+          event-type: reponerve-released

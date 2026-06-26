@@ -9,7 +9,7 @@
 
 > **Local-first software understanding** — tell agents and developers not just *where* code is, but *why* it exists, *who* owns it, and *what breaks* if you change it. Every answer is backed by repository evidence.
 
-**Latest release:** [`v1.5.1`](docs/releases/v1.5.1.md) · [Documentation](docs/README.md) · [Install guide](docs/install.md)
+**Latest release:** [`v1.5.1`](docs/releases/v1.5.1.md) · [Website](https://reponerve.github.io/) · [Documentation](docs/README.md) · [Install guide](docs/install.md)
 
 ### Explain it to your team (30 seconds)
 
