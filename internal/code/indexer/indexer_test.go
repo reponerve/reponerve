@@ -92,3 +92,82 @@ func TestIndexer_SampleModule(t *testing.T) {
 		t.Fatalf("expected struct fields in signature, got %q", serviceSignature)
 	}
 }
+
+func TestIndexer_MultiModuleScanPersistsEachModulePath(t *testing.T) {
+	repoPath := t.TempDir()
+	writeFile(t, filepath.Join(repoPath, "go.work"), "go 1.22\n\nuse (\n\t./moda\n\t./modb\n)\n")
+	writeFile(t, filepath.Join(repoPath, "moda", "go.mod"), "module example.com/moda\n\ngo 1.22\n")
+	writeFile(t, filepath.Join(repoPath, "moda", "a", "a.go"), "package a\n\nfunc A() {}\n")
+	writeFile(t, filepath.Join(repoPath, "modb", "go.mod"), "module example.com/modb\n\ngo 1.22\n")
+	writeFile(t, filepath.Join(repoPath, "modb", "b", "b.go"), "package b\n\nfunc B() {}\n")
+
+	tempDir := t.TempDir()
+	db, err := sqlite.Open(filepath.Join(tempDir, "test.db"))
+	if err != nil {
+		t.Fatalf("open db: %v", err)
+	}
+	defer db.Close()
+
+	if err := migrations.RunUp(db); err != nil {
+		t.Fatalf("migrations: %v", err)
+	}
+
+	idx := indexer.New(
+		db,
+		sqlite.NewSQLiteCodeEntityStore(db),
+		sqlite.NewSQLiteCodeRelationshipStore(db),
+		sqlite.NewSQLiteRepositoryCodeRelationshipStore(db),
+		sqlite.NewSQLiteCodeIndexStateStore(db),
+	)
+
+	repoID := "repo_multimodule"
+	if _, err := db.Exec(`INSERT INTO repositories (id, name, path, default_branch, created_at, updated_at) VALUES (?, ?, ?, ?, datetime(), datetime())`,
+		repoID, "multimodule", repoPath, "main"); err != nil {
+		t.Fatalf("insert repository: %v", err)
+	}
+
+	if err := idx.IndexModules(context.Background(), repoID, repoPath, []string{"example.com/moda", "example.com/modb"}); err != nil {
+		t.Fatalf("index modules failed: %v", err)
+	}
+
+	rows, err := db.Query(`
+		SELECT file_path, module_path FROM code_entities
+		WHERE repository_id = ? AND entity_type = ? AND file_path IN (?, ?)
+	`, repoID, codemodels.EntityTypeFile, "moda/a/a.go", "modb/b/b.go")
+	if err != nil {
+		t.Fatalf("query module paths: %v", err)
+	}
+	defer rows.Close()
+
+	got := map[string]string{}
+	for rows.Next() {
+		var filePath, modulePath string
+		if err := rows.Scan(&filePath, &modulePath); err != nil {
+			t.Fatalf("scan module path: %v", err)
+		}
+		got[filePath] = modulePath
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatalf("rows: %v", err)
+	}
+
+	want := map[string]string{
+		"moda/a/a.go": "example.com/moda",
+		"modb/b/b.go": "example.com/modb",
+	}
+	for filePath, wantModule := range want {
+		if got[filePath] != wantModule {
+			t.Fatalf("%s module_path = %q, want %q (all: %#v)", filePath, got[filePath], wantModule, got)
+		}
+	}
+}
+
+func writeFile(t *testing.T, path, content string) {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}

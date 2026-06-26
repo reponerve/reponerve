@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/reponerve/reponerve/internal/config"
-	exploreui "github.com/reponerve/reponerve/internal/ui/explore"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	exploreui "github.com/reponerve/reponerve/internal/ui/explore"
 )
 
 // NewCommand creates the explore subcommand.
@@ -60,7 +60,7 @@ func NewCommand() *cobra.Command {
 			if !filepath.IsAbs(out) {
 				out = filepath.Join(cfg.Repository.Path, out)
 			}
-			if err := os.WriteFile(out, []byte(html), 0o644); err != nil {
+			if err := writeExportFile(out, []byte(html)); err != nil {
 				return fmt.Errorf("failed to write HTML: %w", err)
 			}
 
@@ -78,4 +78,44 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&host, "host", "127.0.0.1", "Bind host (127.0.0.1 or localhost only)")
 	cmd.Flags().IntVar(&port, "port", 8765, "Bind port for --serve")
 	return cmd
+}
+
+func writeExportFile(path string, contents []byte) error {
+	if info, err := os.Lstat(path); err == nil {
+		if info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("refusing to overwrite symlink: %s", path)
+		}
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+
+	dir := filepath.Dir(path)
+	tmp, err := os.CreateTemp(dir, ".reponerve-graph-*.tmp")
+	if err != nil {
+		return err
+	}
+	tmpName := tmp.Name()
+	removeTmp := true
+	defer func() {
+		if removeTmp {
+			_ = os.Remove(tmpName)
+		}
+	}()
+
+	if _, err := tmp.Write(contents); err != nil {
+		_ = tmp.Close()
+		return err
+	}
+	if err := tmp.Chmod(0o644); err != nil {
+		_ = tmp.Close()
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	if err := os.Rename(tmpName, path); err != nil {
+		return err
+	}
+	removeTmp = false
+	return nil
 }

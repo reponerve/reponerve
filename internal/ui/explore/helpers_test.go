@@ -27,6 +27,12 @@ func TestRenderHTML(t *testing.T) {
 	if !strings.Contains(html, "cytoscape") {
 		t.Fatal("missing cytoscape")
 	}
+	if strings.Contains(html, `const nodes = "[`) {
+		t.Fatal("graph nodes rendered as a string literal")
+	}
+	if !strings.Contains(html, `const nodes = [{"id":"n1","type":"DECISION"}];`) {
+		t.Fatal("graph nodes were not rendered as a JavaScript array")
+	}
 }
 
 func TestFilterNodes(t *testing.T) {

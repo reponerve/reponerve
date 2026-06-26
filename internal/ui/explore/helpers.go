@@ -3,7 +3,6 @@ package exploreui
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 )
 
 type cyNode struct {
@@ -18,28 +17,20 @@ type cyEdge struct {
 	Type string `json:"type"`
 }
 
-func graphNodesJSON(data *Payload) string {
+func graphNodes(data *Payload) []cyNode {
 	out := make([]cyNode, len(data.Nodes))
 	for i, n := range data.Nodes {
 		out[i] = cyNode{ID: n.ID, Type: n.Type}
 	}
-	b, err := json.Marshal(out)
-	if err != nil {
-		return "[]"
-	}
-	return string(b)
+	return out
 }
 
-func graphEdgesJSON(data *Payload) string {
+func graphEdges(data *Payload) []cyEdge {
 	out := make([]cyEdge, len(data.Edges))
 	for i, e := range data.Edges {
 		out[i] = cyEdge{ID: e.ID, From: e.From, To: e.To, Type: e.Type}
 	}
-	b, err := json.Marshal(out)
-	if err != nil {
-		return "[]"
-	}
-	return string(b)
+	return out
 }
 
 // RenderHTML renders the explore page to HTML string.
