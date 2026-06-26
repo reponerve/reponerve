@@ -178,7 +178,6 @@ func (idx *Indexer) IndexModules(ctx context.Context, repositoryID, repositoryPa
 		defaultModule = "."
 	}
 	b := newBuilder(repositoryID, defaultModule, repositoryPath, now)
-	b.modulePath = filtered[0].modulePath
 
 	if err := idx.indexGoModulesFiltered(b, repositoryPath, filtered); err != nil {
 		return err
@@ -259,6 +258,7 @@ func (idx *Indexer) indexGoModulesFiltered(b *builder, repositoryPath string, mo
 		return nil
 	}
 	for _, root := range moduleRoots {
+		b.modulePath = root.modulePath
 		files, err := listGoFiles(root.path)
 		if err != nil {
 			return fmt.Errorf("go file discovery failed: %w", err)
@@ -292,7 +292,6 @@ func (idx *Indexer) indexGoModules(b *builder, repositoryPath string) error {
 	if len(moduleRoots) == 0 {
 		return nil
 	}
-	b.modulePath = moduleRoots[0].modulePath
 	return idx.indexGoModulesFiltered(b, repositoryPath, moduleRoots)
 }
 

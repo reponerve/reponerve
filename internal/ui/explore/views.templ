@@ -62,8 +62,8 @@ templ exploreBody(data *Payload) {
 			<div id="cy"></div>
 			<script>
 				(function() {
-					const nodes = {{ graphNodesJSON(data) }};
-					const edges = {{ graphEdgesJSON(data) }};
+					const nodes = {{ graphNodes(data) }};
+					const edges = {{ graphEdges(data) }};
 					const elements = [];
 					nodes.forEach(n => elements.push({ data: { id: n.id, label: n.type } }));
 					edges.forEach(e => elements.push({ data: { id: e.id, source: e.from, target: e.to, label: e.type } }));
