@@ -1,0 +1,22 @@
+---
+description: >-
+  Audit repository code for bugs, vulnerabilities, and vision-aligned improvements;
+  file GitHub issues. Trigger /repo-audit or asks about code health, vulnerabilities,
+  what to do next, or automated improvement backlog.
+alwaysApply: false
+---
+
+# Repository audit (code + issues)
+
+When the user asks to **audit the codebase**, find **vulnerabilities**, decide **what to do next**, or uses **`/repo-audit`**:
+
+Follow `.cursor/skills/repo-audit/SKILL.md`:
+
+1. `./scripts/repo-audit.sh` — mechanical checks
+2. `reponerve review` / `ask` / `ship-check` — evidence-backed gaps
+3. Vision filter via `product-triage/reference.md`
+4. Show summary to user
+
+**Issue filing in Cursor:** use `--dry-run` first; `--yes` only when the user explicitly asks to create issues.
+
+**CI:** `.github/workflows/repo-audit.yml` runs daily at 06:00 UTC and auto-files mechanical findings with `--yes` (no human approval).

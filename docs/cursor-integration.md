@@ -128,6 +128,34 @@ Example prompts:
 - "What can I reuse for OAuth?" → `reuse_check` / `reponerve reuse-check "..." --json`
 - PR review on changed files → `pr_context` / `reponerve pr-context --file ... --json`
 
+## Product triage (vision-aligned issues)
+
+Use when prioritizing GitHub issues or evaluating feature requests against mission:
+
+| Trigger | Skill |
+| --- | --- |
+| `/product-triage` | `.cursor/skills/product-triage/SKILL.md` |
+| "What should we build?" / "Review open issues" | Same skill + `.cursor/rules/product-triage.mdc` |
+
+Workflow: RepoNerve `ask` (vision) → `gh issue list` or `./scripts/product-triage-issues.sh` → rubric in `product-triage/reference.md` → triage report (ALIGN / RFC / DEFER / REJECT).
+
+Requires `gh auth login` for issue fetch. RepoNerve MCP or CLI for evidence.
+
+After daily audit issues exist, run `/product-triage` to prioritize the `repo-audit` backlog.
+
+## Repository audit (daily automation)
+
+Automated code health + security scan with GitHub issue filing:
+
+| Trigger | Skill |
+| --- | --- |
+| `/repo-audit` | `.cursor/skills/repo-audit/SKILL.md` |
+| "Audit codebase" / "Find vulnerabilities" | Same + `.cursor/rules/repo-audit.mdc` |
+
+**Daily CI (06:00 UTC):** `.github/workflows/repo-audit.yml` — builds RepoNerve, `init` + `scan`, runs `scripts/repo-audit.sh`, files deduplicated issues via `create-audit-issues.sh --yes`.
+
+**Cursor workflow:** mechanical issues are auto-filed by CI; use `/repo-audit` for qualitative gaps and agent findings before optional `--yes`.
+
 ## Available MCP tools (49)
 
 See `docs/copilot-chat-integration.md` for the full tool list. Highlights:
@@ -173,6 +201,9 @@ You should receive JSON with 49 tools. Any non-JSON output on stdout breaks MCP.
 - Universal understanding (north star): `docs/product/universal-understanding.md`
 - Agent context contract: `docs/architecture/agent-context-contract.md`
 - Agent skill: `.cursor/skills/reponerve/SKILL.md` (CLI map: `reference.md`)
+- Product triage skill: `.cursor/skills/product-triage/SKILL.md`
+- Repository audit skill: `.cursor/skills/repo-audit/SKILL.md`
+- Daily audit workflow: `.github/workflows/repo-audit.yml`
 - Project rule: `.cursor/rules/reponerve.mdc`
 - [Cursor MCP documentation](https://cursor.com/docs/mcp)
 - MCP troubleshooting: `docs/mcp/troubleshooting.md`

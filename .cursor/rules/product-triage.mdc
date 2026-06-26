@@ -1,0 +1,22 @@
+---
+description: >-
+  Triage GitHub issues and feature ideas against RepoNerve vision and out-of-scope
+  policy. Trigger /product-triage or questions about roadmap priority, needed
+  features, or issue alignment.
+alwaysApply: false
+---
+
+# Product triage (vision alignment)
+
+When the user asks to **prioritize issues**, **review enhancements**, **what to build next**, or uses **`/product-triage`**:
+
+Follow `.cursor/skills/product-triage/SKILL.md`:
+
+1. Ensure RepoNerve memory (`reponerve init && reponerve scan` if needed)
+2. Load vision context via `reponerve ask` + `docs/vision/vision.md` + `docs/roadmap/v1.x-backlog.md`
+3. Fetch issues: `./scripts/product-triage-issues.sh` or `gh issue list`
+4. Score with rubric in `.cursor/skills/product-triage/reference.md`
+5. Run `reuse-check` before recommending new subsystems
+6. Output the triage report table format from the skill
+
+Do not recommend out-of-scope items (semantic search, cloud core, autonomous commits, federation) without explicitly flagging RFC + vision conflict.

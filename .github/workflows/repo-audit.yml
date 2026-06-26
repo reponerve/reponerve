@@ -1,0 +1,59 @@
+name: Daily repository audit
+
+on:
+  schedule:
+    # Every day 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache: true
+
+      - name: Install jq and govulncheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y jq
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Build RepoNerve CLI
+        run: go build -o reponerve ./cmd/reponerve
+
+      - name: Initialize and scan memory
+        run: |
+          export PATH="$PWD:$PATH"
+          reponerve init --skip-ide
+          reponerve scan
+
+      - name: Run mechanical audit
+        run: |
+          export PATH="$PWD:$PATH"
+          chmod +x scripts/repo-audit.sh scripts/create-audit-issues.sh
+          ./scripts/repo-audit.sh .reponerve/audit-report.json
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-report
+          path: .reponerve/audit-report.json
+          if-no-files-found: error
+
+      - name: Create GitHub issues (deduplicated)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/create-audit-issues.sh --yes .reponerve/audit-report.json
