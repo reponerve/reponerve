@@ -567,3 +567,18 @@ release: v0.7.0-alpha ownership intelligence complete
 Never add `Co-authored-by` trailers to commits — including `Co-authored-by: Cursor <cursoragent@cursor.com>` or any other agent attribution line.
 
 Commit messages must contain only the subject and body written for the change. No co-author, signed-off-by, or tool attribution footers unless the user explicitly requests them.
+
+---
+
+## Cursor Cloud specific instructions
+
+RepoNerve is a **single Go CLI binary** (`./cmd/reponerve`). Storage is embedded pure-Go SQLite (`modernc.org/sqlite`), so **no CGO and no external DB/service** is required. Go 1.26+ is required (see `go.mod`).
+
+Standard commands are documented in `README.md` and `Makefile` (`make setup`/`build`/`test`/`lint`; targets `make run`, `make scan`, `make mcp`). Don't duplicate them — use those. Notes below are only non-obvious caveats for this environment:
+
+- **`make lint` rewrites files.** It runs `go fmt ./...` in place, and Go 1.26's gofmt reformats many already-committed files (import grouping, trailing newlines). Do **not** commit those churn-only changes. To check formatting without rewriting, use `gofmt -l .`; rely on `go vet ./...` for the real lint signal, or `git checkout -- .` to drop spurious fmt edits.
+- **Tests:** `go test ./...` (or `make test`) is the full suite; `tests/integration` is the slow part (~30s). No services or fixtures need to be started first.
+- **MCP server (`reponerve mcp`)** speaks JSON-RPC over **stdin/stdout**, not a TCP port. Smoke-test by piping an `initialize` + `tools/list` request into it; do not expect a listening socket.
+- **Explore web UI (`reponerve explore --serve --host 127.0.0.1 --port <N>`)** loads htmx/Alpine/Cytoscape from public CDNs, so the graph only fully renders with outbound internet; the server itself and HTML export work offline.
+- **`.reponerve/` is gitignored.** `reponerve init`/`scan` only create local, untracked memory; safe to run in any repo. Note `reponerve init` (re)writes IDE-integration files (`.cursor/*`, `CLAUDE.md`, `.vscode/mcp.json`, etc.), so avoid running `init` inside this repo just to test — use a throwaway repo, or only run `scan` here.
+- **Scanning Go projects:** code-intelligence symbol indexing (`explain-function`, `explain-file`, `search`) needs the scanned repo to have a `go.mod`; without it, decisions/events still index but Go symbols do not.
