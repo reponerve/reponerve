@@ -100,7 +100,8 @@ rm -f "$TEST_LOG"
 # --- govulncheck ---
 VULN_LOG="$(mktemp)"
 if command -v govulncheck >/dev/null 2>&1; then
-  if govulncheck ./... >"$VULN_LOG" 2>&1; then
+  MODULE_GO_VERSION="$(go list -m -f '{{.GoVersion}}')"
+  if GOTOOLCHAIN="go${MODULE_GO_VERSION}" go run golang.org/x/vuln/cmd/govulncheck@latest ./... >"$VULN_LOG" 2>&1; then
     :
   else
     body="**govulncheck** reported vulnerabilities:
