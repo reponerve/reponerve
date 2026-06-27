@@ -98,10 +98,15 @@ func (db *Database) MergeCodeIndexModules(
 
 	placeholders := strings.Repeat("?,", len(modulePaths))
 	placeholders = placeholders[:len(placeholders)-1]
-	args := make([]interface{}, 0, len(modulePaths)+1)
-	args = append(args, repositoryID)
-	for _, mp := range modulePaths {
-		args = append(args, mp)
+
+	deleteRepoCodeLinks := fmt.Sprintf(`
+		DELETE FROM repository_code_relationships
+		WHERE repository_id = ?
+		  AND code_entity_id IN (SELECT id FROM code_entities WHERE repository_id = ? AND module_path IN (%s))`, placeholders)
+	repoCodeArgs := []interface{}{repositoryID, repositoryID}
+	repoCodeArgs = append(repoCodeArgs, modulePathArgs(modulePaths)...)
+	if _, err := tx.ExecContext(ctx, deleteRepoCodeLinks, repoCodeArgs...); err != nil {
+		return fmt.Errorf("delete scoped repository-code links: %w", err)
 	}
 
 	deleteRels := fmt.Sprintf(`
