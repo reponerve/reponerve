@@ -79,15 +79,23 @@ if ! curl -fsSL "$url" -o "${tmpdir}/archive"; then
 fi
 
 if [ "$VERIFY" = "1" ]; then
-	need_cmd sha256sum 2>/dev/null || need_cmd shasum
+	if command -v sha256sum >/dev/null 2>&1; then
+		checksum_tool="sha256sum"
+	else
+		need_cmd shasum
+		checksum_tool="shasum"
+	fi
 	checksum_url="${base}/reponerve_${version#v}_checksums.txt"
 	curl -fsSL "$checksum_url" -o "${tmpdir}/checksums.txt"
 	(
 		cd "$tmpdir"
-		if command -v sha256sum >/dev/null 2>&1; then
-			grep " ${archive}\$" checksums.txt | sha256sum -c -
+		checksum_line=$(grep " ${archive}\$" checksums.txt || true)
+		[ -n "$checksum_line" ] || die "checksum not found for ${archive}"
+		set -- $checksum_line
+		expected="$1"
+		if [ "$checksum_tool" = "sha256sum" ]; then
+			printf '%s  archive\n' "$expected" | sha256sum -c -
 		else
-			expected=$(grep " ${archive}\$" checksums.txt | awk '{print $1}')
 			actual=$(shasum -a 256 archive | awk '{print $1}')
 			[ "$expected" = "$actual" ] || die "checksum mismatch"
 		fi
