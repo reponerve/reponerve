@@ -11,6 +11,7 @@ Related:
 * `docs/product/token-economics.md`
 * `docs/product/implementation-status.md`
 * `docs/architecture/agent-native-repository-intelligence.md`
+* `docs/product/competitive-landscape-2026-06-29.md`
 
 ---
 
@@ -27,6 +28,8 @@ Users do not buy intelligence. They buy understanding, development speed, confid
 ---
 
 # Competitive Landscape (2026)
+
+Deep-dive issue backlog and source notes: `docs/product/competitive-landscape-2026-06-29.md`.
 
 ## Tier 1: Code Graph + MCP (closest competitors)
 
