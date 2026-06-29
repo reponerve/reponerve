@@ -103,7 +103,19 @@ if command -v govulncheck >/dev/null 2>&1; then
   if govulncheck ./... >"$VULN_LOG" 2>&1; then
     :
   else
-    body="**govulncheck** reported vulnerabilities:
+    if grep -Eq "govulncheck: loading packages|There are errors with the provided package patterns|package requires newer Go version" "$VULN_LOG"; then
+      body="**govulncheck** could not complete:
+
+\`\`\`
+$(head -c 12000 "$VULN_LOG")
+\`\`\`
+
+Fix the scanner/runtime compatibility issue, then re-run \`govulncheck ./...\`.
+
+_Automated finding from \`scripts/repo-audit.sh\`._"
+      add_finding "govulncheck-error" "medium" "health" "govulncheck could not complete" "$body" '["repo-audit","bug"]'
+    else
+      body="**govulncheck** reported vulnerabilities:
 
 \`\`\`
 $(head -c 12000 "$VULN_LOG")
@@ -112,7 +124,8 @@ $(head -c 12000 "$VULN_LOG")
 Review at https://go.dev/security/vuln/ and upgrade affected modules.
 
 _Automated finding from \`scripts/repo-audit.sh\`._"
-    add_finding "govulncheck" "high" "security" "Go vulnerability scan findings" "$body" '["repo-audit","bug"]'
+      add_finding "govulncheck" "high" "security" "Go vulnerability scan findings" "$body" '["repo-audit","bug"]'
+    fi
   fi
 else
   add_finding "govulncheck-missing" "low" "security" "Install govulncheck for vulnerability scanning" \
