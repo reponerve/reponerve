@@ -1,0 +1,158 @@
+{
+  "generated_at": "2026-06-30",
+  "repository": "reponerve/reponerve",
+  "source_report": "docs/product/competitive-landscape-2026-06-30.md",
+  "filing_note": "Use labels from labels[]. If repository labels are not available yet, file competitive-001 first or apply existing_repo_labels only.",
+  "issues": [
+    {
+      "id": "competitive-001",
+      "title": "Add GitHub type and priority labels for product triage",
+      "type": "suggestion",
+      "priority": "P0",
+      "labels": [
+        "type:suggestion",
+        "priority:p0",
+        "documentation"
+      ],
+      "existing_repo_labels": [
+        "documentation"
+      ],
+      "body": "## Problem\nCompetitive research produced issue-ready findings, but the repository does not currently have type labels for feature/enhancement/bug/suggestion or priority labels. This blocks consistent roadmap triage and automated issue filing.\n\n## Competitive evidence\nGreptile, CodeRabbit, and Augment all market workflow integration as part of the product experience. For RepoNerve, issue taxonomy is part of the workflow surface because issues are where product opportunities become actionable work.\n\n## Acceptance criteria\n- Create labels: type:feature, type:enhancement, type:bug, type:suggestion, priority:p0, priority:p1, priority:p2, priority:p3.\n- Document label meanings in contributor or triage docs.\n- Ensure issue filing scripts and templates can use these labels without failing when labels are missing.\n\n## RFC needed\nNo."
+    },
+    {
+      "id": "competitive-002",
+      "title": "Publish a reproducible context-quality and token-savings benchmark suite",
+      "type": "feature",
+      "priority": "P0",
+      "labels": [
+        "type:feature",
+        "priority:p0",
+        "enhancement"
+      ],
+      "existing_repo_labels": [
+        "enhancement"
+      ],
+      "body": "## Problem\nRepoNerve's strongest claim is reduced exploration and token cost, but the project lacks a reproducible benchmark that proves context quality and token savings against obvious baselines.\n\n## Competitive evidence\nAugment markets Context Engine MCP with agent-quality and tool-call reduction claims. Aider documents token-budgeted repo maps. Greptile and CodeRabbit sell full-codebase context as a measurable review-quality advantage.\n\n## Acceptance criteria\n- Add a benchmark plan and runnable harness comparing RepoNerve against raw grep/read exploration, an Aider-style structural repo-map baseline where feasible, and a no-memory baseline for ask/plan/review tasks.\n- Measure tokens or bytes emitted, number of files/entities surfaced, evidence coverage, and scan/query latency.\n- Include at least one fixture repository beyond RepoNerve itself.\n- Publish methodology and reproducible commands in docs/product/.\n- Do not require embeddings or remote model calls.\n\n## RFC needed\nNo for a benchmark harness; yes if it introduces new product APIs or telemetry storage."
+    },
+    {
+      "id": "competitive-003",
+      "title": "Add a public competitive positioning page for Software Understanding Infrastructure",
+      "type": "suggestion",
+      "priority": "P0",
+      "labels": [
+        "type:suggestion",
+        "priority:p0",
+        "documentation"
+      ],
+      "existing_repo_labels": [
+        "documentation"
+      ],
+      "body": "## Problem\nRepoNerve's differentiation can be confused with code graph retrieval, semantic search, AI review, or agent memory. The product needs a concise comparison page explaining when RepoNerve complements or differs from Greptile, Sourcegraph Cody, Augment, Pieces, Aider, Serena, DeepWiki, Kiro, and CodeRabbit.\n\n## Competitive evidence\nCompetitors have crisp narratives: Greptile and CodeRabbit are validation layers, Sourcegraph Cody is enterprise code understanding, Augment is a context engine for any MCP agent, Pieces is OS-level memory, Aider is terminal pair-programming with a repo map, Serena is an IDE-like symbol toolkit, DeepWiki is generated repository documentation, and Kiro is spec-driven development.\n\n## Acceptance criteria\n- Add or update a product page with a competitor matrix, direct/indirect categories, composition guidance, non-goals, and local-first evidence-backed differentiators.\n- Include source links for competitor claims.\n- Keep claims factual and avoid unverified win/loss assertions.\n\n## RFC needed\nNo."
+    },
+    {
+      "id": "competitive-004",
+      "title": "Ingest AI assistant configuration files as first-class evidence sources",
+      "type": "enhancement",
+      "priority": "P1",
+      "labels": [
+        "type:enhancement",
+        "priority:p1",
+        "enhancement"
+      ],
+      "existing_repo_labels": [
+        "enhancement"
+      ],
+      "body": "## Problem\nRepository truth increasingly lives in AI tool configuration files, but RepoNerve does not appear to treat the broader ecosystem of agent rules and steering files as a first-class source family.\n\n## Competitive evidence\nKiro uses .kiro/steering/ for persistent project instructions. Cursor uses .cursor/rules/*.mdc and skills. CodeRabbit reads files such as .cursorrules, CLAUDE.md, and Copilot instructions for review context. Greptile uses repository rules. DeepWiki can be steered by .devin/wiki.json.\n\n## Acceptance criteria\n- Discover and ingest .cursor/rules/*.mdc, .cursor/skills/*/SKILL.md, CLAUDE.md, AGENTS.md, .github/copilot-instructions.md, .kiro/steering/*.md, .greptile/rules/**, CodeRabbit configuration files, and .devin/wiki.json.\n- Preserve exact file path and source type in evidence.\n- Make indexed guidance visible through ask, plan, review, and MCP context packs.\n- Add deterministic ordering and duplicate-handling tests.\n- Treat instructions as evidence-bearing documents; do not execute or blindly trust them.\n\n## RFC needed\nLikely no if this extends document ingestion; yes if it introduces a new memory type or major ingestion model."
+    },
+    {
+      "id": "competitive-005",
+      "title": "Expose fine-grained symbol navigation tools for MCP and CLI users",
+      "type": "feature",
+      "priority": "P1",
+      "labels": [
+        "type:feature",
+        "priority:p1",
+        "enhancement"
+      ],
+      "existing_repo_labels": [
+        "enhancement"
+      ],
+      "body": "## Problem\nRepoNerve has deterministic code intelligence and explain commands, but agent users also need small, IDE-like symbol operations to avoid falling back to broad file reads or grep.\n\n## Competitive evidence\nSerena markets MCP tools such as find symbol, symbol overview, references, declarations, implementations, and type hierarchy. Aider's repo map helps agents choose files through a symbol graph.\n\n## Acceptance criteria\n- Add CLI and MCP operations for file symbol outline, find symbol by qualified name, callers/callees when available, references or repository-code links for a symbol, and dependency traversal for a file or symbol.\n- Include source path, line range, and evidence in every result.\n- Keep results deterministic and bounded by token budget.\n- Add integration tests for Go and at least one tree-sitter language.\n- Document when users should use these tools instead of ask or explain.\n\n## RFC needed\nNo if built on existing code stores and MCP patterns; yes if it changes MCP contracts incompatibly."
+    },
+    {
+      "id": "competitive-006",
+      "title": "Generate a local source-cited repository guide from RepoNerve memory",
+      "type": "feature",
+      "priority": "P1",
+      "labels": [
+        "type:feature",
+        "priority:p1",
+        "enhancement"
+      ],
+      "existing_repo_labels": [
+        "enhancement"
+      ],
+      "body": "## Problem\nRepoNerve can answer questions and serve an explore UI, but users also expect a browsable, source-cited onboarding artifact that captures the repository's architecture, features, ownership, and important decisions.\n\n## Competitive evidence\nDeepWiki generates source-linked wiki pages, architecture diagrams, and repo Q&A for public repositories. Kiro creates requirements, design, and task documents before coding. These products reduce cold-start friction by creating visible artifacts, not only chat answers.\n\n## Acceptance criteria\n- Add a command or documented workflow to export a local repository guide.\n- Include repository purpose, architecture overview, major features, important decisions and ADRs, ownership/expertise summary, and suggested onboarding path.\n- Link every conclusion to repository evidence.\n- Support Markdown output first; HTML can reuse explore later.\n- Respect scoped scans and bounded output.\n\n## RFC needed\nPossibly, if adding a new public command and product surface; not required for a documented composition of existing commands."
+    },
+    {
+      "id": "competitive-007",
+      "title": "Add memory governance controls for session memory and handoff bundles",
+      "type": "enhancement",
+      "priority": "P1",
+      "labels": [
+        "type:enhancement",
+        "priority:p1",
+        "enhancement"
+      ],
+      "existing_repo_labels": [
+        "enhancement"
+      ],
+      "body": "## Problem\nLocal-first memory is a differentiator, but users need clear controls over what session memory stores, exports, forgets, and excludes.\n\n## Competitive evidence\nPieces emphasizes local processing plus granular controls such as app deny lists, pause modes, scoped deletion, and source visibility. This positions privacy controls as part of the memory product, not an afterthought.\n\n## Acceptance criteria\n- Provide a way to list session memory entries by source, time, and type.\n- Add scoped deletion or pruning beyond one-off forget operations.\n- Add configurable deny patterns for files or paths that should never become session memory evidence.\n- Add doctor checks or recommendations for memory freshness and sensitive-path risk.\n- Ensure handoff exports include provenance and can be inspected before sharing.\n- Add tests for deterministic filtering and deletion behavior.\n\n## RFC needed\nLikely no for controls around existing session memory; yes if new memory types or storage migrations are required."
+    },
+    {
+      "id": "competitive-008",
+      "title": "Improve first-run setup, PATH, MCP, and quickstart verification",
+      "type": "bug",
+      "priority": "P1",
+      "labels": [
+        "type:bug",
+        "priority:p1",
+        "bug"
+      ],
+      "existing_repo_labels": [
+        "bug"
+      ],
+      "body": "## Problem\nFirst-run adoption depends on a tight feedback loop: install, initialize, scan, verify MCP, and ask the first useful question. If any step silently half-works, users may conclude the tool is broken.\n\n## Competitive evidence\nAugment markets a two-minute MCP setup. DeepWiki starts from a GitHub URL. Kiro and Cursor surface project rules and steering setup inside the IDE. These products reduce setup ambiguity.\n\n## Acceptance criteria\n- After init or install, print a concise success checklist covering CLI PATH, memory database, scan status, MCP config, IDE restart/reload, and first recommended commands.\n- Add a quick verification command or documented flow using doctor, onboard, and one sample ask.\n- Detect common PATH problems and print shell-specific remediation.\n- Avoid modifying generated integration files when memory already exists unless explicitly requested.\n\n## RFC needed\nNo."
+    },
+    {
+      "id": "competitive-009",
+      "title": "Add context-pack diagnostics that explain why evidence was selected",
+      "type": "enhancement",
+      "priority": "P1",
+      "labels": [
+        "type:enhancement",
+        "priority:p1",
+        "enhancement"
+      ],
+      "existing_repo_labels": [
+        "enhancement"
+      ],
+      "body": "## Problem\nRepoNerve emphasizes evidence-backed context, but users and agents need easier visibility into why a context pack included certain entities and omitted others.\n\n## Competitive evidence\nAugment and CodeRabbit describe observability around context/tool use and review inputs. Aider documents its repo-map token budget and ranking behavior. Clear diagnostics build trust in retrieval systems.\n\n## Acceptance criteria\n- Add an optional diagnostics mode for ask, plan, review, and MCP context tools.\n- Report source services used, token or byte budget, candidate count, selected entities with inclusion reasons, truncation/omission details, and evidence source paths.\n- Keep diagnostics deterministic and machine-readable in JSON.\n- Ensure compact/prose formats remain bounded.\n\n## RFC needed\nNo if optional and compatible; yes for breaking output-contract changes."
+    },
+    {
+      "id": "competitive-010",
+      "title": "Document composition recipes with adjacent AI coding tools",
+      "type": "suggestion",
+      "priority": "P2",
+      "labels": [
+        "type:suggestion",
+        "priority:p2",
+        "documentation"
+      ],
+      "existing_repo_labels": [
+        "documentation"
+      ],
+      "body": "## Problem\nMany potential users already use Cursor, Claude Code, Aider, Serena, CodeRabbit, Greptile, Augment, Pieces, or DeepWiki. RepoNerve should explain how to compose with those tools instead of appearing to replace every adjacent category.\n\n## Competitive evidence\nAugment positions Context Engine MCP as usable from Claude Code, Cursor, and Codex. Pieces exposes memory to coding assistants through MCP. DeepWiki exposes repository documentation through MCP. Serena integrates with many MCP clients.\n\n## Acceptance criteria\n- Add recipes for Cursor, Claude Code, Aider, Serena, CodeRabbit or Greptile, and Pieces or DeepWiki.\n- Each recipe states what RepoNerve provides, what the adjacent tool provides, setup steps, recommended commands or MCP tools, and privacy/evidence boundaries.\n- Avoid mandatory cloud dependencies for RepoNerve core.\n\n## RFC needed\nNo."
+    }
+  ]
+}
