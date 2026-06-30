@@ -31,6 +31,11 @@ add_finding() {
   FINDINGS="$(echo "$FINDINGS" | jq --argjson e "$entry" '. + [$e]')"
 }
 
+govulncheck_has_vulnerability() {
+  local log_file="$1"
+  jq -R -s 'test("GO-[0-9]{4}-[0-9]+|Vulnerability #[0-9]+")' "$log_file"
+}
+
 # --- RepoNerve doctor ---
 if command -v reponerve >/dev/null 2>&1 && [[ -f .reponerve/memory.db ]]; then
   DOCTOR_JSON="$(reponerve doctor --json 2>/dev/null || true)"
@@ -103,7 +108,8 @@ if command -v govulncheck >/dev/null 2>&1; then
   if govulncheck ./... >"$VULN_LOG" 2>&1; then
     :
   else
-    body="**govulncheck** reported vulnerabilities:
+    if [[ "$(govulncheck_has_vulnerability "$VULN_LOG")" == "true" ]]; then
+      body="**govulncheck** reported vulnerabilities:
 
 \`\`\`
 $(head -c 12000 "$VULN_LOG")
@@ -112,7 +118,19 @@ $(head -c 12000 "$VULN_LOG")
 Review at https://go.dev/security/vuln/ and upgrade affected modules.
 
 _Automated finding from \`scripts/repo-audit.sh\`._"
-    add_finding "govulncheck" "high" "security" "Go vulnerability scan findings" "$body" '["repo-audit","bug"]'
+      add_finding "govulncheck" "high" "security" "Go vulnerability scan findings" "$body" '["repo-audit","bug"]'
+    else
+      body="**govulncheck** did not complete successfully, so vulnerability coverage is incomplete:
+
+\`\`\`
+$(head -c 12000 "$VULN_LOG")
+\`\`\`
+
+Install a govulncheck binary built with a Go toolchain compatible with this module, then rerun \`./scripts/repo-audit.sh\`.
+
+_Automated finding from \`scripts/repo-audit.sh\`._"
+      add_finding "govulncheck-execution-failed" "medium" "health" "govulncheck execution failed" "$body" '["repo-audit","bug"]'
+    fi
   fi
 else
   add_finding "govulncheck-missing" "low" "security" "Install govulncheck for vulnerability scanning" \
