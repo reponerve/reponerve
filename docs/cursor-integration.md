@@ -203,6 +203,7 @@ You should receive JSON with 49 tools. Any non-JSON output on stdout breaks MCP.
 - Agent skill: `.cursor/skills/reponerve/SKILL.md` (CLI map: `reference.md`)
 - Product triage skill: `.cursor/skills/product-triage/SKILL.md`
 - Repository audit skill: `.cursor/skills/repo-audit/SKILL.md`
+- Fable 5 prompting skill: `.cursor/skills/prompting-fable-5/SKILL.md`
 - Daily audit workflow: `.github/workflows/repo-audit.yml`
 - Project rule: `.cursor/rules/reponerve.mdc`
 - [Cursor MCP documentation](https://cursor.com/docs/mcp)
