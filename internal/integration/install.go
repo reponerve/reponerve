@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -51,7 +52,7 @@ func Install(opts Options) (Result, error) {
 	}
 
 	for _, file := range projectFiles {
-		content, err := fs.ReadFile(bundleFS, filepath.Join("bundle", file.bundleName))
+		content, err := fs.ReadFile(bundleFS, path.Join("bundle", file.bundleName))
 		if err != nil {
 			return result, fmt.Errorf("read bundle %s: %w", file.bundleName, err)
 		}
@@ -202,7 +203,7 @@ func installGlobalSkill(force bool) (Result, error) {
 	}
 
 	for _, file := range globalFiles {
-		content, err := fs.ReadFile(bundleFS, filepath.Join("bundle", file.bundleName))
+		content, err := fs.ReadFile(bundleFS, path.Join("bundle", file.bundleName))
 		if err != nil {
 			return result, fmt.Errorf("read bundle %s: %w", file.bundleName, err)
 		}
