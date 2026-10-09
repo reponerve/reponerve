@@ -3,6 +3,7 @@ package export
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -67,6 +68,9 @@ func TestExporter_Unit(t *testing.T) {
 	})
 
 	t.Run("Permission failure", func(t *testing.T) {
+		if runtime.GOOS == "windows" {
+			t.Skip("skipping directory permission test on Windows")
+		}
 		rc := &context.RepositoryContext{
 			RepositoryID: "test_repo",
 			GeneratedAt:  genTime,

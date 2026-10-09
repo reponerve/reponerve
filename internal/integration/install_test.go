@@ -103,9 +103,8 @@ func TestMergeCursorMCPPreservesExistingServers(t *testing.T) {
 func TestInstallGlobalSkill(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
 
-	// installGlobalSkill uses os.UserHomeDir(), not HOME on all platforms;
-	// run full Install with GlobalSkill in a project and verify via home override only on unix.
 	if home == "" {
 		t.Skip("temp home unavailable")
 	}

@@ -46,8 +46,10 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     if: github.repository == 'reponerve/reponerve'
+    continue-on-error: true
     steps:
       - name: Trigger website sync
+        continue-on-error: true
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.WEBSITE_SYNC_TOKEN }}
