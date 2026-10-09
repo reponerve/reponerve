@@ -16,7 +16,9 @@ const hookMarker = "# reponerve"
 
 const postCommitScript = `#!/bin/sh
 # reponerve — refresh repository memory after commit
-reponerve scan >/dev/null 2>&1 || true
+if command -v reponerve >/dev/null 2>&1; then
+  (nohup reponerve scan >/dev/null 2>&1 &)
+fi
 `
 
 // NewCommand creates the hook subcommand group.

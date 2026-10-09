@@ -230,6 +230,57 @@ func TestIndexSource_Zig(t *testing.T) {
 	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "zig/src/handler.zig.bootstrap")
 }
 
+func TestIndexSource_JavaScriptExpress(t *testing.T) {
+	code := `
+const express = require('express');
+const router = require('./router');
+
+const createApp = () => {
+  return {};
+};
+
+var app = createApp();
+
+app.use = function(middleware) {
+  return this;
+};
+
+proto.handle = function(req, res) {
+  return true;
+};
+
+exports.application = proto;
+module.exports = createApp;
+`
+	idx, err := lang.IndexSource(lang.JavaScript, "express/index.js", []byte(code))
+	if err != nil {
+		t.Fatalf("failed to index express js: %v", err)
+	}
+
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "express/index.js.createApp")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "express/index.js.app.use")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeMethod, "express/index.js.proto.handle")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "express/index.js.application")
+	assertSymbol(t, idx.Symbols, codemodels.EntityTypeFunction, "express/index.js.default")
+
+	if len(idx.Imports) < 2 {
+		t.Fatalf("expected at least 2 imports from require, got %d", len(idx.Imports))
+	}
+	foundExpress := false
+	foundRouter := false
+	for _, imp := range idx.Imports {
+		if imp.Path == "express" {
+			foundExpress = true
+		}
+		if imp.Path == "./router" {
+			foundRouter = true
+		}
+	}
+	if !foundExpress || !foundRouter {
+		t.Errorf("missing require imports: express=%v, router=%v", foundExpress, foundRouter)
+	}
+}
+
 func readTestFile(t *testing.T, parts ...string) []byte {
 	t.Helper()
 	path := append([]string{"..", "indexer", "testdata", "multilang"}, parts...)

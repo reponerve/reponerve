@@ -114,6 +114,13 @@ func TestRootCommandHelp(t *testing.T) {
 	}
 }
 
+func TestRootCommandSilenceUsage(t *testing.T) {
+	cmd := NewRootCmd()
+	if !cmd.SilenceUsage {
+		t.Errorf("expected SilenceUsage to be true on root command")
+	}
+}
+
 func TestInitCommand(t *testing.T) {
 	output, err := executeCommand("init")
 	if err != nil {
@@ -176,7 +183,8 @@ func TestAskCommand(t *testing.T) {
 		}
 		if !strings.Contains(output, "No deterministic answer pattern matched") &&
 			!strings.Contains(output, "Search found") &&
-			!strings.Contains(output, "No decision evidence") {
+			!strings.Contains(output, "No decision evidence") &&
+			!strings.Contains(output, "No matches found") {
 			t.Errorf("expected fallback or search summary in output, got %q", output)
 		}
 	})
@@ -269,6 +277,16 @@ func TestExplainCommand(t *testing.T) {
 	})
 
 	t.Run("with topic", func(t *testing.T) {
+		if err := os.MkdirAll("docs/adr", 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile("docs/adr/001-auth.md", []byte("# services/auth\n\nStatus: Accepted\n\nContext: We introduce services/auth for authentication.\n"), 0644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := executeCommand("scan"); err != nil {
+			t.Fatalf("failed to scan test ADR: %v", err)
+		}
+
 		output, err := executeCommand("explain", "services/auth")
 		if err != nil {
 			t.Fatalf("unexpected error executing explain: %v", err)
@@ -280,6 +298,16 @@ func TestExplainCommand(t *testing.T) {
 		}
 		if !strings.Contains(output, "REPOSITORY CONTEXT") {
 			t.Errorf("expected repository context section, got %q", output)
+		}
+	})
+
+	t.Run("with nonexistent topic", func(t *testing.T) {
+		_, err := executeCommand("explain", "nonexistent-topic-xyz")
+		if err == nil {
+			t.Fatal("expected explain with nonexistent topic to fail")
+		}
+		if !strings.Contains(err.Error(), "no match found for \"nonexistent-topic-xyz\" in this repository") {
+			t.Fatalf("unexpected error: %v", err)
 		}
 	})
 }

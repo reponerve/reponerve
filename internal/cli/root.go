@@ -5,46 +5,47 @@ import (
 
 	askcmd "github.com/reponerve/reponerve/internal/cli/ask"
 	contextcmd "github.com/reponerve/reponerve/internal/cli/contextcmd"
-	explorecmd "github.com/reponerve/reponerve/internal/cli/explore"
-	forgetcmd "github.com/reponerve/reponerve/internal/cli/forget"
-	handoffcmd "github.com/reponerve/reponerve/internal/cli/handoff"
-	remembercmd "github.com/reponerve/reponerve/internal/cli/remember"
-	workflowcmd "github.com/reponerve/reponerve/internal/cli/workflowcmd"
+	disciplinepolicycmd "github.com/reponerve/reponerve/internal/cli/disciplinepolicy"
+	doctorcmd "github.com/reponerve/reponerve/internal/cli/doctor"
 	explaincmd "github.com/reponerve/reponerve/internal/cli/explain"
+	explainfeaturecmd "github.com/reponerve/reponerve/internal/cli/explainfeature"
 	explainfilecmd "github.com/reponerve/reponerve/internal/cli/explainfile"
 	explainfunctioncmd "github.com/reponerve/reponerve/internal/cli/explainfunction"
 	explaininterfacecmd "github.com/reponerve/reponerve/internal/cli/explaininterface"
 	explainstructcmd "github.com/reponerve/reponerve/internal/cli/explainstruct"
 	explaintypecmd "github.com/reponerve/reponerve/internal/cli/explaintype"
-	explainfeaturecmd "github.com/reponerve/reponerve/internal/cli/explainfeature"
-	listfeaturescmd "github.com/reponerve/reponerve/internal/cli/listfeatures"
-	impactcmd "github.com/reponerve/reponerve/internal/cli/impactcmd"
-	onboardcmd "github.com/reponerve/reponerve/internal/cli/onboardcmd"
-	plancmd "github.com/reponerve/reponerve/internal/cli/plancmd"
-	reviewcmd "github.com/reponerve/reponerve/internal/cli/reviewcmd"
-	reusecheckcmd "github.com/reponerve/reponerve/internal/cli/reusecheck"
-	shipcheckcmd "github.com/reponerve/reponerve/internal/cli/shipcheck"
-	disciplinepolicycmd "github.com/reponerve/reponerve/internal/cli/disciplinepolicy"
-	prcontextcmd "github.com/reponerve/reponerve/internal/cli/prcontext"
-	doctorcmd "github.com/reponerve/reponerve/internal/cli/doctor"
+	explorecmd "github.com/reponerve/reponerve/internal/cli/explore"
+	forgetcmd "github.com/reponerve/reponerve/internal/cli/forget"
+	handoffcmd "github.com/reponerve/reponerve/internal/cli/handoff"
 	hookcmd "github.com/reponerve/reponerve/internal/cli/hook"
+	impactcmd "github.com/reponerve/reponerve/internal/cli/impactcmd"
 	initcmd "github.com/reponerve/reponerve/internal/cli/init"
 	integratecmd "github.com/reponerve/reponerve/internal/cli/integrate"
-	searchcmd "github.com/reponerve/reponerve/internal/cli/search"
+	listfeaturescmd "github.com/reponerve/reponerve/internal/cli/listfeatures"
 	mcpcmd "github.com/reponerve/reponerve/internal/cli/mcp"
 	memorycmd "github.com/reponerve/reponerve/internal/cli/memory"
+	onboardcmd "github.com/reponerve/reponerve/internal/cli/onboardcmd"
+	plancmd "github.com/reponerve/reponerve/internal/cli/plancmd"
+	prcontextcmd "github.com/reponerve/reponerve/internal/cli/prcontext"
+	remembercmd "github.com/reponerve/reponerve/internal/cli/remember"
+	reusecheckcmd "github.com/reponerve/reponerve/internal/cli/reusecheck"
+	reviewcmd "github.com/reponerve/reponerve/internal/cli/reviewcmd"
 	scancmd "github.com/reponerve/reponerve/internal/cli/scan"
+	searchcmd "github.com/reponerve/reponerve/internal/cli/search"
+	shipcheckcmd "github.com/reponerve/reponerve/internal/cli/shipcheck"
 	versioncmd "github.com/reponerve/reponerve/internal/cli/versioncmd"
+	workflowcmd "github.com/reponerve/reponerve/internal/cli/workflowcmd"
 	"github.com/reponerve/reponerve/internal/version"
 )
 
 // NewRootCmd creates the root command for the reponerve CLI.
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:   "reponerve",
-		Short: "RepoNerve is a memory and context engine for software repositories",
-		Long:  `RepoNerve is an open-source memory and context engine that preserves repository knowledge and generates optimized context.`,
-		Version: version.String(),
+		Use:          "reponerve",
+		Short:        "RepoNerve is a memory and context engine for software repositories",
+		Long:         `RepoNerve is an open-source memory and context engine that preserves repository knowledge and generates optimized context.`,
+		Version:      version.String(),
+		SilenceUsage: true,
 	}
 
 	// Register subcommands

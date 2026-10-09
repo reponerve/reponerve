@@ -76,6 +76,11 @@ func Initialize(workspaceDir string) (*Config, error) {
 		}
 	}
 
+	gitignorePath := filepath.Join(workspaceDir, ".gitignore")
+	if _, err := os.Stat(gitignorePath); os.IsNotExist(err) {
+		_ = os.WriteFile(gitignorePath, []byte("*\n"), 0644)
+	}
+
 	return Load(workspaceDir)
 }
 

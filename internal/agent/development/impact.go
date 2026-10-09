@@ -87,35 +87,64 @@ func (s *Service) AnalyzeImpact(ctx context.Context, req DevelopmentRequest) (*D
 		})
 	}
 
+	const maxImpactDepth = 3
+	visitedEntities := make(map[string]struct{})
 	for _, e := range entities {
+		visitedEntities[e.ID] = struct{}{}
+	}
+
+	currentLevel := make([]string, 0, len(entities))
+	for _, e := range entities {
+		currentLevel = append(currentLevel, e.ID)
+	}
+
+	for depth := 1; depth <= maxImpactDepth && len(currentLevel) > 0; depth++ {
 		if s.relReader == nil {
 			break
 		}
-		outbound, err := s.relReader.ListByFromEntity(ctx, e.ID)
-		if err != nil {
-			return nil, err
-		}
-		for _, rel := range outbound {
-			label := rel.RelationshipType
-			if toEntity, err := s.codeEntityReader.GetByID(ctx, rel.ToEntityID); err == nil && toEntity != nil {
-				label = fmt.Sprintf("%s (%s %s)", toEntity.QualifiedName, rel.RelationshipType, toEntity.QualifiedName)
+		var nextLevel []string
+		for _, targetID := range currentLevel {
+			inbound, err := s.relReader.ListByToEntity(ctx, targetID)
+			if err != nil {
+				return nil, err
 			}
-			out.CodeDependencies = appendUniqueRelationshipRef(out.CodeDependencies, RelationshipRef{
-				RelationshipType: rel.RelationshipType,
-				FromEntityID:     rel.FromEntityID,
-				ToEntityID:       rel.ToEntityID,
-				Label:            label,
-				EvidenceJSON:     rel.EvidenceJSON,
-			})
-			appendEvidence(&out.Evidence, sourceCodeIntelligence, "depends_on", map[string]string{
-				"from_entity_id": rel.FromEntityID,
-				"to_entity_id":   rel.ToEntityID,
-				"relationship":   rel.RelationshipType,
-			})
-			if toEntity, err := s.codeEntityReader.GetByID(ctx, rel.ToEntityID); err == nil && toEntity != nil {
-				out.DependentAreas = appendUniqueEntityRef(out.DependentAreas, codeEntityRef(toEntity))
+			var targetName string
+			if targetEntity, err := s.codeEntityReader.GetByID(ctx, targetID); err == nil && targetEntity != nil {
+				targetName = targetEntity.QualifiedName
+			} else {
+				targetName = targetID
+			}
+
+			for _, rel := range inbound {
+				callerID := rel.FromEntityID
+				callerEntity, err := s.codeEntityReader.GetByID(ctx, callerID)
+				label := rel.RelationshipType
+				if err == nil && callerEntity != nil {
+					label = fmt.Sprintf("%s (%s %s)", callerEntity.QualifiedName, rel.RelationshipType, targetName)
+				}
+				out.CodeDependencies = appendUniqueRelationshipRef(out.CodeDependencies, RelationshipRef{
+					RelationshipType: rel.RelationshipType,
+					FromEntityID:     rel.FromEntityID,
+					ToEntityID:       rel.ToEntityID,
+					Label:            label,
+					EvidenceJSON:     rel.EvidenceJSON,
+				})
+				appendEvidence(&out.Evidence, sourceCodeIntelligence, "inbound_dependency", map[string]string{
+					"caller_entity_id": rel.FromEntityID,
+					"target_entity_id": rel.ToEntityID,
+					"relationship":     rel.RelationshipType,
+					"depth":            fmt.Sprintf("%d", depth),
+				})
+				if err == nil && callerEntity != nil {
+					out.DependentAreas = appendUniqueEntityRef(out.DependentAreas, codeEntityRef(callerEntity))
+				}
+				if _, seen := visitedEntities[callerID]; !seen {
+					visitedEntities[callerID] = struct{}{}
+					nextLevel = append(nextLevel, callerID)
+				}
 			}
 		}
+		currentLevel = nextLevel
 	}
 
 	_, owners, ev, err := s.matchExpertise(ctx, req.RepositoryID, subject)

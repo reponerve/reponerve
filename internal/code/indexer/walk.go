@@ -33,6 +33,9 @@ var skipDirNames = map[string]bool{
 	// Agent/tooling directories — not project source; pollute plan/ask context.
 	".agents":       true,
 	"graphify-venv": true,
+	// Test fixtures and test data — fake code that pollutes symbol index and search answers.
+	"testdata": true,
+	"fixtures": true,
 }
 
 func listGoFiles(repoPath string) ([]string, error) {
@@ -62,7 +65,7 @@ func listFilesByPredicate(repoPath string, keep func(rel string) bool) ([]string
 		}
 
 		if d.IsDir() {
-			if skipDirNames[d.Name()] {
+			if path != repoPath && skipDirNames[d.Name()] {
 				return filepath.SkipDir
 			}
 			return nil

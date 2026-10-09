@@ -36,6 +36,15 @@ func TestConfigInitializeAndLoad(t *testing.T) {
 		t.Fatalf("config file was not created: %v", err)
 	}
 
+	gitignorePath := filepath.Join(workspaceDir, ".gitignore")
+	data, err := os.ReadFile(gitignorePath)
+	if err != nil {
+		t.Fatalf(".gitignore was not created: %v", err)
+	}
+	if string(data) != "*\n" {
+		t.Errorf("expected .gitignore to contain '*\\n', got %q", string(data))
+	}
+
 	loadedCfg, err := Load(workspaceDir)
 	if err != nil {
 		t.Fatalf("failed to load config: %v", err)

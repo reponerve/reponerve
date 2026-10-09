@@ -2,6 +2,7 @@ package lang
 
 import (
 	"fmt"
+	"sync"
 
 	gts "github.com/odvcencio/gotreesitter"
 	"github.com/odvcencio/gotreesitter/grammars"
@@ -67,49 +68,71 @@ func IndexSource(language, filePath string, src []byte) (*FileIndex, error) {
 	}
 }
 
+var (
+	langCacheMu sync.RWMutex
+	langCache   = make(map[string]*gts.Language)
+)
+
 func languageFor(language string) (*gts.Language, error) {
+	langCacheMu.RLock()
+	if cached, ok := langCache[language]; ok {
+		langCacheMu.RUnlock()
+		return cached, nil
+	}
+	langCacheMu.RUnlock()
+
+	langCacheMu.Lock()
+	defer langCacheMu.Unlock()
+	if cached, ok := langCache[language]; ok {
+		return cached, nil
+	}
+
+	var lang *gts.Language
 	switch language {
 	case TypeScript:
-		return grammars.TypescriptLanguage(), nil
+		lang = grammars.TypescriptLanguage()
 	case JavaScript:
-		return grammars.JavascriptLanguage(), nil
+		lang = grammars.JavascriptLanguage()
 	case Python:
-		return grammars.PythonLanguage(), nil
+		lang = grammars.PythonLanguage()
 	case Rust:
-		return grammars.RustLanguage(), nil
+		lang = grammars.RustLanguage()
 	case Java:
-		return grammars.JavaLanguage(), nil
+		lang = grammars.JavaLanguage()
 	case CSharp:
-		return grammars.CSharpLanguage(), nil
+		lang = grammars.CSharpLanguage()
 	case Ruby:
-		return grammars.RubyLanguage(), nil
+		lang = grammars.RubyLanguage()
 	case Kotlin:
-		return grammars.KotlinLanguage(), nil
+		lang = grammars.KotlinLanguage()
 	case Swift:
-		return grammars.SwiftLanguage(), nil
+		lang = grammars.SwiftLanguage()
 	case PHP:
-		return grammars.PhpLanguage(), nil
+		lang = grammars.PhpLanguage()
 	case Cpp:
-		return grammars.CppLanguage(), nil
+		lang = grammars.CppLanguage()
 	case C:
-		return grammars.CLanguage(), nil
+		lang = grammars.CLanguage()
 	case Scala:
-		return grammars.ScalaLanguage(), nil
+		lang = grammars.ScalaLanguage()
 	case Lua:
-		return grammars.LuaLanguage(), nil
+		lang = grammars.LuaLanguage()
 	case Bash:
-		return grammars.BashLanguage(), nil
+		lang = grammars.BashLanguage()
 	case SQL:
-		return grammars.SqlLanguage(), nil
+		lang = grammars.SqlLanguage()
 	case Dart:
-		return grammars.DartLanguage(), nil
+		lang = grammars.DartLanguage()
 	case Elixir:
-		return grammars.ElixirLanguage(), nil
+		lang = grammars.ElixirLanguage()
 	case Zig:
-		return grammars.ZigLanguage(), nil
+		lang = grammars.ZigLanguage()
 	default:
 		return nil, fmt.Errorf("unsupported language %q", language)
 	}
+
+	langCache[language] = lang
+	return lang, nil
 }
 
 func packagePathForFile(filePath string) string {
