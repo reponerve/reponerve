@@ -42,19 +42,6 @@ checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
   algorithm: sha256
 
-brews:
-  - repository:
-      owner: reponerve
-      name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-    directory: Formula
-    homepage: "https://reponerve.com"
-    description: "The intelligence layer for software understanding"
-    license: "MIT"
-    test: |
-      system "#{bin}/reponerve", "version"
-
-
 signs:
   - cmd: gpg
     args:
