@@ -10,13 +10,13 @@ import (
 
 // PRContextResult is the structured PR evidence pack for CI and team workflows.
 type PRContextResult struct {
-	Topic              string                  `json:"topic"`
-	ChangedFiles       []string                `json:"changed_files"`
-	Review             *DevelopmentReviewGuide `json:"review,omitempty"`
-	ShipCheck          *ShipCheckResult        `json:"ship_check,omitempty"`
-	PRCommentMarkdown  string                  `json:"pr_comment_markdown"`
-	Evidence           []EvidenceItem          `json:"evidence"`
-	SourceServices     []string                `json:"source_services"`
+	Topic             string                  `json:"topic"`
+	ChangedFiles      []string                `json:"changed_files"`
+	Review            *DevelopmentReviewGuide `json:"review,omitempty"`
+	ShipCheck         *ShipCheckResult        `json:"ship_check,omitempty"`
+	PRCommentMarkdown string                  `json:"pr_comment_markdown"`
+	Evidence          []EvidenceItem          `json:"evidence"`
+	SourceServices    []string                `json:"source_services"`
 }
 
 // PRContextRequest is input for PR-scoped evidence assembly.

@@ -6,12 +6,16 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
 	"time"
 
 	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/ownership/botfilter"
+	"github.com/reponerve/reponerve/internal/ownership/codeowners"
 	"github.com/reponerve/reponerve/pkg/models"
 )
 
@@ -32,14 +36,24 @@ type Evidence struct {
 	FactCount      int  `json:"fact_count"`
 	EventCount     int  `json:"event_count"`
 	RecentActivity bool `json:"recent_activity"`
+	FilesTouched   int  `json:"files_touched,omitempty"`
+	IsCodeOwner    bool `json:"is_code_owner,omitempty"`
 }
 
-// Detector identifies domain-based expertise from repository memory.
-type Detector struct{}
+// Detector identifies domain-based and directory-based expertise from repository memory.
+type Detector struct {
+	codeownersRules []codeowners.Rule
+}
 
 // NewDetector creates a new Detector instance.
 func NewDetector() *Detector {
 	return &Detector{}
+}
+
+// WithCodeOwners configures CODEOWNERS rules for the detector.
+func (d *Detector) WithCodeOwners(rules []codeowners.Rule) *Detector {
+	d.codeownersRules = rules
+	return d
 }
 
 // authorRegex matches conventional Git author format "Name <email>"
@@ -50,7 +64,52 @@ type contributorDomainMetrics struct {
 	decisions        int
 	facts            int
 	events           int
+	filesTouched     int
+	weightedScore    float64
+	isCodeOwner      bool
 	lastActivityTime time.Time
+}
+
+// extractDirectoryDomain extracts a component or directory domain from a file path.
+func extractDirectoryDomain(path string) string {
+	path = filepath.ToSlash(strings.TrimSpace(path))
+	path = strings.TrimPrefix(path, "/")
+	parts := strings.Split(path, "/")
+	if len(parts) <= 1 {
+		return ""
+	}
+	wrapperDirs := map[string]bool{
+		"internal": true,
+		"pkg":      true,
+		"packages": true,
+		"src":      true,
+		"lib":      true,
+		"cmd":      true,
+		"test":     true,
+		"tests":    true,
+	}
+	if wrapperDirs[parts[0]] && len(parts) > 2 {
+		return parts[0] + "/" + parts[1]
+	}
+	return parts[0]
+}
+
+func contributorMatchesOwner(c *models.Contributor, owner string) bool {
+	cleanOwner := strings.TrimPrefix(strings.ToLower(strings.TrimSpace(owner)), "@")
+	if cleanOwner == "" {
+		return false
+	}
+	if strings.EqualFold(c.Email, owner) || strings.EqualFold(c.Email, cleanOwner) {
+		return true
+	}
+	if strings.EqualFold(c.Name, cleanOwner) {
+		return true
+	}
+	emailParts := strings.Split(c.Email, "@")
+	if len(emailParts) > 0 && strings.EqualFold(emailParts[0], cleanOwner) {
+		return true
+	}
+	return false
 }
 
 // Detect processes contributors, events, decisions, facts, and sources to calculate expertise scores and evidence.
@@ -62,28 +121,38 @@ func (d *Detector) Detect(
 	facts []*memorymodels.Fact,
 	sources []*models.Source,
 ) ([]*models.Expertise, error) {
-	if len(contributors) == 0 {
+	// Filter out bots from contributors
+	var humanContributors []*models.Contributor
+	for _, c := range contributors {
+		if !botfilter.IsBot(c.Name, c.Email) {
+			humanContributors = append(humanContributors, c)
+		}
+	}
+	if len(humanContributors) == 0 {
 		return nil, nil
 	}
 
-	// 1. Calculate latest commit timestamp across all git sources
+	// 1. Calculate latest commit timestamp across all non-bot git sources
 	var latestRepoTimestamp time.Time
 	for _, src := range sources {
-		if src.SourceType == "commit" {
+		if src.SourceType == "commit" && !botfilter.IsBot(src.Author, "") {
 			if src.Timestamp.After(latestRepoTimestamp) {
 				latestRepoTimestamp = src.Timestamp
 			}
 		}
 	}
 
-	// 2. Index contributors by ID and build SourceID -> ContributorID mapping
+	// 2. Index human contributors by ID and build SourceID -> ContributorID mapping
 	knownContributors := make(map[string]*models.Contributor)
-	for _, c := range contributors {
+	for _, c := range humanContributors {
 		knownContributors[c.ID] = c
 	}
 
 	sourceToContributor := make(map[string]string)
 	for _, src := range sources {
+		if botfilter.IsBot(src.Author, "") {
+			continue
+		}
 		name := strings.TrimSpace(src.Author)
 		email := ""
 		matches := authorRegex.FindStringSubmatch(src.Author)
@@ -103,11 +172,44 @@ func (d *Detector) Detect(
 		}
 	}
 
+	// Discover directory domains from commit metadata files
+	allDomains := make(map[string]bool)
+	for domain := range DomainKeywords {
+		allDomains[domain] = true
+	}
+
+	sourceDirFiles := make(map[string]map[string]int)
+	for _, src := range sources {
+		if src.SourceType != "commit" || botfilter.IsBot(src.Author, "") || src.MetadataJSON == "" {
+			continue
+		}
+		var meta struct {
+			Files []string `json:"files"`
+		}
+		if err := json.Unmarshal([]byte(src.MetadataJSON), &meta); err != nil {
+			continue
+		}
+		if len(meta.Files) == 0 {
+			continue
+		}
+		dirCounts := make(map[string]int)
+		for _, f := range meta.Files {
+			dir := extractDirectoryDomain(f)
+			if dir != "" {
+				dirCounts[dir]++
+				allDomains[dir] = true
+			}
+		}
+		if len(dirCounts) > 0 {
+			sourceDirFiles[src.ID] = dirCounts
+		}
+	}
+
 	// 3. Pre-initialize metrics structure for all known contributors and domains
 	metricsMap := make(map[string]map[string]*contributorDomainMetrics)
-	for _, c := range contributors {
+	for _, c := range humanContributors {
 		metricsMap[c.ID] = make(map[string]*contributorDomainMetrics)
-		for domain := range DomainKeywords {
+		for domain := range allDomains {
 			metricsMap[c.ID][domain] = &contributorDomainMetrics{}
 		}
 	}
@@ -132,17 +234,39 @@ func (d *Detector) Detect(
 
 	// 4. Count matches for Commits (sources)
 	for _, src := range sources {
-		if src.SourceType != "commit" {
+		if src.SourceType != "commit" || botfilter.IsBot(src.Author, "") {
 			continue
 		}
 		cID := getContributorIDForSource(src)
 		if _, ok := metricsMap[cID]; !ok {
 			continue
 		}
+
+		// Recency factor with 180-day half-life
+		recencyFactor := 1.0
+		if !latestRepoTimestamp.IsZero() && src.Timestamp.Before(latestRepoTimestamp) {
+			daysAgo := latestRepoTimestamp.Sub(src.Timestamp).Hours() / 24.0
+			recencyFactor = math.Pow(2.0, -daysAgo/180.0)
+		}
+
+		// Keyword domains
 		for domain, keywords := range DomainKeywords {
 			if matchesDomain(src.Title, keywords) {
 				metrics := metricsMap[cID][domain]
 				metrics.commits++
+				metrics.weightedScore += 1.0 * recencyFactor
+				updateActivityTime(metrics, src.Timestamp)
+			}
+		}
+
+		// Directory domains
+		if dirCounts, ok := sourceDirFiles[src.ID]; ok {
+			for dir, count := range dirCounts {
+				metrics := metricsMap[cID][dir]
+				metrics.commits++
+				metrics.filesTouched += count
+				breadth := 1.0 + math.Min(float64(count), 10.0)*0.2
+				metrics.weightedScore += breadth * recencyFactor
 				updateActivityTime(metrics, src.Timestamp)
 			}
 		}
@@ -160,6 +284,13 @@ func (d *Detector) Detect(
 		for domain, keywords := range DomainKeywords {
 			if matchesDomain(dec.Title, keywords) {
 				metrics := metricsMap[cID][domain]
+				metrics.decisions++
+				updateActivityTime(metrics, dec.CreatedAt)
+			}
+		}
+		if dirCounts, ok := sourceDirFiles[dec.SourceID]; ok {
+			for dir := range dirCounts {
+				metrics := metricsMap[cID][dir]
 				metrics.decisions++
 				updateActivityTime(metrics, dec.CreatedAt)
 			}
@@ -182,6 +313,13 @@ func (d *Detector) Detect(
 				updateActivityTime(metrics, fact.CreatedAt)
 			}
 		}
+		if dirCounts, ok := sourceDirFiles[fact.SourceID]; ok {
+			for dir := range dirCounts {
+				metrics := metricsMap[cID][dir]
+				metrics.facts++
+				updateActivityTime(metrics, fact.CreatedAt)
+			}
+		}
 	}
 
 	// 7. Count matches for Events
@@ -200,15 +338,60 @@ func (d *Detector) Detect(
 				updateActivityTime(metrics, event.Timestamp)
 			}
 		}
+		if dirCounts, ok := sourceDirFiles[event.SourceID]; ok {
+			for dir := range dirCounts {
+				metrics := metricsMap[cID][dir]
+				metrics.events++
+				updateActivityTime(metrics, event.Timestamp)
+			}
+		}
+	}
+
+	// Evaluate CODEOWNERS
+	if len(d.codeownersRules) > 0 {
+		for _, c := range humanContributors {
+			for domain := range allDomains {
+				metrics := metricsMap[c.ID][domain]
+				for _, rule := range d.codeownersRules {
+					if codeowners.Matches(rule.Pattern, domain) ||
+						codeowners.Matches(rule.Pattern, domain+"/") ||
+						codeowners.Matches(rule.Pattern, domain+"/file.go") {
+						for _, owner := range rule.Owners {
+							if contributorMatchesOwner(c, owner) {
+								metrics.isCodeOwner = true
+								break
+							}
+						}
+					}
+					if metrics.isCodeOwner {
+						break
+					}
+				}
+			}
+		}
+	}
+
+	// Helper to calculate rawScore for a contributor in a domain
+	calcRawScore := func(domain string, m *contributorDomainMetrics) float64 {
+		var rawScore float64
+		if _, isKw := DomainKeywords[domain]; isKw && m.filesTouched == 0 && !m.isCodeOwner {
+			rawScore = (float64(m.commits) * 1.0) + (float64(m.decisions) * 5.0) + (float64(m.facts) * 2.0) + (float64(m.events) * 3.0)
+		} else {
+			rawScore = m.weightedScore + (float64(m.decisions) * 5.0) + (float64(m.facts) * 2.0) + (float64(m.events) * 3.0)
+			if m.isCodeOwner {
+				rawScore += 10.0
+			}
+		}
+		return rawScore
 	}
 
 	// 8. Find max rawScore in each domain across all contributors
 	maxRawScoreInDomain := make(map[string]float64)
-	for domain := range DomainKeywords {
+	for domain := range allDomains {
 		var maxScore float64
-		for _, c := range contributors {
+		for _, c := range humanContributors {
 			m := metricsMap[c.ID][domain]
-			rawScore := (float64(m.commits) * 1.0) + (float64(m.decisions) * 5.0) + (float64(m.facts) * 2.0) + (float64(m.events) * 3.0)
+			rawScore := calcRawScore(domain, m)
 			if rawScore > maxScore {
 				maxScore = rawScore
 			}
@@ -218,10 +401,10 @@ func (d *Detector) Detect(
 
 	// 9. Build Expertise slice
 	var expertiseRecords []*models.Expertise
-	for _, c := range contributors {
-		for domain := range DomainKeywords {
+	for _, c := range humanContributors {
+		for domain := range allDomains {
 			m := metricsMap[c.ID][domain]
-			rawScore := (float64(m.commits) * 1.0) + (float64(m.decisions) * 5.0) + (float64(m.facts) * 2.0) + (float64(m.events) * 3.0)
+			rawScore := calcRawScore(domain, m)
 			if rawScore == 0 {
 				continue
 			}
@@ -246,6 +429,8 @@ func (d *Detector) Detect(
 				FactCount:      m.facts,
 				EventCount:     m.events,
 				RecentActivity: recentActivity,
+				FilesTouched:   m.filesTouched,
+				IsCodeOwner:    m.isCodeOwner,
 			}
 
 			bytes, err := json.Marshal(evidenceObj)

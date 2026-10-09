@@ -8,7 +8,7 @@ set -eu
 
 REPO="${REPONERVE_REPO:-reponerve/reponerve}"
 INSTALL_DIR="${REPONERVE_INSTALL_DIR:-$HOME/.local/bin}"
-VERIFY="${REPONERVE_VERIFY:-0}"
+VERIFY="${REPONERVE_VERIFY:-1}"
 
 log() { printf '%s\n' "$*"; }
 die() { log "error: $*" >&2; exit 1; }
@@ -79,7 +79,13 @@ if ! curl -fsSL "$url" -o "${tmpdir}/archive"; then
 fi
 
 if [ "$VERIFY" = "1" ]; then
-	need_cmd sha256sum 2>/dev/null || need_cmd shasum
+	if command -v sha256sum >/dev/null 2>&1; then
+		:
+	elif command -v shasum >/dev/null 2>&1; then
+		:
+	else
+		die "neither sha256sum nor shasum found for verification"
+	fi
 	checksum_url="${base}/reponerve_${version#v}_checksums.txt"
 	curl -fsSL "$checksum_url" -o "${tmpdir}/checksums.txt"
 	(

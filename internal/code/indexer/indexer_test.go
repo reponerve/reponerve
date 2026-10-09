@@ -91,4 +91,22 @@ func TestIndexer_SampleModule(t *testing.T) {
 	if !strings.Contains(serviceSignature, "store *store.Store") {
 		t.Fatalf("expected struct fields in signature, got %q", serviceSignature)
 	}
+
+	var saveID string
+	err = db.QueryRow(`
+		SELECT id FROM code_entities
+		WHERE repository_id = ? AND entity_type = ? AND qualified_name = ?
+	`, repoID, codemodels.EntityTypeMethod, "internal/store.Store.Save").Scan(&saveID)
+	if err != nil {
+		t.Fatalf("expected Save method entity: %v", err)
+	}
+
+	var callRelID string
+	err = db.QueryRow(`
+		SELECT id FROM code_relationships
+		WHERE repository_id = ? AND relationship_type = 'CALLS' AND from_entity_id = ? AND to_entity_id = ?
+	`, repoID, loginID, saveID).Scan(&callRelID)
+	if err != nil {
+		t.Fatalf("expected CALLS relationship from Login to Save: %v", err)
+	}
 }

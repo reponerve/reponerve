@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/reponerve/reponerve/internal/ownership/botfilter"
 	"github.com/reponerve/reponerve/pkg/models"
 )
 
@@ -55,6 +56,10 @@ func (e *Extractor) Extract(ctx context.Context, sources []*models.Source) ([]*m
 		}
 
 		if name == "" && email == "" {
+			continue
+		}
+
+		if botfilter.IsBot(name, email) {
 			continue
 		}
 

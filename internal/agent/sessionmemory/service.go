@@ -12,7 +12,6 @@ import (
 	"time"
 
 	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
-	"github.com/reponerve/reponerve/internal/memory/searchindex"
 	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
 	"github.com/reponerve/reponerve/internal/query/storage"
 	storagedef "github.com/reponerve/reponerve/internal/storage"
@@ -89,7 +88,14 @@ func (s *Service) Remember(ctx context.Context, req RememberRequest) (*memorymod
 	if err := s.factStore.UpsertFact(ctx, fact); err != nil {
 		return nil, err
 	}
-	if err := s.rebuildSearch(ctx, req.RepositoryID); err != nil {
+	doc := storagedef.MemorySearchDocument{
+		MemoryID:     fact.ID,
+		RepositoryID: req.RepositoryID,
+		EntityType:   "FACT",
+		Title:        fact.Subject,
+		Content:      strings.TrimSpace(fact.Predicate + " " + fact.Object),
+	}
+	if err := s.searchStore.IndexDocument(ctx, doc); err != nil {
 		return nil, err
 	}
 	_ = s.recordAccess(req.RepositoryID, fact.ID)
@@ -132,7 +138,7 @@ func (s *Service) Forget(ctx context.Context, repositoryID, factID string) error
 	if err := s.factStore.DeleteFact(ctx, factID); err != nil {
 		return err
 	}
-	return s.rebuildSearch(ctx, repositoryID)
+	return s.searchStore.DeleteDocument(ctx, factID)
 }
 
 // ListSessionFacts returns session facts ranked by access recency.
@@ -209,9 +215,16 @@ func (s *Service) ImportHandoff(ctx context.Context, bundle *HandoffBundle) erro
 		if err := s.factStore.UpsertFact(ctx, fact); err != nil {
 			return err
 		}
-	}
-	if err := s.rebuildSearch(ctx, bundle.RepositoryID); err != nil {
-		return err
+		doc := storagedef.MemorySearchDocument{
+			MemoryID:     fact.ID,
+			RepositoryID: fact.RepositoryID,
+			EntityType:   "FACT",
+			Title:        fact.Subject,
+			Content:      strings.TrimSpace(fact.Predicate + " " + fact.Object),
+		}
+		if err := s.searchStore.IndexDocument(ctx, doc); err != nil {
+			return err
+		}
 	}
 	return mergeAccessRanking(s.accessPath, bundle.RepositoryID, bundle.AccessRanking)
 }
@@ -236,13 +249,6 @@ func (s *Service) ensureSessionSource(ctx context.Context, repositoryID string) 
 		return "", err
 	}
 	return sourceID, nil
-}
-
-func (s *Service) rebuildSearch(ctx context.Context, repositoryID string) error {
-	return searchindex.RebuildFromRepository(
-		ctx, repositoryID,
-		s.eventReader, s.decisionReader, s.factReader, s.sourceReader, s.searchStore,
-	)
 }
 
 func isSessionFact(f *memorymodels.Fact, sessionSourceID string) bool {

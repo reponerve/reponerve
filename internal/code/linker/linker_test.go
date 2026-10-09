@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/reponerve/reponerve/internal/code"
-	codelinker "github.com/reponerve/reponerve/internal/code/linker"
 	"github.com/reponerve/reponerve/internal/code/indexer"
+	codelinker "github.com/reponerve/reponerve/internal/code/linker"
 	codemodels "github.com/reponerve/reponerve/internal/code/models"
-	"github.com/reponerve/reponerve/internal/storage/migrations"
 	"github.com/reponerve/reponerve/internal/query/storage"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
 )
 

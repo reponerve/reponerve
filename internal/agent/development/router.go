@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"unicode"
 
 	agentsearch "github.com/reponerve/reponerve/internal/agent/search"
 	codemodels "github.com/reponerve/reponerve/internal/code/models"
@@ -13,7 +14,7 @@ import (
 
 // Router resolves natural-language topics across repository and code authorities.
 type Router struct {
-	searchService  *agentsearch.Service
+	searchService    *agentsearch.Service
 	codeEntityReader storage.CodeEntityReader
 	repoCodeReader   storage.RepositoryCodeRelationshipReader
 }
@@ -216,7 +217,6 @@ func topicTerms(topic string) []string {
 func scoreCodeEntity(e *codemodels.CodeEntity, terms []string) int {
 	name := strings.ToLower(e.Name)
 	qualified := strings.ToLower(e.QualifiedName)
-	filePath := strings.ToLower(e.FilePath)
 	score := 0
 	for _, term := range terms {
 		switch {
@@ -226,15 +226,66 @@ func scoreCodeEntity(e *codemodels.CodeEntity, terms []string) int {
 			score += 100
 		case strings.HasSuffix(qualified, "."+term):
 			score += 80
-		case strings.Contains(name, term):
+		case isIdentifierWordMatch(e.Name, term):
+			score += 60
+		case isIdentifierWordMatch(e.QualifiedName, term):
 			score += 50
-		case strings.Contains(qualified, term):
+		case isPathSegmentMatch(e.FilePath, term):
 			score += 40
-		case strings.Contains(filePath, term):
-			score += 25
 		}
 	}
 	return score
+}
+
+func isIdentifierWordMatch(ident, term string) bool {
+	term = strings.ToLower(term)
+	words := splitIdentifierWords(ident)
+	for _, w := range words {
+		if strings.ToLower(w) == term {
+			return true
+		}
+	}
+	return false
+}
+
+func isPathSegmentMatch(path, term string) bool {
+	term = strings.ToLower(term)
+	segments := strings.FieldsFunc(path, func(r rune) bool {
+		return r == '/' || r == '\\' || r == '_' || r == '-' || r == '.'
+	})
+	for _, s := range segments {
+		if strings.ToLower(s) == term {
+			return true
+		}
+	}
+	return false
+}
+
+func splitIdentifierWords(ident string) []string {
+	var words []string
+	var current strings.Builder
+	runes := []rune(ident)
+	for i := 0; i < len(runes); i++ {
+		r := runes[i]
+		if r == '_' || r == '-' || r == '.' || r == '/' || r == '$' || r == ':' {
+			if current.Len() > 0 {
+				words = append(words, current.String())
+				current.Reset()
+			}
+			continue
+		}
+		if i > 0 && unicode.IsUpper(r) && !unicode.IsUpper(runes[i-1]) {
+			if current.Len() > 0 {
+				words = append(words, current.String())
+				current.Reset()
+			}
+		}
+		current.WriteRune(r)
+	}
+	if current.Len() > 0 {
+		words = append(words, current.String())
+	}
+	return words
 }
 
 func classifyPrimaryEntityType(topic *ResolvedTopic) string {

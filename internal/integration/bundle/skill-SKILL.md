@@ -33,7 +33,7 @@ reponerve explain-file "<path>" --json
 
 ## What You Must Do When Invoked
 
-Follow these steps in order. **Do not skip RepoNerve and grep the repo.**
+Follow these steps in order. **Check RepoNerve first for orientation, architectural context, and relationships before reading and modifying code.**
 
 ### Step 1 — Ensure RepoNerve memory exists
 
@@ -89,15 +89,16 @@ For symbol checks, always pass `--package` when the symbol name is ambiguous.
 
 | `agent.completeness` | You must |
 | --- | --- |
-| `full` | Answer/edit from `structured`; no bulk file reads |
+| `full` | Answer orientation/architecture from `structured`; read target files to verify implementation |
 | `partial` | Run `recommended_next_tools` (more CLI commands) before editing |
-| `retrieval_only` | Stop — do not answer confidently; run another command |
+| `retrieval_only` | Query more specific tools/symbols before inspecting code |
 
-### Step 4 — Answer or edit from evidence only
+### Step 4 — Verify against source code before editing
 
-- Cite only paths, symbols, ADRs in RepoNerve output
-- Missing fact → say "RepoNerve has no evidence for X" and query more
-- Homonyms → compare all `entity_briefings`; use `--package`
+- Use RepoNerve's briefings, relationships, and ADR citations for orientation and architectural constraints.
+- Always read and verify the targeted source files and function bodies directly before making edits — RepoNerve guides your exploration; source code is the ground truth.
+- When an architecture or rationale fact is absent from RepoNerve, say "RepoNerve has no indexed evidence for X" rather than guessing.
+- Homonyms → compare all `entity_briefings`; use `--package` to isolate the right symbol.
 
 ---
 

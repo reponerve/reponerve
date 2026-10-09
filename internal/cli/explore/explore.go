@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/reponerve/reponerve/internal/config"
-	exploreui "github.com/reponerve/reponerve/internal/ui/explore"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
+	exploreui "github.com/reponerve/reponerve/internal/ui/explore"
 )
 
 // NewCommand creates the explore subcommand.

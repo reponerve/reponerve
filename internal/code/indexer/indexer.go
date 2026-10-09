@@ -281,6 +281,7 @@ func (idx *Indexer) indexGoModulesFiltered(b *builder, repositoryPath string, mo
 			}
 		}
 	}
+	b.extractAllRelationships()
 	return nil
 }
 

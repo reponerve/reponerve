@@ -1,16 +1,20 @@
 name: npm Publish
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+  workflow_dispatch:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success') }}
     defaults:
       run:
         working-directory: npm/reponerve
@@ -25,6 +29,10 @@ jobs:
       - name: Sync package version from tag
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
+          if [ -z "$VERSION" ] && [ -n "${{ github.event.workflow_run.head_branch }}" ]; then
+            VERSION="${{ github.event.workflow_run.head_branch }}"
+            VERSION="${VERSION#v}"
+          fi
           npm version "$VERSION" --no-git-tag-version --allow-same-version
           node -e "
             const fs = require('fs');
@@ -34,6 +42,6 @@ jobs:
           "
 
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

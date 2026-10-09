@@ -261,13 +261,13 @@ func rerankEvents(items []*models.Event, scores map[string]int) []*models.Event 
 }
 
 type scoredItem struct {
-	kind  string
-	score int
-	text  string
-	dec   *memorymodels.Decision
+	kind   string
+	score  int
+	text   string
+	dec    *memorymodels.Decision
 	intent *memorymodels.Intent
-	fact  *memorymodels.Fact
-	event *models.Event
+	fact   *memorymodels.Fact
+	event  *models.Event
 }
 
 func packByTokenBudget(

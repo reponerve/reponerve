@@ -6,9 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	codelinker "github.com/reponerve/reponerve/internal/code/linker"
-	"github.com/reponerve/reponerve/internal/code/indexer"
 	"github.com/reponerve/reponerve/internal/agent/discipline"
+	"github.com/reponerve/reponerve/internal/code/indexer"
+	codelinker "github.com/reponerve/reponerve/internal/code/linker"
 	"github.com/reponerve/reponerve/internal/config"
 	"github.com/reponerve/reponerve/internal/ingestion"
 	"github.com/reponerve/reponerve/internal/memory/searchindex"

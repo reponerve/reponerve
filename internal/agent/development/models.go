@@ -48,17 +48,17 @@ type RepositoryCodeLinkRef struct {
 
 // CodeContext is authoritative code understanding assembled from Code Intelligence.
 type CodeContext struct {
-	Modules      []EntityRef         `json:"modules"`
-	Files        []EntityRef         `json:"files"`
-	Packages     []EntityRef         `json:"packages"`
-	Structs      []EntityRef         `json:"structs"`
-	Interfaces   []EntityRef         `json:"interfaces"`
-	TypeAliases  []EntityRef         `json:"type_aliases"`
-	Functions    []EntityRef         `json:"functions"`
-	Methods      []EntityRef         `json:"methods"`
-	Endpoints    []EntityRef         `json:"endpoints"`
+	Modules      []EntityRef           `json:"modules"`
+	Files        []EntityRef           `json:"files"`
+	Packages     []EntityRef           `json:"packages"`
+	Structs      []EntityRef           `json:"structs"`
+	Interfaces   []EntityRef           `json:"interfaces"`
+	TypeAliases  []EntityRef           `json:"type_aliases"`
+	Functions    []EntityRef           `json:"functions"`
+	Methods      []EntityRef           `json:"methods"`
+	Endpoints    []EntityRef           `json:"endpoints"`
 	CallGraph    *codemodels.CallGraph `json:"call_graph,omitempty"`
-	Dependencies []RelationshipRef   `json:"dependencies"`
+	Dependencies []RelationshipRef     `json:"dependencies"`
 }
 
 // RepositoryContext is repository intelligence assembled from upstream authorities.

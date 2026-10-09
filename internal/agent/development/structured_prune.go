@@ -2,9 +2,9 @@ package development
 
 // PruneReport records fields truncated for agent consumers.
 type PruneReport struct {
-	Truncated      bool
+	Truncated       bool
 	TruncatedFields []string
-	OmittedCounts  map[string]int
+	OmittedCounts   map[string]int
 }
 
 // PruneStructured returns a copy of structured DE payloads with list caps applied.

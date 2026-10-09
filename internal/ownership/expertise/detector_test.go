@@ -9,6 +9,7 @@ import (
 	"time"
 
 	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/ownership/codeowners"
 	"github.com/reponerve/reponerve/internal/ownership/expertise"
 	"github.com/reponerve/reponerve/pkg/models"
 )
@@ -267,5 +268,264 @@ func TestDetector_Determinism(t *testing.T) {
 		if res1[i].ID != res2[i].ID || res1[i].Score != res2[i].Score || res1[i].EvidenceJSON != res2[i].EvidenceJSON {
 			t.Errorf("determinism violation at index %d: %+v vs %+v", i, res1[i], res2[i])
 		}
+	}
+}
+
+func TestDetector_DirectoryOwnership(t *testing.T) {
+	d := expertise.NewDetector()
+	ctx := context.Background()
+
+	repoID := "repo_dir"
+	aliceName := "Alice"
+	aliceEmail := "alice@example.com"
+	aliceID := testContributorID(repoID, aliceName, aliceEmail)
+
+	bobName := "Bob"
+	bobEmail := "bob@example.com"
+	bobID := testContributorID(repoID, bobName, bobEmail)
+
+	contributors := []*models.Contributor{
+		{ID: aliceID, RepositoryID: repoID, Name: aliceName, Email: aliceEmail},
+		{ID: bobID, RepositoryID: repoID, Name: bobName, Email: bobEmail},
+	}
+
+	now := time.Now()
+	sources := []*models.Source{
+		{
+			ID:           "src_alice_1",
+			RepositoryID: repoID,
+			SourceType:   "commit",
+			Author:       "Alice <alice@example.com>",
+			Title:        "feat: add hugolib features",
+			MetadataJSON: `{"files":["hugolib/page.go","hugolib/site.go","hugolib/sub/content.go"]}`,
+			Timestamp:    now,
+		},
+		{
+			ID:           "src_bob_1",
+			RepositoryID: repoID,
+			SourceType:   "commit",
+			Author:       "Bob <bob@example.com>",
+			Title:        "feat: implement routing",
+			MetadataJSON: `{"files":["lib/router/route.js","lib/router/layer.js"]}`,
+			Timestamp:    now,
+		},
+	}
+
+	res, err := d.Detect(ctx, contributors, nil, nil, nil, sources)
+	if err != nil {
+		t.Fatalf("Detect failed: %v", err)
+	}
+
+	var foundAliceHugo, foundBobRouter bool
+	for _, exp := range res {
+		if exp.ContributorID == aliceID && exp.Domain == "hugolib" {
+			foundAliceHugo = true
+			if exp.Score != 1.0 {
+				t.Errorf("expected Alice score 1.0 in hugolib, got %f", exp.Score)
+			}
+			var ev expertise.Evidence
+			if err := json.Unmarshal([]byte(exp.EvidenceJSON), &ev); err != nil {
+				t.Fatalf("failed to unmarshal evidence: %v", err)
+			}
+			if ev.FilesTouched != 3 {
+				t.Errorf("expected 3 files touched, got %d", ev.FilesTouched)
+			}
+		}
+		if exp.ContributorID == bobID && exp.Domain == "lib/router" {
+			foundBobRouter = true
+			if exp.Score != 1.0 {
+				t.Errorf("expected Bob score 1.0 in lib/router, got %f", exp.Score)
+			}
+			var ev expertise.Evidence
+			if err := json.Unmarshal([]byte(exp.EvidenceJSON), &ev); err != nil {
+				t.Fatalf("failed to unmarshal evidence: %v", err)
+			}
+			if ev.FilesTouched != 2 {
+				t.Errorf("expected 2 files touched, got %d", ev.FilesTouched)
+			}
+		}
+	}
+
+	if !foundAliceHugo {
+		t.Error("expected Alice to have expertise in hugolib")
+	}
+	if !foundBobRouter {
+		t.Error("expected Bob to have expertise in lib/router")
+	}
+}
+
+func TestDetector_RecencyWeighting(t *testing.T) {
+	d := expertise.NewDetector()
+	ctx := context.Background()
+
+	repoID := "repo_recency"
+	aliceName := "Alice"
+	aliceEmail := "alice@example.com"
+	aliceID := testContributorID(repoID, aliceName, aliceEmail)
+
+	bobName := "Bob"
+	bobEmail := "bob@example.com"
+	bobID := testContributorID(repoID, bobName, bobEmail)
+
+	contributors := []*models.Contributor{
+		{ID: aliceID, RepositoryID: repoID, Name: aliceName, Email: aliceEmail},
+		{ID: bobID, RepositoryID: repoID, Name: bobName, Email: bobEmail},
+	}
+
+	anchor := time.Date(2026, 6, 1, 12, 0, 0, 0, time.UTC)
+	tRecent := anchor.Add(-2 * 24 * time.Hour) // 2 days ago
+	tOld := anchor.Add(-365 * 24 * time.Hour)  // 1 year ago
+
+	sources := []*models.Source{
+		{
+			ID:           "src_anchor",
+			RepositoryID: repoID,
+			SourceType:   "commit",
+			Author:       "Alice <alice@example.com>",
+			Title:        "anchor commit",
+			Timestamp:    anchor,
+		},
+		{
+			ID:           "src_alice_recent",
+			RepositoryID: repoID,
+			SourceType:   "commit",
+			Author:       "Alice <alice@example.com>",
+			Title:        "recent work",
+			MetadataJSON: `{"files":["hugolib/page.go"]}`,
+			Timestamp:    tRecent,
+		},
+		{
+			ID:           "src_bob_old",
+			RepositoryID: repoID,
+			SourceType:   "commit",
+			Author:       "Bob <bob@example.com>",
+			Title:        "old work",
+			MetadataJSON: `{"files":["hugolib/page.go"]}`,
+			Timestamp:    tOld,
+		},
+	}
+
+	res, err := d.Detect(ctx, contributors, nil, nil, nil, sources)
+	if err != nil {
+		t.Fatalf("Detect failed: %v", err)
+	}
+
+	var aliceScore, bobScore float64
+	for _, exp := range res {
+		if exp.Domain == "hugolib" {
+			if exp.ContributorID == aliceID {
+				aliceScore = exp.Score
+			} else if exp.ContributorID == bobID {
+				bobScore = exp.Score
+			}
+		}
+	}
+
+	if aliceScore <= bobScore {
+		t.Errorf("expected recent contributor (Alice %f) to outscore old contributor (Bob %f)", aliceScore, bobScore)
+	}
+}
+
+func TestDetector_BotFiltering(t *testing.T) {
+	d := expertise.NewDetector()
+	ctx := context.Background()
+
+	repoID := "repo_bot"
+	aliceName := "Alice"
+	aliceEmail := "alice@example.com"
+	aliceID := testContributorID(repoID, aliceName, aliceEmail)
+
+	botName := "dependabot[bot]"
+	botEmail := "dependabot[bot]@users.noreply.github.com"
+	botID := testContributorID(repoID, botName, botEmail)
+
+	contributors := []*models.Contributor{
+		{ID: aliceID, RepositoryID: repoID, Name: aliceName, Email: aliceEmail},
+		{ID: botID, RepositoryID: repoID, Name: botName, Email: botEmail},
+	}
+
+	now := time.Now()
+	sources := []*models.Source{
+		{
+			ID:           "src_alice",
+			RepositoryID: repoID,
+			SourceType:   "commit",
+			Author:       "Alice <alice@example.com>",
+			Title:        "infra: setup pipeline",
+			Timestamp:    now,
+		},
+		{
+			ID:           "src_bot",
+			RepositoryID: repoID,
+			SourceType:   "commit",
+			Author:       "dependabot[bot] <dependabot[bot]@users.noreply.github.com>",
+			Title:        "infra: bump docker and github actions",
+			Timestamp:    now,
+		},
+	}
+
+	res, err := d.Detect(ctx, contributors, nil, nil, nil, sources)
+	if err != nil {
+		t.Fatalf("Detect failed: %v", err)
+	}
+
+	for _, exp := range res {
+		if exp.ContributorID == botID {
+			t.Errorf("bot contributor should not have expertise records: %+v", exp)
+		}
+	}
+}
+
+func TestDetector_CODEOWNERS(t *testing.T) {
+	d := expertise.NewDetector()
+	ctx := context.Background()
+
+	repoID := "repo_codeowners"
+	aliceName := "Alice"
+	aliceEmail := "alice@example.com"
+	aliceID := testContributorID(repoID, aliceName, aliceEmail)
+
+	contributors := []*models.Contributor{
+		{ID: aliceID, RepositoryID: repoID, Name: aliceName, Email: aliceEmail},
+	}
+
+	now := time.Now()
+	sources := []*models.Source{
+		{
+			ID:           "src_alice",
+			RepositoryID: repoID,
+			SourceType:   "commit",
+			Author:       "Alice <alice@example.com>",
+			Title:        "feat: hugolib engine",
+			MetadataJSON: `{"files":["hugolib/page.go"]}`,
+			Timestamp:    now,
+		},
+	}
+
+	rules := []codeowners.Rule{
+		{Pattern: "hugolib/*", Owners: []string{"@alice"}},
+	}
+	d.WithCodeOwners(rules)
+
+	res, err := d.Detect(ctx, contributors, nil, nil, nil, sources)
+	if err != nil {
+		t.Fatalf("Detect failed: %v", err)
+	}
+
+	var found bool
+	for _, exp := range res {
+		if exp.ContributorID == aliceID && exp.Domain == "hugolib" {
+			found = true
+			var ev expertise.Evidence
+			if err := json.Unmarshal([]byte(exp.EvidenceJSON), &ev); err != nil {
+				t.Fatalf("failed to unmarshal evidence: %v", err)
+			}
+			if !ev.IsCodeOwner {
+				t.Error("expected IsCodeOwner to be true")
+			}
+		}
+	}
+	if !found {
+		t.Error("expected Alice hugolib expertise record")
 	}
 }

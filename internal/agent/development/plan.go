@@ -6,19 +6,19 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/reponerve/reponerve/internal/agent/workflow"
 	agentsearch "github.com/reponerve/reponerve/internal/agent/search"
+	"github.com/reponerve/reponerve/internal/agent/workflow"
 	codemodels "github.com/reponerve/reponerve/internal/code/models"
 	"github.com/reponerve/reponerve/internal/intelligence/learning"
 	"github.com/reponerve/reponerve/internal/intelligence/reviewers"
 )
 
 const (
-	sourceKnowledgeDiscovery     = "knowledge_discovery"
-	sourceLearningPaths          = "learning_paths"
+	sourceKnowledgeDiscovery      = "knowledge_discovery"
+	sourceLearningPaths           = "learning_paths"
 	sourceReviewerRecommendations = "reviewer_recommendations"
-	sourceChangePlanning         = "change_planning"
-	sourceWorkflowIntelligence   = "workflow_intelligence"
+	sourceChangePlanning          = "change_planning"
+	sourceWorkflowIntelligence    = "workflow_intelligence"
 )
 
 // Plan prepares implementation guidance by orchestrating upstream planning authorities.

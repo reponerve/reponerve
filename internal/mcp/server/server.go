@@ -18,6 +18,7 @@ import (
 	"github.com/reponerve/reponerve/internal/graph/traversal"
 	"github.com/reponerve/reponerve/internal/mcp"
 	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
+	"github.com/reponerve/reponerve/internal/version"
 	models "github.com/reponerve/reponerve/pkg/models"
 )
 
@@ -221,7 +222,7 @@ func (s *Server) handleInitialize(id *json.RawMessage) {
 		},
 		ServerInfo: ServerInfo{
 			Name:    "reponerve",
-			Version: "0.1.0-alpha",
+			Version: version.Short(),
 		},
 	}
 	s.sendResult(id, result)
@@ -1393,10 +1394,29 @@ func getInputSchema(toolName string) InputSchema {
 			"description": "Optional repository filter",
 		}
 
-	case "explain", "review":
+	case "explain":
 		schema.Properties["topic"] = map[string]interface{}{
 			"type":        "string",
-			"description": "The topic to explain or prepare a review guide for",
+			"description": "The topic, symbol, or file path to explain",
+		}
+		schema.Properties["kind"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional target kind: file, function, struct, interface, type",
+		}
+		schema.Properties["package_path"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional Go package path to disambiguate short symbol names",
+		}
+		schema.Required = []string{"topic"}
+		schema.Properties["repository_id"] = map[string]interface{}{
+			"type":        "string",
+			"description": "Optional repository filter",
+		}
+
+	case "review":
+		schema.Properties["topic"] = map[string]interface{}{
+			"type":        "string",
+			"description": "The topic to prepare a review guide for",
 		}
 		schema.Required = []string{"topic"}
 		schema.Properties["repository_id"] = map[string]interface{}{

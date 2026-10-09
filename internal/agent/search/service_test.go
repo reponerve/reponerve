@@ -15,8 +15,8 @@ import (
 	"github.com/reponerve/reponerve/internal/intelligence/discovery"
 	memorymodels "github.com/reponerve/reponerve/internal/memory/models"
 	"github.com/reponerve/reponerve/internal/query/storage"
-	"github.com/reponerve/reponerve/internal/storage/migrations"
 	searchstorage "github.com/reponerve/reponerve/internal/storage"
+	"github.com/reponerve/reponerve/internal/storage/migrations"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
 	models "github.com/reponerve/reponerve/pkg/models"
 )

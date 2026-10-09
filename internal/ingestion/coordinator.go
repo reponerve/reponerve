@@ -192,7 +192,7 @@ func (c *Coordinator) Run(ctx context.Context, path string) (*ScanResult, error)
 	}
 
 	// Recompute contributors and expertise from full persisted repository memory.
-	if err := c.recomputeOwnership(ctx, repo.ID); err != nil {
+	if err := c.recomputeOwnership(ctx, repo.ID, repo.Path); err != nil {
 		return nil, fmt.Errorf("failed to recompute ownership: %w", err)
 	}
 

@@ -27,4 +27,6 @@ type MemorySearchReader interface {
 type MemorySearchStore interface {
 	MemorySearchReader
 	Rebuild(ctx context.Context, repositoryID string, docs []MemorySearchDocument) error
+	IndexDocument(ctx context.Context, doc MemorySearchDocument) error
+	DeleteDocument(ctx context.Context, memoryID string) error
 }

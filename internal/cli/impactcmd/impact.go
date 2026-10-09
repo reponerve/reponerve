@@ -14,7 +14,7 @@ func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "impact [subject]",
 		Short: "Analyze impact of a service, feature, or area",
-		Long: `Analyze repository and code impact for a natural-language subject by orchestrating knowledge graph impact, agent impact analysis, code intelligence, and ownership intelligence.`,
+		Long:  `Analyze repository and code impact for a natural-language subject by orchestrating knowledge graph impact, agent impact analysis, code intelligence, and ownership intelligence.`,
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return devwire.RunImpact(cmd, args[0], func(ctx context.Context, session *devwire.Handle, subject string) (*development.DevelopmentImpactReport, error) {

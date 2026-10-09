@@ -2,16 +2,16 @@ package development
 
 // Response bounds keep Development Experience outputs agent-consumable on large repos.
 const (
-	DefaultTokenBudget      = 1500
-	MaxRelatedRefs          = 15
-	MaxEvidenceItems        = 20
-	MaxPlanStartingPoints   = 8
-	MaxImpactedAreas        = 15
-	MaxRepositoryCodeLinks  = 12
-	MaxReuseCandidates      = 15
-	MaxShipCheckItems       = 10
-	MaxDisciplineChecks     = 12
-	MaxChangedFilesPR       = 30
+	DefaultTokenBudget     = 1500
+	MaxRelatedRefs         = 15
+	MaxEvidenceItems       = 20
+	MaxPlanStartingPoints  = 8
+	MaxImpactedAreas       = 15
+	MaxRepositoryCodeLinks = 12
+	MaxReuseCandidates     = 15
+	MaxShipCheckItems      = 10
+	MaxDisciplineChecks    = 12
+	MaxChangedFilesPR      = 30
 )
 
 // EffectiveTokenBudget returns the budget to apply (default when unset).

@@ -56,6 +56,12 @@ function downloadURL(version) {
   return `https://github.com/${REPO}/releases/download/${tag}/${file}`;
 }
 
+function checksumsURL(version) {
+  const tag = normalizeVersion(version);
+  const ver = releaseVersion(version);
+  return `https://github.com/${REPO}/releases/download/${tag}/reponerve_${ver}_checksums.txt`;
+}
+
 function binaryNames() {
   if (process.platform === "win32") {
     return ["reponerve.exe", "reponerve"];
@@ -71,5 +77,6 @@ module.exports = {
   releaseVersion,
   archiveName,
   downloadURL,
+  checksumsURL,
   binaryNames,
 };

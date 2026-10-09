@@ -68,10 +68,30 @@ func (s *Server) handleDevelopmentTool(
 			s.sendToolError(id, err.Error())
 			return true
 		}
-		out, err := dev.Explain(ctx, development.DevelopmentRequest{
-			RepositoryID: repoID,
-			Topic:        topic,
-		})
+		kind, _ := getArg("kind", false)
+		if kind == "" {
+			kind, _ = getArg("entity_type", false)
+		}
+		packagePath, _ := getArg("package_path", false)
+
+		var out *development.DevelopmentExplanation
+		switch strings.ToLower(strings.TrimSpace(kind)) {
+		case "file":
+			out, err = dev.ExplainFile(ctx, repoID, topic)
+		case "function", "func":
+			out, err = dev.ExplainFunction(ctx, repoID, topic, packagePath)
+		case "struct":
+			out, err = dev.ExplainStruct(ctx, repoID, topic, packagePath)
+		case "interface":
+			out, err = dev.ExplainInterface(ctx, repoID, topic, packagePath)
+		case "type":
+			out, err = dev.ExplainType(ctx, repoID, topic, packagePath)
+		default:
+			out, err = dev.Explain(ctx, development.DevelopmentRequest{
+				RepositoryID: repoID,
+				Topic:        topic,
+			})
+		}
 		if err != nil {
 			s.sendToolError(id, fmt.Sprintf("explain failed: %v", err))
 			return true

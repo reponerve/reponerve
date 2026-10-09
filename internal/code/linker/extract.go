@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	goFilePathPattern    = regexp.MustCompile(`(?:^|[\s"'(,])([a-zA-Z0-9][\w./-]*\.go)`)
-	packagePathPattern   = regexp.MustCompile(`(?:^|[\s"'(,])((?:internal|cmd|pkg)/[\w./-]+)`)
+	goFilePathPattern      = regexp.MustCompile(`(?:^|[\s"'(,])([a-zA-Z0-9][\w./-]*\.go)`)
+	packagePathPattern     = regexp.MustCompile(`(?:^|[\s"'(,])((?:internal|cmd|pkg)/[\w./-]+)`)
 	camelCaseSymbolPattern = regexp.MustCompile(`\b([A-Z][a-zA-Z0-9]{2,})\b`)
 )
 

@@ -23,6 +23,9 @@ type DocumentPath struct {
 // DefaultDocumentPaths are scanned when config does not override paths.
 func DefaultDocumentPaths() []DocumentPath {
 	return []DocumentPath{
+		{Path: "README.md", Kind: DocumentKindArchitectureDoc},
+		{Path: "readme.md", Kind: DocumentKindArchitectureDoc},
+		{Path: "docs/vision", Kind: DocumentKindArchitectureDoc},
 		{Path: "docs/adr", Kind: DocumentKindADR},
 		{Path: "docs/adrs", Kind: DocumentKindADR},
 		{Path: "docs/decisions", Kind: DocumentKindADR},

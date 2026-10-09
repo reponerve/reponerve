@@ -1,7 +1,7 @@
 ---
 description: >-
-  RepoNerve for AI chat without MCP. On any codebase question, run reponerve ask/plan
-  --json before grep or edits. Trigger /reponerve or load .cursor/skills/reponerve/SKILL.md.
+  RepoNerve for AI chat without MCP. On any codebase question, check RepoNerve first
+  for orientation, then inspect and verify against source code. Trigger /reponerve or load .cursor/skills/reponerve/SKILL.md.
 alwaysApply: false
 ---
 
@@ -11,7 +11,7 @@ When the user asks about this repository — or uses `/reponerve` — follow `.c
 
 1. `test -f .reponerve/memory.db || (reponerve init && reponerve scan)`
 2. `reponerve ask "..." --json` (or `plan` / `onboard` / `explain-*`)
-3. Answer from `structured` → `agent` → `formatted` only
+3. Use `structured` context for orientation; inspect and verify against source files before making edits.
 
 Verification tasks: use `explain-function` / `explain-struct` / `explain-file` with `--package` — not broad `ask`.
 

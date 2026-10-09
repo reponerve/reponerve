@@ -39,24 +39,16 @@ func TestMigrations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to get applied versions after RunUp: %v", err)
 	}
-	for v := 1; v <= 9; v++ {
+	for v := 1; v <= 10; v++ {
 		if !applied[v] {
 			t.Errorf("expected migration version %d to be applied", v)
 		}
 	}
 
-	tables := []string{
+	activeTables := []string{
 		"schema_migrations",
 		"repositories",
 		"sources",
-		"memories",
-		"facts",
-		"events",
-		"decisions",
-		"ownerships",
-		"intents",
-		"relationships",
-		"evidence",
 		"memory_search",
 		"scan_state",
 		"memory_events",
@@ -71,11 +63,29 @@ func TestMigrations(t *testing.T) {
 		"repository_code_relationships",
 		"code_index_state",
 	}
-	for _, table := range tables {
+	for _, table := range activeTables {
 		var name string
 		err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name=?", table).Scan(&name)
 		if err != nil {
-			t.Errorf("expected table %q to exist, got error: %v", table, err)
+			t.Errorf("expected active table %q to exist, got error: %v", table, err)
+		}
+	}
+
+	legacyDroppedTables := []string{
+		"memories",
+		"facts",
+		"events",
+		"decisions",
+		"ownerships",
+		"intents",
+		"relationships",
+		"evidence",
+	}
+	for _, table := range legacyDroppedTables {
+		var name string
+		err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name=?", table).Scan(&name)
+		if err == nil {
+			t.Errorf("expected legacy table %q to be dropped in v10, but it still exists", table)
 		}
 	}
 
@@ -84,7 +94,35 @@ func TestMigrations(t *testing.T) {
 		t.Fatalf("failed to re-run migrations up: %v", err)
 	}
 
-	// First Rollback (rolls back version 9: create_code_intelligence_tables)
+	// First Rollback (rolls back version 10: drop_legacy_tables)
+	err = Rollback(db)
+	if err != nil {
+		t.Fatalf("failed to rollback migration version 10: %v", err)
+	}
+
+	applied, err = GetAppliedVersions(db)
+	if err != nil {
+		t.Fatalf("failed to get applied versions after first rollback: %v", err)
+	}
+	if applied[10] {
+		t.Errorf("expected migration version 10 to be rolled back")
+	}
+	for v := 1; v <= 9; v++ {
+		if !applied[v] {
+			t.Errorf("expected migration version %d to still be applied", v)
+		}
+	}
+
+	// Verify legacy tables recreated after rolling back v10
+	for _, table := range legacyDroppedTables {
+		var name string
+		err := db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name=?", table).Scan(&name)
+		if err != nil {
+			t.Errorf("expected legacy table %q to be recreated after rollback of v10: %v", table, err)
+		}
+	}
+
+	// Second Rollback (rolls back version 9: create_code_intelligence_tables)
 	err = Rollback(db)
 	if err != nil {
 		t.Fatalf("failed to rollback migration version 9: %v", err)
@@ -92,7 +130,7 @@ func TestMigrations(t *testing.T) {
 
 	applied, err = GetAppliedVersions(db)
 	if err != nil {
-		t.Fatalf("failed to get applied versions after first rollback: %v", err)
+		t.Fatalf("failed to get applied versions after second rollback: %v", err)
 	}
 	if applied[9] {
 		t.Errorf("expected migration version 9 to be rolled back")
@@ -107,12 +145,12 @@ func TestMigrations(t *testing.T) {
 	for _, table := range []string{"code_entities", "code_relationships", "repository_code_relationships", "code_index_state"} {
 		err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name=?", table).Scan(&name)
 		if err == nil {
-			t.Errorf("expected table %q to be dropped after first rollback, but it still exists", table)
+			t.Errorf("expected table %q to be dropped after rollback of v9, but it still exists", table)
 		}
 	}
 	err = db.QueryRow("SELECT name FROM sqlite_master WHERE type='table' AND name='contributors'").Scan(&name)
 	if err != nil {
-		t.Error("expected table 'contributors' to still exist after first rollback")
+		t.Error("expected table 'contributors' to still exist after rollback of v9")
 	}
 
 	// Second Rollback (rolls back version 8: create_ownership_tables)

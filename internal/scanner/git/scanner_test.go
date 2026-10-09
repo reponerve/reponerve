@@ -1,6 +1,7 @@
 package git
 
 import (
+	"strings"
 	"testing"
 	"time"
 )
@@ -43,5 +44,38 @@ func TestParseGitLog(t *testing.T) {
 	}
 	if c2.Title != "fix: issue with DB connection" {
 		t.Errorf("expected title to be 'fix: issue with DB connection', got %q", c2.Title)
+	}
+}
+
+func TestStreamGitLog(t *testing.T) {
+	mockOutput := "123456\nAlice <alice@example.com>\n2026-06-05T21:15:26Z\ncommit 1\x00789abc\nBob <bob@example.com>\n2026-06-05T21:20:00Z\ncommit 2\x00"
+	scanner := NewScanner(nil)
+	commits, err := scanner.StreamGitLog("test-repo", strings.NewReader(mockOutput))
+	if err != nil {
+		t.Fatalf("failed to stream git log: %v", err)
+	}
+	if len(commits) != 2 {
+		t.Fatalf("expected 2 commits, got %d", len(commits))
+	}
+	if commits[0].Reference != "123456" || commits[1].Reference != "789abc" {
+		t.Errorf("unexpected commit references: %v", commits)
+	}
+}
+
+func TestStreamGitLog_WithNameOnlyFiles(t *testing.T) {
+	mockOutput := "\x1ecommit1\x1fAlice <alice@example.com>\x1f2026-06-05T21:15:26Z\x1ffeat: add router\x1f\nhugolib/page.go\nhugolib/site.go\n\x1ecommit2\x1fBob <bob@example.com>\x1f2026-06-05T21:20:00Z\x1ffix: storage bug\x1f\ninternal/storage/sqlite.go\n"
+	scanner := NewScanner(nil)
+	commits, err := scanner.StreamGitLog("test-repo", strings.NewReader(mockOutput))
+	if err != nil {
+		t.Fatalf("failed to stream git log: %v", err)
+	}
+	if len(commits) != 2 {
+		t.Fatalf("expected 2 commits, got %d", len(commits))
+	}
+	if !strings.Contains(commits[0].MetadataJSON, "hugolib/page.go") {
+		t.Errorf("expected MetadataJSON to contain hugolib/page.go, got %s", commits[0].MetadataJSON)
+	}
+	if !strings.Contains(commits[1].MetadataJSON, "internal/storage/sqlite.go") {
+		t.Errorf("expected MetadataJSON to contain internal/storage/sqlite.go, got %s", commits[1].MetadataJSON)
 	}
 }

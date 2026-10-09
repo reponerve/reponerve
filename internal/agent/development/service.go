@@ -8,11 +8,11 @@ import (
 	"strings"
 
 	agentimpact "github.com/reponerve/reponerve/internal/agent/impact"
-	agentsearch "github.com/reponerve/reponerve/internal/agent/search"
 	"github.com/reponerve/reponerve/internal/agent/qa"
+	agentsearch "github.com/reponerve/reponerve/internal/agent/search"
 	"github.com/reponerve/reponerve/internal/code"
-	graphimpact "github.com/reponerve/reponerve/internal/graph/impact"
 	codemodels "github.com/reponerve/reponerve/internal/code/models"
+	graphimpact "github.com/reponerve/reponerve/internal/graph/impact"
 	"github.com/reponerve/reponerve/internal/intelligence/changeplan"
 	"github.com/reponerve/reponerve/internal/intelligence/feature"
 	"github.com/reponerve/reponerve/internal/intelligence/learning"
@@ -29,26 +29,26 @@ const (
 
 // Service orchestrates Code Intelligence and Repository Intelligence for Development Experience.
 type Service struct {
-	codeService       *code.Service
-	router            *Router
-	searchService     *agentsearch.Service
-	qaService         *qa.Service
-	codeEntityReader  storage.CodeEntityReader
-	relReader         storage.CodeRelationshipReader
-	repoCodeReader    storage.RepositoryCodeRelationshipReader
-	decisionReader    storage.DecisionReader
-	factReader        storage.FactReader
-	eventReader       storage.EventReader
-	expertiseReader   storage.ExpertiseReader
-	contributorReader storage.ContributorReader
-	sourceReader      storage.SourceReader
-	repositoryPath    string
-	learningService     *learning.Service
-	reviewerService     *reviewers.Service
-	changePlanService   *changeplan.Service
-	graphImpactService  *graphimpact.Service
-	agentImpactService  *agentimpact.Service
-	featureService      *feature.Service
+	codeService        *code.Service
+	router             *Router
+	searchService      *agentsearch.Service
+	qaService          *qa.Service
+	codeEntityReader   storage.CodeEntityReader
+	relReader          storage.CodeRelationshipReader
+	repoCodeReader     storage.RepositoryCodeRelationshipReader
+	decisionReader     storage.DecisionReader
+	factReader         storage.FactReader
+	eventReader        storage.EventReader
+	expertiseReader    storage.ExpertiseReader
+	contributorReader  storage.ContributorReader
+	sourceReader       storage.SourceReader
+	repositoryPath     string
+	learningService    *learning.Service
+	reviewerService    *reviewers.Service
+	changePlanService  *changeplan.Service
+	graphImpactService *graphimpact.Service
+	agentImpactService *agentimpact.Service
+	featureService     *feature.Service
 }
 
 // NewService creates a Development Experience service.
@@ -74,20 +74,20 @@ func NewService(
 	featureService *feature.Service,
 ) *Service {
 	return &Service{
-		codeService:       codeService,
-		router:            NewRouter(searchService, codeEntityReader, repoCodeReader),
-		searchService:     searchService,
-		qaService:         qaService,
-		codeEntityReader:  codeEntityReader,
-		relReader:         relReader,
-		repoCodeReader:    repoCodeReader,
-		decisionReader:    decisionReader,
-		factReader:        factReader,
-		eventReader:       eventReader,
-		expertiseReader:   expertiseReader,
-		contributorReader: contributorReader,
-		sourceReader:      sourceReader,
-		repositoryPath:    repositoryPath,
+		codeService:        codeService,
+		router:             NewRouter(searchService, codeEntityReader, repoCodeReader),
+		searchService:      searchService,
+		qaService:          qaService,
+		codeEntityReader:   codeEntityReader,
+		relReader:          relReader,
+		repoCodeReader:     repoCodeReader,
+		decisionReader:     decisionReader,
+		factReader:         factReader,
+		eventReader:        eventReader,
+		expertiseReader:    expertiseReader,
+		contributorReader:  contributorReader,
+		sourceReader:       sourceReader,
+		repositoryPath:     repositoryPath,
 		learningService:    learningService,
 		reviewerService:    reviewerService,
 		changePlanService:  changePlanService,
@@ -112,6 +112,9 @@ func (s *Service) Explain(ctx context.Context, req DevelopmentRequest) (*Develop
 	topic, err := s.router.ResolveTopic(ctx, req.RepositoryID, req.Topic)
 	if err != nil {
 		return nil, err
+	}
+	if len(topic.CodeEntityIDs) == 0 && len(topic.RepositoryHitIDs) == 0 && len(topic.RepositoryCodeLinks) == 0 {
+		return nil, fmt.Errorf("no match found for %q in this repository", req.Topic)
 	}
 	return s.assembleExplanation(ctx, req.RepositoryID, req.Topic, topic)
 }
@@ -185,9 +188,9 @@ func (s *Service) ExplainFile(ctx context.Context, repositoryID, filePath string
 		return nil, err
 	}
 	topic := &ResolvedTopic{
-		Input:            filePath,
-		RepositoryHitIDs: make(map[string]struct{}),
-		CodeEntityIDs:    make(map[string]struct{}),
+		Input:             filePath,
+		RepositoryHitIDs:  make(map[string]struct{}),
+		CodeEntityIDs:     make(map[string]struct{}),
 		PrimaryEntityType: "code",
 	}
 	for _, e := range allCodeEntities(codeCtx) {
@@ -253,9 +256,9 @@ func (s *Service) explainSymbol(ctx context.Context, repositoryID, symbol, packa
 		}
 	}
 	topic := &ResolvedTopic{
-		Input:            symbol,
-		RepositoryHitIDs: make(map[string]struct{}),
-		CodeEntityIDs:    make(map[string]struct{}),
+		Input:             symbol,
+		RepositoryHitIDs:  make(map[string]struct{}),
+		CodeEntityIDs:     make(map[string]struct{}),
 		PrimaryEntityType: "code",
 	}
 	for _, e := range allCodeEntities(codeCtx) {
@@ -306,16 +309,16 @@ func (s *Service) assembleFromCodeContext(
 	out := &DevelopmentExplanation{
 		Topic: topic,
 		CodeContext: &CodeContext{
-			Modules:     entityRefsFromCode(codeCtx.Modules),
-			Files:       entityRefsFromCode(codeCtx.Files),
-			Packages:    entityRefsFromCode(codeCtx.Packages),
-			Structs:     entityRefsFromCode(codeCtx.Structs),
-			Interfaces:  entityRefsFromCode(codeCtx.Interfaces),
-			TypeAliases: entityRefsFromCode(codeCtx.TypeAliases),
-			Functions:   entityRefsFromCode(codeCtx.Functions),
-			Methods:     entityRefsFromCode(codeCtx.Methods),
-			Endpoints:   entityRefsFromCode(codeCtx.Endpoints),
-			CallGraph:   codeCtx.CallGraph,
+			Modules:      entityRefsFromCode(codeCtx.Modules),
+			Files:        entityRefsFromCode(codeCtx.Files),
+			Packages:     entityRefsFromCode(codeCtx.Packages),
+			Structs:      entityRefsFromCode(codeCtx.Structs),
+			Interfaces:   entityRefsFromCode(codeCtx.Interfaces),
+			TypeAliases:  entityRefsFromCode(codeCtx.TypeAliases),
+			Functions:    entityRefsFromCode(codeCtx.Functions),
+			Methods:      entityRefsFromCode(codeCtx.Methods),
+			Endpoints:    entityRefsFromCode(codeCtx.Endpoints),
+			CallGraph:    codeCtx.CallGraph,
 			Dependencies: relationshipRefs(codeCtx.Dependencies),
 		},
 		RepositoryContext: &RepositoryContext{},
@@ -521,6 +524,7 @@ func (s *Service) matchExpertise(ctx context.Context, repositoryID, topic string
 	var evidence []EvidenceItem
 	seenOwners := map[string]struct{}{}
 
+	labels := s.contributorLabels(ctx, repositoryID)
 	for _, e := range all {
 		domain := strings.ToLower(e.Domain)
 		matched := false
@@ -544,10 +548,14 @@ func (s *Service) matchExpertise(ctx context.Context, repositoryID, topic string
 		})
 		if _, ok := seenOwners[e.ContributorID]; !ok {
 			seenOwners[e.ContributorID] = struct{}{}
+			label := labels[e.ContributorID]
+			if label == "" {
+				label = e.ContributorID
+			}
 			owners = append(owners, EntityRef{
 				EntityType: agentsearch.EntityTypeContributor,
 				EntityID:   e.ContributorID,
-				Label:      e.ContributorID,
+				Label:      label,
 			})
 		}
 	}

@@ -450,6 +450,99 @@ var allMigrations = []Migration{
 			DROP TABLE IF EXISTS code_entities;
 		`,
 	},
+	{
+		Version: 10,
+		Name:    "drop_legacy_tables",
+		Up: `
+			DROP TABLE IF EXISTS evidence;
+			DROP TABLE IF EXISTS relationships;
+			DROP TABLE IF EXISTS intents;
+			DROP TABLE IF EXISTS ownerships;
+			DROP TABLE IF EXISTS decisions;
+			DROP TABLE IF EXISTS events;
+			DROP TABLE IF EXISTS facts;
+			DROP TABLE IF EXISTS memories;
+		`,
+		Down: `
+			CREATE TABLE IF NOT EXISTS memories (
+				id TEXT PRIMARY KEY,
+				repository_id TEXT NOT NULL,
+				memory_type TEXT NOT NULL,
+				title TEXT NOT NULL,
+				summary TEXT,
+				confidence TEXT NOT NULL,
+				metadata_json TEXT,
+				created_at DATETIME NOT NULL,
+				updated_at DATETIME NOT NULL,
+				FOREIGN KEY (repository_id) REFERENCES repositories(id)
+			);
+
+			CREATE TABLE IF NOT EXISTS facts (
+				memory_id TEXT PRIMARY KEY,
+				subject TEXT NOT NULL,
+				predicate TEXT NOT NULL,
+				object TEXT NOT NULL,
+				FOREIGN KEY (memory_id) REFERENCES memories(id)
+			);
+
+			CREATE TABLE IF NOT EXISTS events (
+				memory_id TEXT PRIMARY KEY,
+				event_type TEXT NOT NULL,
+				event_timestamp DATETIME,
+				actor TEXT,
+				resource TEXT,
+				FOREIGN KEY (memory_id) REFERENCES memories(id)
+			);
+
+			CREATE TABLE IF NOT EXISTS decisions (
+				memory_id TEXT PRIMARY KEY,
+				reason TEXT,
+				alternatives TEXT,
+				tradeoffs TEXT,
+				decision_maker TEXT,
+				outcome TEXT,
+				FOREIGN KEY (memory_id) REFERENCES memories(id)
+			);
+
+			CREATE TABLE IF NOT EXISTS ownerships (
+				memory_id TEXT PRIMARY KEY,
+				resource TEXT NOT NULL,
+				owner_type TEXT NOT NULL,
+				owner TEXT NOT NULL,
+				start_date DATETIME,
+				end_date DATETIME,
+				FOREIGN KEY (memory_id) REFERENCES memories(id)
+			);
+
+			CREATE TABLE IF NOT EXISTS intents (
+				memory_id TEXT PRIMARY KEY,
+				goal TEXT NOT NULL,
+				description TEXT,
+				outcome TEXT,
+				FOREIGN KEY (memory_id) REFERENCES memories(id)
+			);
+
+			CREATE TABLE IF NOT EXISTS relationships (
+				id TEXT PRIMARY KEY,
+				source_memory_id TEXT NOT NULL,
+				relation TEXT NOT NULL,
+				target_memory_id TEXT NOT NULL,
+				confidence TEXT,
+				FOREIGN KEY (source_memory_id) REFERENCES memories(id),
+				FOREIGN KEY (target_memory_id) REFERENCES memories(id)
+			);
+
+			CREATE TABLE IF NOT EXISTS evidence (
+				id TEXT PRIMARY KEY,
+				memory_id TEXT NOT NULL,
+				source_id TEXT NOT NULL,
+				confidence TEXT,
+				explanation TEXT,
+				FOREIGN KEY (memory_id) REFERENCES memories(id),
+				FOREIGN KEY (source_id) REFERENCES sources(id)
+			);
+		`,
+	},
 }
 
 // GetAppliedVersions returns the list of applied migration versions from the database.

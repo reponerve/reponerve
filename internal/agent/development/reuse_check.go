@@ -105,7 +105,7 @@ func (s *Service) ReuseCheck(ctx context.Context, req DevelopmentRequest) (*Reus
 		})
 	} else {
 		appendEvidence(&out.Evidence, sourceDevelopmentDiscipline, "reuse_status", map[string]string{
-			"status":     "candidates_found",
+			"status":          "candidates_found",
 			"candidate_count": fmt.Sprintf("%d", len(out.ReuseCandidates)),
 		})
 	}

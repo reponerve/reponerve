@@ -88,8 +88,8 @@ func metaFromAnswer(a *DevelopmentAnswer) AgentContextMeta {
 	}
 
 	meta := AgentContextMeta{
-		Kind:             a.AnswerType,
-		Completeness:     completenessForAnswer(a),
+		Kind:         a.AnswerType,
+		Completeness: completenessForAnswer(a),
 		GuidanceForAgent: append([]string{
 			"Read structured.entity_briefings and related before synthesizing.",
 			"Do not edit code from search hit counts alone.",
@@ -295,9 +295,9 @@ func metaFromReview(g *DevelopmentReviewGuide) AgentContextMeta {
 	}
 
 	meta := AgentContextMeta{
-		Kind:              "review",
-		Completeness:      CompletenessFull,
-		MustUseBeforeEdit: false,
+		Kind:                 "review",
+		Completeness:         CompletenessFull,
+		MustUseBeforeEdit:    false,
 		RecommendedNextTools: g.RecommendedNextTools,
 		GuidanceForAgent: []string{
 			"Verify affected_areas and related_knowledge before merge.",
@@ -344,7 +344,7 @@ func metaFromReuseCheck(r *ReuseCheckResult) AgentContextMeta {
 		return AgentContextMeta{Kind: "reuse_check", Completeness: CompletenessPartial}
 	}
 	meta := AgentContextMeta{
-		Kind:             "reuse_check",
+		Kind:              "reuse_check",
 		MustUseBeforeEdit: true,
 		GuidanceForAgent: append([]string{
 			"Reuse Protocol: extend reuse_candidates before writing new code.",

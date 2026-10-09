@@ -38,7 +38,7 @@ Development Experience (`ask`, `explain`, `explain-file`, `explain-function`, `e
 
 Software Understanding is what they receive.
 
-v1.0.0 scope shipped (`v1.0.0` tagged 2026-06-18). **Latest release:** `v1.5.1`. See `docs/roadmap/v1.0-prd.md`, `docs/vision/vision.md`, and `docs/releases/versioning.md`.
+v1.0.0 scope shipped (`v1.0.0` tagged 2026-06-18). **Latest release:** `v1.6.0`. See `docs/roadmap/v1.0-prd.md`, `docs/vision/vision.md`, and `docs/releases/versioning.md`.
 
 **Implementation status:** All v1.0 capabilities shipped. See `docs/product/implementation-status.md` and `docs/audits/v1.0-release-review.md`.
 
@@ -567,3 +567,24 @@ release: v0.7.0-alpha ownership intelligence complete
 Never add `Co-authored-by` trailers to commits — including `Co-authored-by: Cursor <cursoragent@cursor.com>` or any other agent attribution line.
 
 Commit messages must contain only the subject and body written for the change. No co-author, signed-off-by, or tool attribution footers unless the user explicitly requests them.
+
+## RepoNerve
+
+RepoNerve provides evidence-backed repository context in **AI chat without MCP**.
+
+Before answering questions about this codebase or making edits:
+
+1. Ensure memory exists:
+   `test -f .reponerve/memory.db || (reponerve init && reponerve scan)`
+2. Load context (pick one):
+   - `reponerve ask "<question>" --json`
+   - `reponerve plan "<task>" --json` (pasted tickets)
+   - `reponerve onboard --json` (day one)
+   - `reponerve explain-function "<name>" --package <pkg> --json` (verify a fix / one symbol)
+   - `reponerve explain-file "<path>" --json` (verify a file)
+3. Read the JSON envelope in order: `structured` → `agent` → `formatted`
+4. Use RepoNerve context for orientation and constraints; read and verify targeted source files before making edits.
+
+For verification ("is this fix correct?"), prefer `explain-function` / `explain-struct` / `explain-file` over broad `ask` or full `plan` JSON.
+
+Chat triggers: `/reponerve ask "..."` | Skill: `.cursor/skills/reponerve/SKILL.md`

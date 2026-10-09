@@ -80,9 +80,10 @@ type scanTarget struct {
 // Scan discovers ADR and architecture markdown files under configured directories.
 func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.Source, error) {
 	var sources []*models.Source
+	seenRel := make(map[string]struct{})
 	for _, docPath := range s.documentPaths {
 		target := docPath.scanTarget(repo.Path)
-		batch, err := s.scanDirectory(ctx, repo, target)
+		batch, err := s.scanDirectory(ctx, repo, target, seenRel)
 		if err != nil {
 			return nil, err
 		}
@@ -91,7 +92,7 @@ func (s *Scanner) Scan(ctx context.Context, repo *models.Repository) ([]*models.
 	return sources, nil
 }
 
-func (s *Scanner) scanDirectory(ctx context.Context, repo *models.Repository, target scanTarget) ([]*models.Source, error) {
+func (s *Scanner) scanDirectory(ctx context.Context, repo *models.Repository, target scanTarget, seenRel map[string]struct{}) ([]*models.Source, error) {
 	if _, err := os.Stat(target.dir); err != nil {
 		return nil, nil
 	}
@@ -108,17 +109,22 @@ func (s *Scanner) scanDirectory(ctx context.Context, repo *models.Repository, ta
 			return nil
 		}
 
-		contentBytes, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("failed to read file %s: %w", path, err)
-		}
-		content := string(contentBytes)
-
 		relPath, err := filepath.Rel(repo.Path, path)
 		if err != nil {
 			return fmt.Errorf("failed to get relative path for %s: %w", path, err)
 		}
 		relPath = filepath.ToSlash(relPath)
+		key := strings.ToLower(relPath)
+		if _, ok := seenRel[key]; ok {
+			return nil
+		}
+		seenRel[key] = struct{}{}
+
+		contentBytes, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read file %s: %w", path, err)
+		}
+		content := string(contentBytes)
 
 		title, status := ParseADR(content)
 		if title == "" {

@@ -82,14 +82,14 @@ func (s *Service) buildEntityBriefings(
 
 func pickBriefingRoots(entities []*codemodels.CodeEntity) []*codemodels.CodeEntity {
 	priority := map[string]int{
-		codemodels.EntityTypeStruct:     1,
-		codemodels.EntityTypeInterface:  2,
-		codemodels.EntityTypeTypeAlias:  3,
-		codemodels.EntityTypeFunction:   4,
-		codemodels.EntityTypeMethod:     5,
-		codemodels.EntityTypeFile:       6,
-		codemodels.EntityTypePackage:    7,
-		codemodels.EntityTypeModule:     8,
+		codemodels.EntityTypeStruct:    1,
+		codemodels.EntityTypeInterface: 2,
+		codemodels.EntityTypeTypeAlias: 3,
+		codemodels.EntityTypeFunction:  4,
+		codemodels.EntityTypeMethod:    5,
+		codemodels.EntityTypeFile:      6,
+		codemodels.EntityTypePackage:   7,
+		codemodels.EntityTypeModule:    8,
 	}
 
 	seen := make(map[string]struct{})
@@ -134,12 +134,12 @@ func (s *Service) briefEntity(
 ) EntityBriefing {
 	brief := EntityBriefing{
 		QualifiedName: entity.QualifiedName,
-		EntityType:      entity.EntityType,
-		Layer:           entity.PackagePath,
-		Role:            roleForEntity(entity),
-		DefinedIn:       formatDefinedIn(entity),
-		Signature:       strings.TrimSpace(entity.Signature),
-		Fields:          fieldsFromSignature(entity),
+		EntityType:    entity.EntityType,
+		Layer:         entity.PackagePath,
+		Role:          roleForEntity(entity),
+		DefinedIn:     formatDefinedIn(entity),
+		Signature:     strings.TrimSpace(entity.Signature),
+		Fields:        fieldsFromSignature(entity),
 	}
 
 	if entity.EntityType == codemodels.EntityTypeStruct {

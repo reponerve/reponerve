@@ -22,14 +22,24 @@ const (
 	relImports               = "IMPORTS"
 )
 
+type parsedGoFile struct {
+	file        *ast.File
+	fset        *token.FileSet
+	filePath    string
+	packagePath string
+	packageID   string
+	fileID      string
+	importMap   map[string]string
+}
+
 type builder struct {
 	repositoryID string
 	modulePath   string
 	repoPath     string
 	indexedAt    time.Time
 
-	entities    []*codemodels.CodeEntity
-	rels        []*codemodels.CodeRelationship
+	entities       []*codemodels.CodeEntity
+	rels           []*codemodels.CodeRelationship
 	entitySet      map[string]struct{}
 	packageIDs     map[string]string
 	fileIDs        map[string]string
@@ -38,6 +48,8 @@ type builder struct {
 	langModuleIDs  map[string]string
 	langPackageIDs map[string]string
 	relKeys        map[string]struct{}
+	structFields   map[string]typeRef
+	parsedFiles    []*parsedGoFile
 }
 
 func newBuilder(repositoryID, modulePath, repoPath string, at time.Time) *builder {
@@ -54,6 +66,7 @@ func newBuilder(repositoryID, modulePath, repoPath string, at time.Time) *builde
 		langModuleIDs:  make(map[string]string),
 		langPackageIDs: make(map[string]string),
 		relKeys:        make(map[string]struct{}),
+		structFields:   make(map[string]typeRef),
 	}
 }
 
@@ -179,34 +192,88 @@ func (b *builder) parseFile(filePath, moduleID string) error {
 				if !ok {
 					continue
 				}
-				structID := b.addTypeSymbol(file, fset, filePath, packagePath, packageID, fileID, typeSpec)
-				if structID != "" {
-					b.extractStructDependencies(file, fset, filePath, packagePath, typeSpec, structID)
+				b.addTypeSymbol(file, fset, filePath, packagePath, packageID, fileID, typeSpec)
+				if st, ok := typeSpec.Type.(*ast.StructType); ok && st.Fields != nil {
+					for _, field := range st.Fields.List {
+						tRef := resolveTypeExpr(field.Type, packagePath, importMap)
+						if tRef.typeName != "" {
+							for _, name := range field.Names {
+								if name != nil {
+									b.structFields[packagePath+"."+typeSpec.Name.Name+"."+name.Name] = tRef
+								}
+							}
+						}
+					}
 				}
 			}
 		case *ast.FuncDecl:
-			callerID := b.addFuncSymbol(file, fset, filePath, packagePath, packageID, fileID, d)
-			if callerID != "" {
-				b.extractCalls(file, fset, filePath, packagePath, callerID, d, importMap)
-			}
+			b.addFuncSymbol(file, fset, filePath, packagePath, packageID, fileID, d)
 		}
 	}
 
-	b.extractEndpoints(file, fset, filePath, packagePath, packageID, fileID, importMap)
-	b.extractImplementsAssertions(file, fset, filePath, packagePath)
-
-	for _, imp := range file.Imports {
-		importPath := strings.Trim(imp.Path.Value, `"`)
-		targetPackagePath := resolveImportToPackagePath(b.modulePath, importPath)
-		if targetPackagePath == "" {
-			continue
-		}
-		targetID := b.ensurePackageEntity(targetPackagePath)
-		line := fset.Position(imp.Pos()).Line
-		b.link(relImports, fileID, targetID, filePath, filepath.Base(filePath), targetPackagePath, line)
-	}
+	b.parsedFiles = append(b.parsedFiles, &parsedGoFile{
+		file:        file,
+		fset:        fset,
+		filePath:    filePath,
+		packagePath: packagePath,
+		packageID:   packageID,
+		fileID:      fileID,
+		importMap:   importMap,
+	})
 
 	return nil
+}
+
+func (b *builder) extractAllRelationships() {
+	for _, p := range b.parsedFiles {
+		for _, decl := range p.file.Decls {
+			switch d := decl.(type) {
+			case *ast.GenDecl:
+				if d.Tok != token.TYPE {
+					continue
+				}
+				for _, spec := range d.Specs {
+					typeSpec, ok := spec.(*ast.TypeSpec)
+					if !ok {
+						continue
+					}
+					if _, ok := typeSpec.Type.(*ast.StructType); ok {
+						qualified := symbolQualifiedName(p.packagePath, typeSpec.Name.Name)
+						structID := code.EntityID(b.repositoryID, codemodels.EntityTypeStruct, qualified)
+						b.extractStructDependencies(p.file, p.fset, p.filePath, p.packagePath, typeSpec, structID)
+					}
+				}
+			case *ast.FuncDecl:
+				if d.Name.Name != "init" {
+					var qualified string
+					entityType := codemodels.EntityTypeFunction
+					if d.Recv != nil && len(d.Recv.List) > 0 {
+						entityType = codemodels.EntityTypeMethod
+						recv := receiverName(d.Recv.List[0].Type)
+						qualified = methodQualifiedName(p.packagePath, recv, d.Name.Name)
+					} else {
+						qualified = symbolQualifiedName(p.packagePath, d.Name.Name)
+					}
+					callerID := code.EntityID(b.repositoryID, entityType, qualified)
+					b.extractCalls(p.file, p.fset, p.filePath, p.packagePath, callerID, d, p.importMap)
+				}
+			}
+		}
+
+		b.extractEndpoints(p.file, p.fset, p.filePath, p.packagePath, p.packageID, p.fileID, p.importMap)
+		b.extractImplementsAssertions(p.file, p.fset, p.filePath, p.packagePath)
+
+		for _, imp := range p.file.Imports {
+			importPath := strings.Trim(imp.Path.Value, `"`)
+			targetPackagePath := resolveImportToPackagePath(b.modulePath, importPath)
+			if targetPackagePath == "" {
+				continue
+			}
+			targetID := b.ensurePackageEntity(targetPackagePath)
+			line := p.fset.Position(imp.Pos()).Line
+			b.link(relImports, p.fileID, targetID, p.filePath, filepath.Base(p.filePath), targetPackagePath, line)
+		}
+	}
 }
 
 func (b *builder) addTypeSymbol(file *ast.File, fset *token.FileSet, filePath, packagePath, packageID, fileID string, spec *ast.TypeSpec) string {

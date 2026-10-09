@@ -129,10 +129,10 @@ type indexedText struct {
 }
 
 type codeIndex struct {
-	files          map[string]*codemodels.CodeEntity
-	packages       map[string]*codemodels.CodeEntity
-	byQualified    map[string]*codemodels.CodeEntity
-	symbolNames    []string
+	files            map[string]*codemodels.CodeEntity
+	packages         map[string]*codemodels.CodeEntity
+	byQualified      map[string]*codemodels.CodeEntity
+	symbolNames      []string
 	uniqueShortNames map[string][]string
 }
 

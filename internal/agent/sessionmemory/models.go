@@ -28,10 +28,10 @@ type WritebackRequest struct {
 
 // HandoffBundle transfers session memory between agent sessions.
 type HandoffBundle struct {
-	Version       string                `json:"version"`
-	RepositoryID  string                `json:"repository_id"`
-	SessionID     string                `json:"session_id"`
-	ExportedAt    time.Time             `json:"exported_at"`
-	Facts         []*memorymodels.Fact  `json:"facts"`
-	AccessRanking []string              `json:"access_ranking"`
+	Version       string               `json:"version"`
+	RepositoryID  string               `json:"repository_id"`
+	SessionID     string               `json:"session_id"`
+	ExportedAt    time.Time            `json:"exported_at"`
+	Facts         []*memorymodels.Fact `json:"facts"`
+	AccessRanking []string             `json:"access_ranking"`
 }

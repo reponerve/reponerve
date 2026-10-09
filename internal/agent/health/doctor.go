@@ -39,9 +39,9 @@ type DoctorResult struct {
 
 // Checker runs freshness diagnostics.
 type Checker struct {
-	ScanStateStore    storage.ScanStateStore
+	ScanStateStore      storage.ScanStateStore
 	CodeIndexStateStore storage.CodeIndexStateStore
-	Discovery         repository.Discovery
+	Discovery           repository.Discovery
 }
 
 // NewChecker creates a doctor checker.

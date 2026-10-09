@@ -17,8 +17,8 @@ type SurprisingConnection struct {
 
 // GraphDiscoveryReport summarizes graph structure for agents.
 type GraphDiscoveryReport struct {
-	RepositoryID           string                 `json:"repository_id"`
-	GodNodes               []GodNode              `json:"god_nodes"`
-	SurprisingConnections  []SurprisingConnection `json:"surprising_connections"`
-	SuggestedQuestions     []string               `json:"suggested_questions"`
+	RepositoryID          string                 `json:"repository_id"`
+	GodNodes              []GodNode              `json:"god_nodes"`
+	SurprisingConnections []SurprisingConnection `json:"surprising_connections"`
+	SuggestedQuestions    []string               `json:"suggested_questions"`
 }

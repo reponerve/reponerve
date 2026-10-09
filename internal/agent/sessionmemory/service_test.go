@@ -58,6 +58,11 @@ func TestRememberForgetRoundTrip(t *testing.T) {
 		t.Fatalf("expected 1 session fact, got %v err=%v", list, err)
 	}
 
+	hits, err := searchStore.Search(ctx, repoID, []string{"authentication"}, "FACT")
+	if err != nil || len(hits) != 1 {
+		t.Fatalf("expected 1 search hit after remember, got %v err=%v", hits, err)
+	}
+
 	bundle, err := svc.ExportHandoff(ctx, repoID)
 	if err != nil {
 		t.Fatal(err)
@@ -75,6 +80,11 @@ func TestRememberForgetRoundTrip(t *testing.T) {
 		t.Fatalf("expected 0 facts after forget, got %d", len(list))
 	}
 
+	hits, err = searchStore.Search(ctx, repoID, []string{"authentication"}, "FACT")
+	if err != nil || len(hits) != 0 {
+		t.Fatalf("expected 0 search hits after forget, got %v err=%v", hits, err)
+	}
+
 	imported, err := ImportHandoffFile(bundlePath)
 	if err != nil {
 		t.Fatal(err)
@@ -85,6 +95,11 @@ func TestRememberForgetRoundTrip(t *testing.T) {
 	list, _ = svc.ListSessionFacts(ctx, repoID)
 	if len(list) != 1 {
 		t.Fatalf("expected handoff import to restore 1 fact, got %d", len(list))
+	}
+
+	hits, err = searchStore.Search(ctx, repoID, []string{"authentication"}, "FACT")
+	if err != nil || len(hits) != 1 {
+		t.Fatalf("expected 1 search hit after handoff import, got %v err=%v", hits, err)
 	}
 }
 

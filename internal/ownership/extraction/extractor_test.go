@@ -200,4 +200,41 @@ func TestExtractor_Extract(t *testing.T) {
 			t.Errorf("IDs should not match for different Email: %q vs %q", id1, id4)
 		}
 	})
+
+	t.Run("Filtering out bot authors", func(t *testing.T) {
+		sources := []*models.Source{
+			{
+				ID:           "commit_bot_1",
+				RepositoryID: repoID,
+				SourceType:   "commit",
+				Author:       "dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+				Timestamp:    time.Now(),
+			},
+			{
+				ID:           "commit_bot_2",
+				RepositoryID: repoID,
+				SourceType:   "commit",
+				Author:       "renovate[bot] <renovate@whitesourcesoftware.com>",
+				Timestamp:    time.Now(),
+			},
+			{
+				ID:           "commit_human",
+				RepositoryID: repoID,
+				SourceType:   "commit",
+				Author:       "Alice <alice@example.com>",
+				Timestamp:    time.Now(),
+			},
+		}
+
+		contribs, err := extractor.Extract(ctx, sources)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(contribs) != 1 {
+			t.Fatalf("expected exactly 1 human contributor, got %d", len(contribs))
+		}
+		if contribs[0].Email != "alice@example.com" {
+			t.Errorf("expected Alice, got %v", contribs[0])
+		}
+	})
 }

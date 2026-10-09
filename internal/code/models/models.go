@@ -4,15 +4,15 @@ import "time"
 
 // Entity type constants for code intelligence.
 const (
-	EntityTypeModule      = "module"
-	EntityTypePackage     = "package"
-	EntityTypeFile        = "file"
-	EntityTypeStruct      = "struct"
-	EntityTypeInterface   = "interface"
-	EntityTypeTypeAlias   = "type_alias"
-	EntityTypeFunction    = "function"
-	EntityTypeMethod      = "method"
-	EntityTypeEndpoint    = "endpoint"
+	EntityTypeModule    = "module"
+	EntityTypePackage   = "package"
+	EntityTypeFile      = "file"
+	EntityTypeStruct    = "struct"
+	EntityTypeInterface = "interface"
+	EntityTypeTypeAlias = "type_alias"
+	EntityTypeFunction  = "function"
+	EntityTypeMethod    = "method"
+	EntityTypeEndpoint  = "endpoint"
 )
 
 // CodeEntity represents a deterministic code intelligence entity.

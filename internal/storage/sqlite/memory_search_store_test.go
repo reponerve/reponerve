@@ -115,3 +115,53 @@ func TestMemorySearchStore_HyphenatedTermsDoNotError(t *testing.T) {
 		t.Fatalf("expected hits for hyphenated query")
 	}
 }
+
+func TestMemorySearchStore_IndexAndDeleteDocument(t *testing.T) {
+	tempDir := t.TempDir()
+	db, err := sqlite.Open(filepath.Join(tempDir, "test.db"))
+	if err != nil {
+		t.Fatalf("failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	if err := migrations.RunUp(db); err != nil {
+		t.Fatalf("failed to run migrations: %v", err)
+	}
+
+	store := sqlite.NewMemorySearchStore(db)
+	ctx := context.Background()
+	repoID := "repo_test"
+
+	doc := storage.MemorySearchDocument{
+		MemoryID:     "fact_123",
+		RepositoryID: repoID,
+		EntityType:   "FACT",
+		Title:        "authentication",
+		Content:      "Use JWT middleware in internal/auth",
+	}
+
+	if err := store.IndexDocument(ctx, doc); err != nil {
+		t.Fatalf("IndexDocument failed: %v", err)
+	}
+
+	hits, err := store.Search(ctx, repoID, []string{"authentication"}, "FACT")
+	if err != nil {
+		t.Fatalf("Search failed: %v", err)
+	}
+	if len(hits) != 1 || hits[0].MemoryID != "fact_123" {
+		t.Fatalf("expected 1 hit for fact_123, got: %+v", hits)
+	}
+
+	// Now delete it
+	if err := store.DeleteDocument(ctx, "fact_123"); err != nil {
+		t.Fatalf("DeleteDocument failed: %v", err)
+	}
+
+	hits, err = store.Search(ctx, repoID, []string{"authentication"}, "FACT")
+	if err != nil {
+		t.Fatalf("Search after delete failed: %v", err)
+	}
+	if len(hits) != 0 {
+		t.Fatalf("expected 0 hits after delete, got: %d", len(hits))
+	}
+}

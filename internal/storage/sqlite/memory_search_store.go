@@ -60,6 +60,37 @@ func (s *MemorySearchStore) Rebuild(ctx context.Context, repositoryID string, do
 	return nil
 }
 
+// IndexDocument adds or updates a single memory document in the FTS5 index.
+func (s *MemorySearchStore) IndexDocument(ctx context.Context, doc storage.MemorySearchDocument) error {
+	content := scopedSearchContent(doc.RepositoryID, doc.Content)
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.ExecContext(ctx, `DELETE FROM memory_search WHERE memory_id = ?`, doc.MemoryID); err != nil {
+		return fmt.Errorf("failed to delete existing memory_search row %s: %w", doc.MemoryID, err)
+	}
+
+	if _, err := tx.ExecContext(ctx, `
+		INSERT INTO memory_search (memory_id, title, summary, content)
+		VALUES (?, ?, ?, ?)
+	`, doc.MemoryID, doc.Title, doc.EntityType, content); err != nil {
+		return fmt.Errorf("failed to index memory %s: %w", doc.MemoryID, err)
+	}
+
+	return tx.Commit()
+}
+
+// DeleteDocument removes a memory document from the FTS5 index by memory ID.
+func (s *MemorySearchStore) DeleteDocument(ctx context.Context, memoryID string) error {
+	if _, err := s.db.ExecContext(ctx, `DELETE FROM memory_search WHERE memory_id = ?`, memoryID); err != nil {
+		return fmt.Errorf("failed to delete memory_search row %s: %w", memoryID, err)
+	}
+	return nil
+}
+
 // Search queries FTS5 for repository memory matches.
 func (s *MemorySearchStore) Search(ctx context.Context, repositoryID string, terms []string, entityType string) ([]storage.MemorySearchHit, error) {
 	matchQuery := buildFTSMatchQuery(terms, entityType, repositoryID)
@@ -178,4 +209,3 @@ func tokenizeFTSTerms(term string) []string {
 	}
 	return out
 }
-

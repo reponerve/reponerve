@@ -11,9 +11,9 @@ import (
 	"time"
 
 	memorystorage "github.com/reponerve/reponerve/internal/memory/storage"
+	querystorage "github.com/reponerve/reponerve/internal/query/storage"
 	"github.com/reponerve/reponerve/internal/scanner/repository"
 	"github.com/reponerve/reponerve/internal/storage/migrations"
-	querystorage "github.com/reponerve/reponerve/internal/query/storage"
 	"github.com/reponerve/reponerve/internal/storage/sqlite"
 	"github.com/reponerve/reponerve/pkg/models"
 )

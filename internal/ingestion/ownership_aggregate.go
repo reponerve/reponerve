@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/reponerve/reponerve/internal/ownership/codeowners"
 	"github.com/reponerve/reponerve/internal/ownership/expertise"
 	ownerextraction "github.com/reponerve/reponerve/internal/ownership/extraction"
 	querystorage "github.com/reponerve/reponerve/internal/query/storage"
@@ -18,7 +19,7 @@ type OwnershipReaders struct {
 	Facts     querystorage.FactReader
 }
 
-func (c *Coordinator) recomputeOwnership(ctx context.Context, repositoryID string) error {
+func (c *Coordinator) recomputeOwnership(ctx context.Context, repositoryID string, repoPath string) error {
 	if c.ownershipReaders == nil {
 		return nil
 	}
@@ -58,6 +59,11 @@ func (c *Coordinator) recomputeOwnership(ctx context.Context, repositoryID strin
 	}
 
 	expertiseDetector := expertise.NewDetector()
+	if repoPath != "" {
+		if rules, err := codeowners.FindAndParse(repoPath); err == nil && len(rules) > 0 {
+			expertiseDetector.WithCodeOwners(rules)
+		}
+	}
 	expertiseRecords, err := expertiseDetector.Detect(ctx, contribs, events, decisions, facts, commitSources)
 	if err != nil {
 		return fmt.Errorf("detect expertise: %w", err)
@@ -72,7 +78,7 @@ func (c *Coordinator) recomputeOwnership(ctx context.Context, repositoryID strin
 
 // RecomputeOwnership rebuilds contributor and expertise records from persisted repository memory.
 func (c *Coordinator) RecomputeOwnership(ctx context.Context, repositoryID string) error {
-	return c.recomputeOwnership(ctx, repositoryID)
+	return c.recomputeOwnership(ctx, repositoryID, "")
 }
 
 func filterSourcesByType(sources []*models.Source, sourceType string) []*models.Source {

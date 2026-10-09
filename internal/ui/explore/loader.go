@@ -63,10 +63,10 @@ type NodeDetail struct {
 
 // Loader loads graph payloads from workspace memory.
 type Loader struct {
-	DB           *sqlite.Database
-	RepoPath     string
-	Discovery    repository.Discovery
-	Traversal    *traversal.Engine
+	DB        *sqlite.Database
+	RepoPath  string
+	Discovery repository.Discovery
+	Traversal *traversal.Engine
 }
 
 // Load reads the repository graph and builds a capped UI payload.

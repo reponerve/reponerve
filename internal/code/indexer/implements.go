@@ -1,9 +1,9 @@
 package indexer
 
 import (
+	codemodels "github.com/reponerve/reponerve/internal/code/models"
 	"go/ast"
 	"go/token"
-	codemodels "github.com/reponerve/reponerve/internal/code/models"
 )
 
 const (

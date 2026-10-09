@@ -135,6 +135,9 @@ func TestServer_JSONRPC(t *testing.T) {
 		if result.ServerInfo.Name != "reponerve" {
 			t.Errorf("expected server name 'reponerve', got %q", result.ServerInfo.Name)
 		}
+		if result.ServerInfo.Version == "" || result.ServerInfo.Version == "0.1.0-alpha" {
+			t.Errorf("expected dynamic semver version, got %q", result.ServerInfo.Version)
+		}
 	})
 
 	t.Run("Tools list discovery", func(t *testing.T) {

@@ -49,3 +49,16 @@ func TestDevelopmentTool_RegisteredInList(t *testing.T) {
 		}
 	}
 }
+
+func TestExplainInputSchema_IncludesKindAndPackagePath(t *testing.T) {
+	schema := getInputSchema("explain")
+	if schema.Properties["kind"] == nil {
+		t.Error("expected explain schema to have 'kind' property")
+	}
+	if schema.Properties["package_path"] == nil {
+		t.Error("expected explain schema to have 'package_path' property")
+	}
+	if schema.Properties["topic"] == nil {
+		t.Error("expected explain schema to have 'topic' property")
+	}
+}
